@@ -1,0 +1,11 @@
+{
+  // Конфиг для реальной сборки (production build) — наследует все compilerOptions из базового
+  // tsconfig.json (строгость, module/target и т.д.), но компилирует только src, без __tests__.
+  // Используется явно: npx tsc -p tsconfig.build.json
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src" // В сборке rootDir строго src — гарантирует, что структура dist повторяет только src, без ../__tests__
+  },
+  "include": ["src/**/*.ts"], // В сборку идёт только исходный код, тесты сюда не попадают
+  "exclude": ["node_modules", "dist", "__tests__"] // Явно исключаем тесты на случай, если include где-то пересечётся
+}

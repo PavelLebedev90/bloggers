@@ -1,0 +1,26 @@
+{
+  // Форматировать файл автоматически при сохранении (Cmd+S)
+  "editor.formatOnSave": true,
+
+  // Prettier как форматтер по умолчанию для всех языков
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Явно задать Prettier форматтером для TS/JS/JSON — на случай, если другое расширение уже забрало этот язык себе
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // При сохранении также попросить ESLint автоматически исправить то, что он умеет чинить (--fix)
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  }
+}

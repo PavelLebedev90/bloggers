@@ -1,0 +1,7 @@
+{
+  // Расширения, которые редактор предложит установить при открытии проекта
+  "recommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint"
+  ]
+}

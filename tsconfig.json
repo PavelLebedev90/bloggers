@@ -1,0 +1,121 @@
+{
+  "compilerOptions": {
+    // ===== Структура файлов (File Layout) =====
+    // rootDir здесь намеренно не задан — этот tsconfig покрывает src и __tests__ вместе (проверка типов, IDE, ts-jest),
+    // а строгий rootDir: "./src" для реальной сборки задаётся отдельно в tsconfig.build.json
+    "outDir": "./dist", // Папка, куда попадёт скомпилированный JS-код (используется только при явном emit, сборка идёт через tsconfig.build.json)
+    // "rootDirs": [], // Список папок, которые при компиляции виртуально объединяются в одну (для нестандартной раскладки исходников)
+    // "composite": true, // Помечает проект как часть project references (сборка из нескольких связанных tsconfig)
+    // "tsBuildInfoFile": "./.tsbuildinfo", // Путь к файлу инкрементальной информации о сборке (для incremental/composite)
+
+    // ===== Настройки окружения (Environment Settings) =====
+    "module": "commonjs", // Система модулей для вывода — CommonJS (require/module.exports), стандарт для Node.js без "type": "module"
+    "target": "es2023", // Версия ECMAScript, в которую компилируется TS-код — Node 24 поддерживает ES2023 нативно
+    "lib": ["es2023"], // Набор типов встроенных API (Promise, Array методы и т.д.), доступных для целевой версии es2023
+    "types": ["node", "jest"], // Глобальные типы из @types/*, подключаемые без явного импорта — типы Node.js API и Jest (describe, it, expect)
+    // "typeRoots": ["./node_modules/@types"], // Папки, где искать глобальные типы (по умолчанию — node_modules/@types)
+    // "lib": ["dom", "dom.iterable"], // Пример: типы браузерного окружения (window, document) — не нужны в бэкенде
+    // "moduleResolution": "node10", // Алгоритм поиска модулей — устаревший режим Node.js CommonJS (для module: commonjs обычно достаточно)
+    // "moduleResolution": "bundler", // Алгоритм поиска модулей, имитирующий поведение современных бандлеров (Vite, esbuild)
+    // "customConditions": [], // Дополнительные условия для поля "exports" в package.json при разрешении модулей
+    // "noLib": true, // Не подключать никакие встроенные .d.ts (даже базовые Array, String) — крайне редкий случай
+    // "useDefineForClassFields": true, // Использовать семантику полей класса по стандарту ECMAScript (define) вместо старой (assign)
+
+    // ===== Прочие выходные файлы (Emit) =====
+    "sourceMap": true, // Генерировать .js.map файлы — позволяет отлаживать TS-код напрямую (сопоставление со скомпилированным JS)
+    "declaration": true, // Генерировать .d.ts файлы с типами — нужно, если пакет будет использоваться как библиотека
+    "declarationMap": true, // Генерировать .d.ts.map — переход "к определению" ведёт сразу в исходный .ts, а не в .d.ts
+    "removeComments": true, // Удалять комментарии из скомпилированного JS-кода
+    // "noEmit": true, // Не выпускать JS-файлы вообще — полезно, если tsc используется только для проверки типов (сборку делает другой инструмент)
+    // "emitDeclarationOnly": true, // Выпускать только .d.ts файлы, без .js (когда транспиляцию делает babel/swc/esbuild)
+    // "outFile": "./dist/bundle.js", // Собрать весь вывод в один файл — работает только с module: "amd"/"system"
+    // "importHelpers": true, // Импортировать вспомогательные функции (__extends, __awaiter и т.д.) из tslib вместо дублирования в каждом файле
+    // "downlevelIteration": true, // Более корректная поддержка for..of/spread/деструктуризации при компиляции в старые версии ES (ES5)
+    // "inlineSourceMap": true, // Встраивать source map прямо в .js файл вместо отдельного .map файла (взаимоисключимо с sourceMap)
+    // "inlineSources": true, // Включать исходный TS-код внутрь source map — удобно для отладки без доступа к исходникам
+    // "mapRoot": "./maps", // URL/путь, откуда отладчик должен искать .map файлы (переопределяет расположение по умолчанию)
+    // "sourceRoot": "./src", // URL/путь, откуда отладчик должен искать исходные .ts файлы
+    // "newLine": "lf", // Символ перевода строки в выпущенных файлах — lf или crlf
+    // "noEmitOnError": true, // Не выпускать файлы, если при компиляции были ошибки типов
+    // "preserveConstEnums": true, // Не удалять const enum при компиляции, оставлять как обычный enum в JS
+    // "stripInternal": true, // Не включать в .d.ts объявления, помеченные JSDoc-тегом @internal
+
+    // ===== Более строгая типизация (Stricter Typechecking) =====
+    "noUncheckedIndexedAccess": true, // Обращение по индексу (arr[i], obj[key]) возвращает T | undefined — защита от несуществующих ключей/индексов
+    "exactOptionalPropertyTypes": true, // Необязательное свойство ({ a?: string }) нельзя явно присвоить как undefined — только опустить целиком
+
+    // ===== Стилевые проверки (Style Options) =====
+    "noImplicitReturns": true, // Все ветки функции должны явно возвращать значение (или ни одна) — защита от забытого return
+    "noImplicitOverride": true, // При переопределении метода класса требуется явное ключевое слово override
+    "noUnusedLocals": true, // Ошибка при объявленных, но неиспользуемых локальных переменных
+    "noUnusedParameters": true, // Ошибка при неиспользуемых параметрах функций (кроме параметров с префиксом _)
+    "noFallthroughCasesInSwitch": true, // Ошибка, если case в switch не заканчивается break/return (защита от случайного "провала" в следующий case)
+    "allowUnreachableCode": true, // Запрещать заведомо недостижимый код (после return/throw)
+    // "noPropertyAccessFromIndexSignature": true, // (отключено) Требовало бы доступа через obj['key'] вместо obj.key для свойств из индексной сигнатуры
+    // "noImplicitAny": true, // Ошибка, если тип переменной/параметра не удалось вывести и он неявно стал any (включено через strict)
+    // "strictNullChecks": true, // null и undefined — отдельные типы, не совместимые с другими типами без явного указания (включено через strict)
+    // "allowUnusedLabels": false, // Запрещать неиспользуемые метки (label:) в коде
+
+    // ===== Рекомендуемые опции (Recommended) =====
+    "strict": true, // Включает весь пакет строгих проверок TS (strictNullChecks, noImplicitAny и т.д.)
+    "esModuleInterop": true, // Совместимость импорта CommonJS-модулей через ESM-синтаксис (import express from "express")
+    "forceConsistentCasingInFileNames": true, // Ошибка при разном регистре в пути импорта одного и того же файла — важно для Linux/CI, где ФС регистрозависима
+    "isolatedModules": true, // Каждый файл должен компилироваться независимо (без учёта типов из других файлов) — требование для транспиляторов вроде esbuild/swc
+    "moduleDetection": "force", // Все файлы считаются модулями (с собственной областью видимости), даже без import/export
+    "skipLibCheck": true, // Не проверять типы внутри .d.ts файлов из node_modules — ускоряет компиляцию
+    // "allowJs": true, // Разрешить компилировать .js файлы наравне с .ts (для постепенной миграции JS-проекта на TS)
+    // "checkJs": true, // Проверять типы и в .js файлах (требует allowJs)
+    // "verbatimModuleSyntax": true, // Импорты/экспорты типов должны явно помечаться как "import type" — иначе они не удаляются/не сохраняются буквально при компиляции
+    // "noUncheckedSideEffectImports": true, // Ошибка при импорте модуля "только ради побочного эффекта" (import "./file"), если такого файла не существует
+    // "jsx": "react-jsx", // Режим компиляции JSX-синтаксиса — не нужен в бэкенд-проекте без React
+
+    "resolveJsonModule": true, // Разрешает импортировать .json файлы напрямую (import data from "./data.json") с выводом типов
+
+    // ===== Прочие настройки модулей и разрешения путей =====
+    // "baseUrl": "./", // Базовая директория для разрешения нестрогих (non-relative) путей импорта
+    "paths": { "@/*": ["./src/*"] }, // Алиасы путей импорта (например "@/utils" вместо "../../utils") — требует настройки в раннере (ts-node/jest/webpack)
+    // "rootDirs": ["src", "generated"], // См. выше — виртуальное объединение нескольких папок в одну для разрешения импортов
+    // "allowSyntheticDefaultImports": true, // Разрешает "import express from 'express'" даже если модуль не имеет default-экспорта (обычно включается вместе с esModuleInterop)
+    // "resolvePackageJsonExports": true, // Учитывать поле "exports" в package.json при разрешении импортов из node_modules
+    // "resolvePackageJsonImports": true, // Учитывать поле "imports" (алиасы вида "#internal") в package.json при разрешении импортов
+    // "allowArbitraryExtensions": true, // Разрешает импортировать файлы с нестандартными расширениями (например .css), если рядом есть файл описания типов
+    // "allowImportingTsExtensions": true, // Разрешает писать в импортах ".ts" расширение явно (актуально при noEmit, без реальной компиляции TS→JS)
+
+    // ===== Диагностика и производительность (Compiler Diagnostics / Watch) =====
+    // "incremental": true, // Сохранять информацию о предыдущей сборке в файл (.tsbuildinfo) для ускорения повторных компиляций
+    "assumeChangesOnlyAffectDirectDependencies": true, // При watch-режиме считать, что изменение файла влияет только на файлы, которые его напрямую импортируют
+    // "diagnostics": true, // Выводить внутреннюю диагностику компилятора (время выполнения этапов)
+    // "extendedDiagnostics": true, // Расширенная диагностика — больше деталей о времени компиляции
+    // "generateCpuProfile": "profile.cpuprofile", // Сохранить CPU-профиль работы компилятора (для отладки медленной компиляции)
+    // "listFiles": true, // Вывести список всех файлов, включённых в компиляцию
+    // "listEmittedFiles": true, // Вывести список всех сгенерированных файлов
+    // "traceResolution": true, // Подробный лог того, как компилятор разрешает каждый импорт/модуль
+    // "explainFiles": true, // Объяснить, почему каждый файл был включён в программу компиляции
+
+    // ===== Вывод ошибок (Output Formatting) =====
+    // "pretty": true, // Цветной и форматированный вывод ошибок в терминале (включено по умолчанию)
+    "noErrorTruncation": true // Не обрезать длинные типы в тексте сообщений об ошибках
+
+    // ===== Полнота проверки типов проекта (Completeness) =====
+    // "skipDefaultLibCheck": true, // Не проверять типы только во встроенных .d.ts самого TypeScript (более узкая версия skipLibCheck)
+
+    // ===== Project References / сборка монорепозиториев =====
+    // "disableReferencedProjectLoad": true, // Не подгружать автоматически все связанные проекты (project references) в IDE — для больших монорепо
+    // "disableSolutionSearching": true, // Исключить проект из поиска "перейти к определению" в других проектах решения
+    // "disableSizeLimit": true, // Снять ограничение объёма памяти для очень больших проектов (файлы >20МБ типов)
+
+    // ===== Прочее =====
+    // "experimentalDecorators": true, // Включить поддержку декораторов (устаревший, "legacy" стандарт — используется, например, в старом NestJS/TypeORM)
+    // "emitDecoratorMetadata": true, // Генерировать метаданные типов для декораторов (нужно для reflect-metadata, DI-контейнеров вроде NestJS)
+    // "erasableSyntaxOnly": true, // Запрещает конструкции TS, которые нельзя просто "стереть" при транспиляции (enum, namespace и т.п.) — для чистой транспиляции без type-checking
+    // "libReplacement": true // Разрешает переопределять встроенные lib-файлы через npm-пакеты @typescript/lib-*
+  },
+  "include": ["src/**/*.ts", "__tests__/**/*.ts"], // Какие файлы включать в проверку типов — весь TS-код в src и тесты в __tests__
+  "exclude": ["node_modules", "dist"] // Какие папки исключить из компиляции
+
+  // "files": ["src/index.ts"], // Явный список файлов для компиляции (альтернатива include, без глобов)
+  // "references": [{ "path": "../shared" }], // Ссылки на другие проекты (project references) — для монорепозиториев с несколькими tsconfig
+  // "extends": "./tsconfig.base.json", // Наследование настроек из другого tsconfig-файла
+  // "watchOptions": { "watchFile": "useFsEvents" }, // Настройки поведения режима tsc --watch (какой механизм слежения за файлами использовать)
+  // "typeAcquisition": { "enable": false } // Настройки автоматической подгрузки типов для JS-проектов (актуально в основном для editor/tsserver, не для tsc)
+}
