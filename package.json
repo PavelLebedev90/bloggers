@@ -1,20 +1,33 @@
 {
   "name": "bloggers",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend-сервис bloggers",
+  "private": true,
+  "main": "dist/index.js",
   "scripts": {
+    "watch": "tsc -w -p tsconfig.build.json",
+    "dev": "nodemon --inspect dist/index.js",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "packageManager": "pnpm@10.24.0",
+  "lint-staged": {
+    "*.ts": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md}": [
+      "prettier --write"
+    ]
+  },
   "dependencies": {
     "express": "^5.2.1"
   },
@@ -28,8 +41,10 @@
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.6",
+    "husky": "^9.1.7",
     "jest": "^30.5.1",
     "jiti": "^2.7.0",
+    "lint-staged": "^17.5.0",
     "nodemon": "^3.1.14",
     "prettier": "^3.9.6",
     "supertest": "^7.2.2",
