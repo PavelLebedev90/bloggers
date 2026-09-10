@@ -1,0 +1,16 @@
+{
+  "version": "1.0.0",
+  "name": "bloggers",
+  "build": [
+    {
+      "src": "src/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "src/index.ts"
+    }
+  ]
+}
