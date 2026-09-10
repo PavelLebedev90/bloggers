@@ -1,10 +1,10 @@
-import { ValidationError, ValidationErrorMessages } from "@/core/types/validation-error";
+import { ValidationError, ValidationErrorMessages } from "../../types/validation-error";
 import {
   ArrayValidation,
   BooleanValidation,
   NumberValidation,
   StringValidation,
-} from "@/core/types/validation-scheme";
+} from "../../types/validation-scheme";
 
 export const isInvalidString = (rules: StringValidation, value: unknown) => {
   if (rules.isNullable && value === null) {

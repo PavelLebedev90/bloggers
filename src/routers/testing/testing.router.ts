@@ -1,5 +1,5 @@
-import { HttpStatus } from "@/core/types/http-statuses";
-import { db } from "@/db/db-bloggers";
+import { HttpStatus } from "../../core/types/http-statuses";
+import { db } from "../../db/db-bloggers";
 import { Router } from "express";
 
 export const testingRouter: Router = Router({});

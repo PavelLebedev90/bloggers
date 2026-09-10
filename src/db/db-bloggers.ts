@@ -1,4 +1,4 @@
-import { VideoDBModel } from "@/routers/videos/types/video.db";
+import { VideoDBModel } from "../routers/videos/types/video.db";
 
 export const db = {
   videos: <VideoDBModel[]>[

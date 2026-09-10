@@ -1,9 +1,9 @@
 import request from "supertest";
-import { HttpStatus } from "@/core/types/http-statuses";
-import { VideoCreateModel, VideoUpdateModel } from "@/routers/videos/types/video.input";
-import { VideoResponseModel } from "@/routers/videos/types/video.output";
+import { HttpStatus } from "../../../src/core/types/http-statuses";
+import { VideoCreateModel, VideoUpdateModel } from "../../../src/routers/videos/types/video.input";
+import { VideoResponseModel } from "../../../src/routers/videos/types/video.output";
 import { app, TESTING_PATH, VIDEOS_PATH } from "../../utils/config";
-import { Resolutions } from "@/routers/videos/types/video.db";
+import { Resolutions } from "../../../src/routers/videos/types/video.db";
 
 describe("videos CRUD", () => {
   beforeEach(async () => {

@@ -1,8 +1,8 @@
 import request from "supertest";
-import { HttpStatus } from "@/core/types/http-statuses";
-import { VideoCreateModel, VideoUpdateModel } from "@/routers/videos/types/video.input";
+import { HttpStatus } from "../../../src/core/types/http-statuses";
+import { VideoCreateModel, VideoUpdateModel } from "../../../src/routers/videos/types/video.input";
 import { app, TESTING_PATH, VIDEOS_PATH } from "../../utils/config";
-import { Resolutions } from "@/routers/videos/types/video.db";
+import { Resolutions } from "../../../src/routers/videos/types/video.db";
 
 const validCreatePayload: VideoCreateModel = {
   title: "Valid title",

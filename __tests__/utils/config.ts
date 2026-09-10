@@ -1,6 +1,6 @@
 import express from "express";
-import { setupApp } from "@/setup-app";
-import { getFullProuterPath, ROUTER_PATH } from "@/core/types/routes-path";
+import { setupApp } from "../../src/setup-app";
+import { getFullProuterPath, ROUTER_PATH } from "../../src/core/types/routes-path";
 
 const expressApp = express();
 export const app = setupApp(expressApp);

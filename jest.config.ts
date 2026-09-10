@@ -15,9 +15,9 @@ const config: Config = {
   testMatch: ["**/*.test.ts", "**/*.spec.ts"],
 
   // Алиасы путей импорта в тестах — должны совпадать с "paths" в tsconfig.json
-  moduleNameMapper: {
-    "^@/(.*)$": "<rootDir>/src/$1",
-  },
+  // moduleNameMapper: {
+  //   "^@/(.*)$": "<rootDir>/src/$1",
+  // },
 
   // Расширения файлов, которые Jest умеет разрешать при импорте без указания расширения
   moduleFileExtensions: ["ts", "js", "json", "node"],

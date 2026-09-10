@@ -1,13 +1,13 @@
 import { Router, Response, Request } from "express";
 import { VideoResponseModel } from "./types/video.output";
-import { db } from "@/db/db-bloggers";
+import { db } from "../../db/db-bloggers";
 import { mappedOutput, mappedVideo } from "./mappers/mapped.output";
-import { HttpStatus } from "@/core/types/http-statuses";
+import { HttpStatus } from "../../core/types/http-statuses";
 import { VideoCreateModel, VideoUpdateModel } from "./types/video.input";
 import { mappedToDB } from "./mappers/mapped.toDB";
 import { VideoDBModel } from "./types/video.db";
 import { validateVideosInput, ValidationType } from "./validation/validation.body";
-import { ValidationErrorMessages } from "@/core/types/validation-error";
+import { ValidationErrorMessages } from "../../core/types/validation-error";
 
 export const videosRouter: Router = Router({});
 

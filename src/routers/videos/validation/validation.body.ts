@@ -1,14 +1,14 @@
-import { ValidationScheme } from "@/core/types/validation-scheme";
+import { ValidationScheme } from "../../../core/types/validation-scheme";
 import { Resolutions } from "../types/video.db";
 import { VideoCreateModel, VideoUpdateModel } from "../types/video.input";
-import { ValidationError, ValidationErrorMessages } from "@/core/types/validation-error";
+import { ValidationError, ValidationErrorMessages } from "../../../core/types/validation-error";
 import {
   isInvalidArray,
   isInvalidBoolean,
   isInvalidNumber,
   isInvalidString,
   validationErrorOutput,
-} from "@/core/utils/validation/validation.utils";
+} from "../../../core/utils/validation/validation.utils";
 
 const validationCreate: Record<keyof VideoCreateModel, ValidationScheme<Resolutions>> = {
   title: {
