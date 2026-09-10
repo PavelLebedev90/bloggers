@@ -3,6 +3,7 @@ import { HttpStatus } from "@/core/types/http-statuses";
 import { VideoCreateModel, VideoUpdateModel } from "@/routers/videos/types/video.input";
 import { VideoResponseModel } from "@/routers/videos/types/video.output";
 import { app, TESTING_PATH, VIDEOS_PATH } from "../../utils/config";
+import { Resolutions } from "@/routers/videos/types/video.db";
 
 describe("videos CRUD", () => {
   beforeEach(async () => {
@@ -20,7 +21,7 @@ describe("videos CRUD", () => {
     const newVideo: VideoCreateModel = {
       title: "Backend with zero",
       author: "Ivan",
-      availableResolutions: ["P1080"],
+      availableResolutions: [Resolutions.P1080],
     };
 
     const res = await request(app).post(VIDEOS_PATH).send(newVideo);
@@ -38,11 +39,30 @@ describe("videos CRUD", () => {
     });
   });
 
+  it("should set publicationDate to tomorrow (current date + 1 day) on creation", async () => {
+    const newVideo: VideoCreateModel = {
+      title: "Publication date check",
+      author: "Author",
+      availableResolutions: [Resolutions.P1080],
+    };
+
+    const res = await request(app).post(VIDEOS_PATH).send(newVideo);
+
+    expect(res.status).toBe(HttpStatus.Created);
+
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const actualDate = new Date(res.body.publicationDate as string).toISOString().slice(0, 10);
+    const expectedDate = tomorrow.toISOString().slice(0, 10);
+    expect(actualDate).toBe(expectedDate);
+  });
+
   it("should return the list of videos after creation", async () => {
     const newVideo: VideoCreateModel = {
       title: "Video 1",
       author: "Author 1",
-      availableResolutions: ["P720"],
+      availableResolutions: [Resolutions.P720],
     };
 
     await request(app).post(VIDEOS_PATH).send(newVideo);
@@ -60,7 +80,7 @@ describe("videos CRUD", () => {
       .send({
         title: "Video by id",
         author: "Author",
-        availableResolutions: ["P480"],
+        availableResolutions: [Resolutions.P480],
       } satisfies VideoCreateModel);
 
     const createdId = createdRes.body.id;
@@ -90,7 +110,7 @@ describe("videos CRUD", () => {
       .send({
         title: "Old title",
         author: "Old author",
-        availableResolutions: ["P360"],
+        availableResolutions: [Resolutions.P360],
       } satisfies VideoCreateModel);
 
     const createdId = createdRes.body.id;
@@ -98,7 +118,7 @@ describe("videos CRUD", () => {
     const updatePayload: VideoUpdateModel = {
       title: "New title",
       author: "New author",
-      availableResolutions: ["P1080", "P1440"],
+      availableResolutions: [Resolutions.P1080, Resolutions.P1440],
       canBeDownloaded: true,
       minAgeRestriction: 18,
       publicationDate: new Date().toISOString(),
@@ -116,7 +136,7 @@ describe("videos CRUD", () => {
     const updatePayload: VideoUpdateModel = {
       title: "Title",
       author: "Author",
-      availableResolutions: ["P240"],
+      availableResolutions: [Resolutions.P240],
       canBeDownloaded: false,
       minAgeRestriction: null,
       publicationDate: new Date().toISOString(),
@@ -131,7 +151,7 @@ describe("videos CRUD", () => {
     const updatePayload: VideoUpdateModel = {
       title: "Title",
       author: "Author",
-      availableResolutions: ["P240"],
+      availableResolutions: [Resolutions.P240],
       canBeDownloaded: false,
       minAgeRestriction: null,
       publicationDate: new Date().toISOString(),
@@ -148,7 +168,7 @@ describe("videos CRUD", () => {
       .send({
         title: "To be deleted",
         author: "Author",
-        availableResolutions: ["P144"],
+        availableResolutions: [Resolutions.P144],
       } satisfies VideoCreateModel);
 
     const createdId = createdRes.body.id;
