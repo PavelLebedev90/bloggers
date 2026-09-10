@@ -2,6 +2,7 @@ import request from "supertest";
 import { HttpStatus } from "@/core/types/http-statuses";
 import { VideoCreateModel } from "@/routers/videos/types/video.input";
 import { app, TESTING_PATH, VIDEOS_PATH } from "../../utils/config";
+import { Resolutions } from "@/routers/videos/types/video.db";
 
 describe("testing all-data", () => {
   beforeEach(async () => {
@@ -13,7 +14,7 @@ describe("testing all-data", () => {
       .send({
         title: "Video to be wiped",
         author: "Author",
-        availableResolutions: ["P1080"],
+        availableResolutions: [Resolutions.P1080],
       } satisfies VideoCreateModel);
 
     const listBeforeRes = await request(app).get(VIDEOS_PATH);
