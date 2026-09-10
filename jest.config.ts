@@ -12,7 +12,7 @@ const config: Config = {
   rootDir: ".",
 
   // Паттерны файлов, которые Jest считает тестами
-  testMatch: ["**/__tests__/**/*.ts", "**/*.test.ts", "**/*.spec.ts"],
+  testMatch: ["**/*.test.ts", "**/*.spec.ts"],
 
   // Алиасы путей импорта в тестах — должны совпадать с "paths" в tsconfig.json
   moduleNameMapper: {
@@ -26,13 +26,13 @@ const config: Config = {
   clearMocks: true,
 
   // Собирать отчёт о покрытии кода тестами
-  // collectCoverage: true,
+  collectCoverage: true,
 
   // В какую папку сохранять отчёт о покрытии (актуально при collectCoverage: true)
   // coverageDirectory: "coverage",
 
   // Из каких файлов собирать покрытие — весь src, кроме файлов с типами и точки входа
-  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts"],
+  collectCoverageFrom: ["src/**/*.ts", "!src/**/*.d.ts", "!src/**/types/**"],
 
   // Провайдер инструментации для сбора покрытия — v8 быстрее и точнее, чем babel
   coverageProvider: "v8",

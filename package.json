@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "watch": "tsc -w -p tsconfig.build.json",
-    "dev": "nodemon --inspect dist/index.js",
+    "dev": "nodemon --watch src -e ts --exec \"node --inspect -r ts-node/register -r tsconfig-paths/register\" src/index.ts",
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "build": "tsc -p tsconfig.build.json",
@@ -29,6 +29,7 @@
     ]
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^5.2.1"
   },
   "devDependencies": {
@@ -50,6 +51,7 @@
     "supertest": "^7.2.2",
     "ts-jest": "^29.4.12",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3"
   }
 }
