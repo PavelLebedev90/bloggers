@@ -1,4 +1,4 @@
-const BASE_PATH = process.env.BASE_PATH || "/api3";
+const BASE_PATH = process.env.BASE_PATH || "/api";
 
 export enum ROUTER_PATH {
   TESTING = "testing",
