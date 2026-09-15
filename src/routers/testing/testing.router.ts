@@ -1,12 +1,7 @@
-import { HttpStatus } from "../../core/types/http-statuses";
-import { db } from "../../db/db-bloggers";
 import { Router } from "express";
+import { deleteTestingHandler } from "./handlers/deleteTestingHandler";
+import { ROUTER_PATH } from "../../core/consts/routers-path";
 
 export const testingRouter: Router = Router({});
 
-const TESTING_ROUTER_PATH = "/all-data";
-
-testingRouter.delete(TESTING_ROUTER_PATH, (_req, res) => {
-  db.videos = [];
-  res.sendStatus(HttpStatus.NoContent);
-});
+testingRouter.delete(ROUTER_PATH.TESTING.ALL_DATA, deleteTestingHandler);

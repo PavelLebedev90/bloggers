@@ -1,7 +1,7 @@
 import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses";
 import { VideoCreateModel, VideoUpdateModel } from "../../../src/routers/videos/types/video.input";
-import { app, TESTING_PATH, VIDEOS_PATH } from "../../utils/config";
+import { app, TESTING_ALL_DATA, VIDEOS_PATH } from "../../utils/config";
 import { Resolutions } from "../../../src/routers/videos/types/video.db";
 
 const validCreatePayload: VideoCreateModel = {
@@ -21,7 +21,7 @@ const validUpdatePayload: VideoUpdateModel = {
 
 describe("videos validation", () => {
   beforeEach(async () => {
-    await request(app).delete(`${TESTING_PATH}/all-data`);
+    await request(app).delete(TESTING_ALL_DATA);
   });
 
   describe("POST /videos", () => {

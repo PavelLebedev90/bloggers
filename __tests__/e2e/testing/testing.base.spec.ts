@@ -1,12 +1,12 @@
 import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses";
 import { VideoCreateModel } from "../../../src/routers/videos/types/video.input";
-import { app, TESTING_PATH, VIDEOS_PATH } from "../../utils/config";
+import { app, TESTING_ALL_DATA, VIDEOS_PATH } from "../../utils/config";
 import { Resolutions } from "../../../src/routers/videos/types/video.db";
 
 describe("testing all-data", () => {
   beforeEach(async () => {
-    await request(app).delete(`${TESTING_PATH}/all-data`);
+    await request(app).delete(TESTING_ALL_DATA);
   });
   it("should clear all videos from the DB", async () => {
     await request(app)
@@ -20,7 +20,7 @@ describe("testing all-data", () => {
     const listBeforeRes = await request(app).get(VIDEOS_PATH);
     expect(listBeforeRes.body).toHaveLength(1);
 
-    const deleteRes = await request(app).delete(`${TESTING_PATH}/all-data`);
+    const deleteRes = await request(app).delete(TESTING_ALL_DATA);
     expect(deleteRes.status).toBe(HttpStatus.NoContent);
 
     const listAfterRes = await request(app).get(VIDEOS_PATH);
@@ -29,9 +29,9 @@ describe("testing all-data", () => {
   });
 
   it("should be idempotent when the DB is already empty", async () => {
-    await request(app).delete(`${TESTING_PATH}/all-data`);
+    await request(app).delete(TESTING_ALL_DATA);
 
-    const deleteRes = await request(app).delete(`${TESTING_PATH}/all-data`);
+    const deleteRes = await request(app).delete(TESTING_ALL_DATA);
     expect(deleteRes.status).toBe(HttpStatus.NoContent);
 
     const listRes = await request(app).get(VIDEOS_PATH);
