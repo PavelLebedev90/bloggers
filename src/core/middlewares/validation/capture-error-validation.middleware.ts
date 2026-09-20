@@ -23,7 +23,7 @@ export const captureErrorValidation = (schema: z.ZodObject) => {
       if (error instanceof ZodError) {
         const errorMessages: Record<string, ValidationError> = error.issues.reduce(
           (acc, issue) => {
-            const path = issue.path.join(".");
+            const path = issue.path.at(-1)?.toString() ?? "";
             if (!acc[path]) {
               acc[path] = {
                 field: path,
