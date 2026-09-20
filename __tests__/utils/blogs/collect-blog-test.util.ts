@@ -2,7 +2,7 @@ import { BlogCreateModel } from "../../../src/routers/blogs/types/blogs-input.ty
 
 export const collectBlogToCreate = (): BlogCreateModel => {
   return {
-    name: "Код и Кофе | Блог о разработке",
+    name: "Код и Кофе",
     description:
       "Практические руководства по веб-разработке, архитектуре систем и карьере в ИТ. Пишем простым языком о сложных вещах.",
     websiteUrl: "https://code-and-coffee.com",
