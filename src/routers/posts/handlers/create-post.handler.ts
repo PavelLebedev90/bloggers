@@ -6,7 +6,7 @@ import { PostResponseModel } from "../types/posts-output.type";
 import { postsRepository } from "../repository/posts.repository";
 import { blogsRepository } from "../../blogs/repository/blogs.repository";
 import { errorMessage } from "../../../core/utils/error-formatter/error-messages.formatter";
-import { ERROR_MESSAGES } from "../../../consts/error-messages.const";
+import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
 
 export const createPostHandler = (
   req: Request<unknown, unknown, PostCreateModel>,

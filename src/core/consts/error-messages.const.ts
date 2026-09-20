@@ -1,4 +1,4 @@
-import { ValidationError } from "../core/types/validation-error.type";
+import { ValidationError } from "../types/validation-error.type";
 
 export const ERROR_MESSAGES = {
   notFoundMessage(field: string, entity: string): ValidationError {

@@ -3,7 +3,7 @@ import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { blogsRepository } from "../../blogs/repository/blogs.repository";
 import { errorMessage } from "../../../core/utils/error-formatter/error-messages.formatter";
-import { ERROR_MESSAGES } from "../../../consts/error-messages.const";
+import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
 import { BlogUpdateModel } from "../types/blogs-input.type";
 
 export const updateBlogHandler = (
