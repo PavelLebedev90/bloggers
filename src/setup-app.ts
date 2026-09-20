@@ -1,13 +1,16 @@
 import express, { Express } from "express";
-import { videosRouter } from "./routers/videos/videos.router";
 import { testingRouter } from "./routers/testing/testing.router";
-import { ROUTER_PATH } from "./core/consts/routers-path";
-import { getFullRouterPath } from "./core/utils/router/getFullRouterPath";
+import { TESTING_ROUTER_PATH } from "./routers/testing/consts/testing-router-path.const";
+import { POSTS_ROUTER_PATH } from "./routers/posts/const/posts-router-path.const";
+import { postsRouter } from "./routers/posts/posts.router";
+import { blogsRouter } from "./routers/blogs/blogs.router";
+import { BLOGS_ROUTER_PATH } from "./routers/blogs/const/blogs-router-path.const";
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
 
-  app.use(getFullRouterPath(ROUTER_PATH.VIDEOS.ROOT), videosRouter);
-  app.use(getFullRouterPath(ROUTER_PATH.TESTING.ROOT), testingRouter);
+  app.use(TESTING_ROUTER_PATH, testingRouter);
+  app.use(POSTS_ROUTER_PATH, postsRouter);
+  app.use(BLOGS_ROUTER_PATH, blogsRouter);
   return app;
 };

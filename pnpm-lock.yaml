@@ -14,6 +14,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
+      nanoid:
+        specifier: 3.3.4
+        version: 3.3.4
     devDependencies:
       '@types/express':
         specifier: ^5.0.6
@@ -1864,6 +1867,11 @@ packages:
 
   ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
+
+  nanoid@3.3.4:
+    resolution: {integrity: sha512-MqBkQh/OHTS2egovRtLk45wEyNXwF+cokD+1YPf9u5VfJiRdAiRwB2froX5Co9Rh20xs4siNPm8naNotSD6RBw==}
+    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
+    hasBin: true
 
   napi-postinstall@0.3.4:
     resolution: {integrity: sha512-PHI5f1O0EP5xJ9gQmFGMS6IZcrVvTjpXjz7Na41gTE7eE2hK11lg04CECCYEEjdc17EV4DO+fkGEtt7TpTaTiQ==}
@@ -4471,6 +4479,8 @@ snapshots:
   minipass@7.1.3: {}
 
   ms@2.1.3: {}
+
+  nanoid@3.3.4: {}
 
   napi-postinstall@0.3.4: {}
 

@@ -11,8 +11,8 @@ export default defineConfig([
 
   {
     // ===== Область действия конфига =====
-    files: ["src/**/*.ts"], // Какие файлы обрабатывает этот блок конфига (glob-паттерны)
-    // ignores: ["**/*.d.ts"], // Какие файлы исключить именно из этого блока конфига (не глобально)
+    files: ["src/**/*.ts", "__tests__/**/*.ts"], // Какие файлы обрабатывает этот блок конфига (glob-паттерны)
+    ignores: ["**/*.spec.ts", "**/*.test.ts"], // Какие файлы исключить именно из этого блока конфига (не глобально)
 
     // ===== Настройки языка (Language Options) =====
     languageOptions: {
@@ -31,7 +31,7 @@ export default defineConfig([
     // ===== Настройки линтера (Linter Options) =====
     linterOptions: {
       reportUnusedDisableDirectives: "error", // Считать ошибкой лишние (ничего не подавляющие) комментарии eslint-disable
-      noInlineConfig: true, // Запретить/разрешить комментарии вида eslint-disable прямо в коде файлов
+      noInlineConfig: false, // Запретить/разрешить комментарии вида eslint-disable прямо в коде файлов
     },
 
     // ===== Плагины =====
