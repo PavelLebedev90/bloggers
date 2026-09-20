@@ -20,7 +20,11 @@
 //   minAgeRestriction: 18,
 //   publicationDate: new Date().toISOString(),
 // };
-
+describe("test", () => {
+  test("Test", () => {
+    expect(5 + 5).toBe(10);
+  });
+});
 // describe("videos validation", () => {
 //   beforeEach(async () => {
 //     await request(app).delete(TESTING_ALL_DATA);
