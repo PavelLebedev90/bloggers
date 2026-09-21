@@ -7,7 +7,7 @@ import { ValidationError } from "../../types/validation-error.type";
 export const captureErrorValidation = (schema: z.ZodObject) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      await schema.parseAsync(
+      const sanitizedResult = await schema.parseAsync(
         {
           body: req.body,
           query: req.query,
@@ -18,6 +18,8 @@ export const captureErrorValidation = (schema: z.ZodObject) => {
           reportInput: true,
         },
       );
+
+      req.body = sanitizedResult.body;
       next();
     } catch (error) {
       if (error instanceof ZodError) {
