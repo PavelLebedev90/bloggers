@@ -1,0 +1,187 @@
+tags:
+  - name: Blogs
+    description: API for managing blogs
+
+paths:
+  /api/blogs:
+    get:
+      summary: Get a list of all blogs
+      tags: [Blogs]
+      responses:
+        200:
+          description: List of all blogs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Blog"
+    post:
+      summary: Create a new blog
+      tags: [Blogs]
+      security:
+        - BasicAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogInput"
+      responses:
+        201:
+          description: Blog successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /api/blogs/{id}:
+    get:
+      summary: Get a blog by ID
+      tags: [Blogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The unique identifier of the blog
+          schema:
+            type: string
+            example: "1"
+      responses:
+        200:
+          description: The requested blog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        404:
+          description: Blog not found
+    put:
+      summary: Update a blog
+      tags: [Blogs]
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The unique identifier of the blog
+          schema:
+            type: string
+            example: "1"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlogInput"
+      responses:
+        204:
+          description: Blog successfully updated
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: Blog not found
+    delete:
+      summary: Delete a blog
+      tags: [Blogs]
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: The unique identifier of the blog
+          schema:
+            type: string
+            example: "1"
+      responses:
+        204:
+          description: Blog successfully deleted
+        404:
+          description: Blog not found
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+  schemas:
+    Blog:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - websiteUrl
+      properties:
+        id:
+          type: string
+          example: "1"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 15
+          example: "Tech Blog"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "A blog about technology"
+        websiteUrl:
+          type: string
+          minLength: 1
+          maxLength: 100
+          format: uri
+          pattern: '^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$'
+          example: "https://example.com"
+    BlogInput:
+      type: object
+      required:
+        - name
+        - description
+        - websiteUrl
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 15
+          example: "Tech Blog"
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+          example: "A blog about technology"
+        websiteUrl:
+          type: string
+          minLength: 1
+          maxLength: 100
+          format: uri
+          pattern: '^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$'
+          example: "https://example.com"
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "clientName"
+        message:
+          type: string
+          example: "Client name is required"
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errorMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
