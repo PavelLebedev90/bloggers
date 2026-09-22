@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { HttpStatus } from "../../types/http-statuses.type";
-import { AUTH_LOGIN, AUTH_PASSWORD } from "../../consts/auth-basic.const";
+import { AUTH_LOGIN, AUTH_PASSWORD } from "../../config/setup.config";
 
 export const baseAuthorizationMiddleWare = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;

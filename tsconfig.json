@@ -50,7 +50,7 @@
     "noUnusedLocals": true, // Ошибка при объявленных, но неиспользуемых локальных переменных
     "noUnusedParameters": true, // Ошибка при неиспользуемых параметрах функций (кроме параметров с префиксом _)
     "noFallthroughCasesInSwitch": true, // Ошибка, если case в switch не заканчивается break/return (защита от случайного "провала" в следующий case)
-    "allowUnreachableCode": true, // Запрещать заведомо недостижимый код (после return/throw)
+    "allowUnreachableCode": false, // Запрещать заведомо недостижимый код (после return/throw)
     // "noPropertyAccessFromIndexSignature": true, // (отключено) Требовало бы доступа через obj['key'] вместо obj.key для свойств из индексной сигнатуры
     // "noImplicitAny": true, // Ошибка, если тип переменной/параметра не удалось вывести и он неявно стал any (включено через strict)
     // "strictNullChecks": true, // null и undefined — отдельные типы, не совместимые с другими типами без явного указания (включено через strict)
@@ -75,7 +75,7 @@
     // "baseUrl": "./", // Базовая директория для разрешения нестрогих (non-relative) путей импорта
     // "paths": { "@/*": ["./src/*"] }, // Алиасы путей импорта отключены: на Vercel скомпилированный JS не резолвит "@/", т.к. это работает только через резолвер путей в раннере (ts-node/jest/webpack), а не в чистом Node — см. историю деплоя. src/ переведён на относительные импорты; __tests__/ временно ещё использует "@/" через jest moduleNameMapper.
     // "rootDirs": ["src", "generated"], // См. выше — виртуальное объединение нескольких папок в одну для разрешения импортов
-    // "allowSyntheticDefaultImports": true, // Разрешает "import express from 'express'" даже если модуль не имеет default-экспорта (обычно включается вместе с esModuleInterop)
+    "allowSyntheticDefaultImports": true, // Разрешает "import express from 'express'" даже если модуль не имеет default-экспорта (обычно включается вместе с esModuleInterop)
     // "resolvePackageJsonExports": true, // Учитывать поле "exports" в package.json при разрешении импортов из node_modules
     // "resolvePackageJsonImports": true, // Учитывать поле "imports" (алиасы вида "#internal") в package.json при разрешении импортов
     // "allowArbitraryExtensions": true, // Разрешает импортировать файлы с нестандартными расширениями (например .css), если рядом есть файл описания типов

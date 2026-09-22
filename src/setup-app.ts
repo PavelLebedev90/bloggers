@@ -6,6 +6,7 @@ import { postsRouter } from "./routers/posts/posts.router";
 import { blogsRouter } from "./routers/blogs/blogs.router";
 import { BLOGS_ROUTER_PATH } from "./routers/blogs/const/blogs-router-path.const";
 import { setupSwagger } from "./core/swagger/setup-swagger";
+import { globalErrorMiddleware } from "./core/middlewares/errors/global-error.middleware";
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
@@ -15,6 +16,8 @@ export const setupApp = (app: Express) => {
   app.use(BLOGS_ROUTER_PATH, blogsRouter);
 
   setupSwagger(app);
+
+  app.use(globalErrorMiddleware);
 
   return app;
 };

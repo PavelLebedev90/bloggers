@@ -5,6 +5,9 @@ export const PORT = process.env.PORT || 3000;
 
 export const BASE_PATH = process.env.BASE_PATH || "";
 
+export const AUTH_LOGIN = process.env.AUTH_LOGIN;
+export const AUTH_PASSWORD = process.env.AUTH_PASSWORD;
+
 const isProduction = process.env.NODE_ENV === "production";
 const isTest = process.env.NODE_ENV === "test";
 

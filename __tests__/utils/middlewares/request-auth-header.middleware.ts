@@ -1,6 +1,6 @@
 import { Express } from "express";
 import request from "supertest";
-import { AUTH_LOGIN, AUTH_PASSWORD } from "../../../src/core/consts/auth-basic.const";
+import { AUTH_LOGIN, AUTH_PASSWORD } from "../../../src/core/config/setup.config";
 
 const AUTH_CREDENTIALS = Buffer.from(`${AUTH_LOGIN}:${AUTH_PASSWORD}`, "utf-8").toString("base64");
 export const AUTH_HEADER = `Basic ${AUTH_CREDENTIALS}`;
