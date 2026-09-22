@@ -5,8 +5,11 @@ import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
 import { BlogResponseModel } from "../types/blogs-output.type";
 import { blogsRepository } from "../repository/blogs.repository";
 
-export const getBlogHandler = (req: Request<{ id: string }>, res: Response<BlogResponseModel>) => {
-  const dbBlog = blogsRepository.getBlog(req.params.id);
+export const getBlogHandler = async (
+  req: Request<{ id: string }>,
+  res: Response<BlogResponseModel>,
+) => {
+  const dbBlog = await blogsRepository.getBlog(req.params.id);
 
   if (!dbBlog) {
     return errorMessage({

@@ -1,4 +1,4 @@
-import { BASE_PATH } from "../../../core/config/base-path.config";
+import { BASE_PATH } from "../../../core/config/setup.config";
 
 export const POSTS_ROUTER = {
   ROOT: "/posts",

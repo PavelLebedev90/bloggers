@@ -4,8 +4,8 @@ import { errorMessage } from "../../../core/utils/error-formatter/error-messages
 import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
 import { blogsRepository } from "../repository/blogs.repository";
 
-export const deleteBlogHandler = (req: Request<{ id: string }>, res: Response) => {
-  const isDeleted = blogsRepository.deleteBlog(req.params.id);
+export const deleteBlogHandler = async (req: Request<{ id: string }>, res: Response) => {
+  const isDeleted = await blogsRepository.deleteBlog(req.params.id);
   if (!isDeleted) {
     return errorMessage({
       res,

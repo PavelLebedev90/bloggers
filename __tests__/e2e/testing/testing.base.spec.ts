@@ -8,11 +8,10 @@ import { createPost } from "../../utils/posts/crud-post-test.util";
 import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";
 import { createBlog } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
+import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 
 describe("testing all-data", () => {
-  beforeEach(async () => {
-    await request(app).delete(TESTING_ALL_DATA);
-  });
+  setupDbLifecycle();
   it("should clear all blogs from the DB", async () => {
     await createBlog(collectBlogToCreate());
 

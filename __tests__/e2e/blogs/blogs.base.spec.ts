@@ -1,7 +1,6 @@
 import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
 import { app } from "../../consts/express.const";
-import { TESTING_ALL_DATA } from "../../../src/routers/testing/consts/testing-router-path.const";
 import {
   createBlog,
   deleteBlogById,
@@ -11,11 +10,10 @@ import {
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router-path.const";
 import { BlogResponseModel } from "../../../src/routers/blogs/types/blogs-output.type";
+import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 
 describe("Blogs CRUD", () => {
-  beforeEach(async () => {
-    await request(app).delete(TESTING_ALL_DATA);
-  });
+  setupDbLifecycle();
 
   it("should return an empty array when there are no blogs", async () => {
     const res = await request(app).get(BLOGS_ROUTER_PATH);

@@ -1,48 +1,37 @@
 import { nanoid } from "nanoid";
-import { db } from "../../../db/db-bloggers";
 import { BlogDBModel } from "../../blogs/types/blogs-db.type";
 import { PostCreateModel, PostUpdateModel } from "../types/posts-input.type";
 import { postsToOutputMapper, postToOutputMapper } from "../mappers/post-to-output.mapper";
 import { postToDBMapper } from "../mappers/post-to-db.mapper";
+import { postsCollection } from "../../../db/collections";
 
 export const postsRepository = {
-  getAll() {
-    return postsToOutputMapper(db.posts);
+  async getAll() {
+    const result = await postsCollection.find({}).toArray();
+    return postsToOutputMapper(result);
   },
-  getPost(postId: string) {
-    const post = db.posts.find((post) => post.id === postId) ?? null;
-    if (post) {
-      return postToOutputMapper(post);
+  async getPost(postId: string) {
+    const result = await postsCollection.findOne({ id: postId });
+
+    if (result) {
+      return postToOutputMapper(result);
     }
-    return post;
+    return result;
   },
-  createPost(bodyPost: PostCreateModel, blog: BlogDBModel) {
+  async createPost(bodyPost: PostCreateModel, blog: BlogDBModel) {
     const id = nanoid(10);
 
     const newPost = postToDBMapper(id, bodyPost, blog);
-    db.posts.push(newPost);
+    await postsCollection.insertOne(newPost);
+
     return postToOutputMapper(newPost);
   },
-  updatePost(postId: string, bodyPost: PostUpdateModel, blog: BlogDBModel) {
-    const dbPost = db.posts.find((post) => post.id === postId);
-    if (!dbPost) {
-      return false;
-    }
-
-    dbPost.title = bodyPost.title;
-    dbPost.shortDescription = bodyPost.shortDescription;
-    dbPost.content = bodyPost.content;
-    dbPost.blogId = blog.id;
-
-    return true;
+  async updatePost(postId: string, bodyPost: PostUpdateModel) {
+    const result = await postsCollection.updateOne({ id: postId }, { $set: bodyPost });
+    return result.matchedCount === 1;
   },
-  deletePost(postId: string) {
-    const postIdx = db.posts.findIndex((post) => post.id === postId);
-
-    if (postIdx === -1) {
-      return false;
-    }
-    db.posts.splice(postIdx, 1);
-    return true;
+  async deletePost(postId: string) {
+    const result = await postsCollection.deleteOne({ id: postId });
+    return result.deletedCount === 1;
   },
 };

@@ -1,7 +1,6 @@
 import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
 import { app } from "../../consts/express.const";
-import { TESTING_ALL_DATA } from "../../../src/routers/testing/consts/testing-router-path.const";
 import { POSTS_ROUTER_PATH } from "../../../src/routers/posts/const/posts-router-path.const";
 import { PostResponseModel } from "../../../src/routers/posts/types/posts-output.type";
 import { createBlog } from "../../utils/blogs/crud-blog-test.util";
@@ -13,11 +12,10 @@ import {
   getPostById,
   updatePostById,
 } from "../../utils/posts/crud-post-test.util";
+import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 
 describe("Posts CRUD", () => {
-  beforeEach(async () => {
-    await request(app).delete(TESTING_ALL_DATA);
-  });
+  setupDbLifecycle();
 
   it("should return an empty array when there are no posts", async () => {
     const res = await request(app).get(POSTS_ROUTER_PATH);

@@ -1,14 +1,18 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import { setupApp } from "./setup-app";
+import { runDB } from "./db/mongo.db";
+import { MONGO_PATH, PORT } from "./core/config/setup.config";
 
-const app = express();
-setupApp(app);
+const bootstrap = async () => {
+  const app = express();
+  setupApp(app);
 
-const PORT = process.env.PORT || 3000;
+  await runDB(MONGO_PATH);
 
-app.listen(PORT, () => {
-  console.log("Server is running");
-});
+  app.listen(PORT, () => {
+    console.log("Server is running", PORT);
+  });
+  return app;
+};
+
+bootstrap();

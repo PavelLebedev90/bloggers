@@ -4,8 +4,8 @@ import { postsRepository } from "../repository/posts.repository";
 import { errorMessage } from "../../../core/utils/error-formatter/error-messages.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
 
-export const deletePostHandler = (req: Request<{ id: string }>, res: Response) => {
-  const isDeleted = postsRepository.deletePost(req.params.id);
+export const deletePostHandler = async (req: Request<{ id: string }>, res: Response) => {
+  const isDeleted = await postsRepository.deletePost(req.params.id);
   if (!isDeleted) {
     return errorMessage({
       res,

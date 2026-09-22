@@ -1,47 +1,36 @@
 import { nanoid } from "nanoid";
-import { db } from "../../../db/db-bloggers";
 import { BlogCreateModel, BlogUpdateModel } from "../types/blogs-input.type";
 import { blogsToOutputMapper, blogToOutputMapper } from "../mappers/blog-to-output.mapper";
 import { blogToDBMapper } from "../mappers/blog-to-db.mapper";
+import { blogsCollection } from "../../../db/collections";
 
 export const blogsRepository = {
-  getAll() {
-    return blogsToOutputMapper(db.blogs);
+  async getAll() {
+    const blogs = await blogsCollection.find({}).toArray();
+    return blogsToOutputMapper(blogs);
   },
-  getBlog(blogId: string) {
-    const blog = db.blogs.find((blog) => blog.id === blogId) ?? null;
+  async getBlog(blogId: string) {
+    const blog = await blogsCollection.findOne({ id: blogId });
     if (blog) {
       return blogToOutputMapper(blog);
     }
     return blog;
   },
-  createBlog(bodyBlog: BlogCreateModel) {
+  async createBlog(bodyBlog: BlogCreateModel) {
     const id = nanoid(10);
 
     const newBlog = blogToDBMapper(id, bodyBlog);
-    db.blogs.push(newBlog);
+
+    await blogsCollection.insertOne(newBlog);
 
     return blogToOutputMapper(newBlog);
   },
-  updateBlog(blogId: string, bodyBlog: BlogUpdateModel) {
-    const dbBlog = db.blogs.find((blog) => blog.id === blogId);
-    if (!dbBlog) {
-      return false;
-    }
-
-    dbBlog.name = bodyBlog.name;
-    dbBlog.description = bodyBlog.description;
-    dbBlog.websiteUrl = bodyBlog.websiteUrl;
-
-    return true;
+  async updateBlog(blogId: string, bodyBlog: BlogUpdateModel) {
+    const result = await blogsCollection.updateOne({ id: blogId }, { $set: bodyBlog });
+    return result.matchedCount === 1;
   },
-  deleteBlog(blogId: string) {
-    const blogIdx = db.blogs.findIndex((blog) => blog.id === blogId);
-
-    if (blogIdx === -1) {
-      return false;
-    }
-    db.blogs.splice(blogIdx, 1);
-    return true;
+  async deleteBlog(blogId: string) {
+    const result = await blogsCollection.deleteOne({ id: blogId });
+    return result.deletedCount === 1;
   },
 };

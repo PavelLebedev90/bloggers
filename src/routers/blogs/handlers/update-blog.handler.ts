@@ -6,11 +6,11 @@ import { errorMessage } from "../../../core/utils/error-formatter/error-messages
 import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
 import { BlogUpdateModel } from "../types/blogs-input.type";
 
-export const updateBlogHandler = (
+export const updateBlogHandler = async (
   req: Request<{ id: string }, unknown, BlogUpdateModel>,
   res: Response<BlogUpdateModel | ValidationErrorMessages>,
 ) => {
-  const isUpdated = blogsRepository.updateBlog(req.params.id, req.body);
+  const isUpdated = await blogsRepository.updateBlog(req.params.id, req.body);
 
   if (!isUpdated) {
     return errorMessage({

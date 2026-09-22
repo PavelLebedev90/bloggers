@@ -1,14 +1,10 @@
-import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
-import { app } from "../../consts/express.const";
-import { TESTING_ALL_DATA } from "../../../src/routers/testing/consts/testing-router-path.const";
 import { createBlog, getBlogById } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
+import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 
 describe("blogs validation", () => {
-  beforeEach(async () => {
-    await request(app).delete(TESTING_ALL_DATA);
-  });
+  setupDbLifecycle();
 
   describe("POST /blogs", () => {
     it("should return 400 when name is missing", async () => {
