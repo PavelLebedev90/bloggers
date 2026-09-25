@@ -7,7 +7,7 @@ import { TESTING_ALL_DATA } from "../../../src/routers/testing/consts/testing-ro
 export function setupDbLifecycle() {
   beforeAll(async () => {
     await runDB(MONGO_PATH);
-  });
+  }, 20000);
 
   afterEach(async () => {
     await request(app).delete(TESTING_ALL_DATA);
