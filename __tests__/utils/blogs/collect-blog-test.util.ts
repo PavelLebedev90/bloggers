@@ -1,6 +1,6 @@
-import { BlogCreateModel } from "../../../src/routers/blogs/types/blogs-input.type";
+import { BlogInputModel } from "../../../src/routers/blogs/types/blogs-input.type";
 
-export const collectBlogToCreate = (): BlogCreateModel => {
+export const collectBlogToCreate = (): BlogInputModel => {
   return {
     name: "Код и Кофе",
     description:

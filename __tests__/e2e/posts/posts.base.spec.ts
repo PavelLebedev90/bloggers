@@ -2,7 +2,7 @@ import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
 import { app } from "../../consts/express.const";
 import { POSTS_ROUTER_PATH } from "../../../src/routers/posts/const/posts-router-path.const";
-import { PostResponseModel } from "../../../src/routers/posts/types/posts-output.type";
+import { PostOutputModel } from "../../../src/routers/posts/types/posts-output.type";
 import { createBlog } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";
@@ -30,7 +30,7 @@ describe("Posts CRUD", () => {
     const post = await createPost(collectPostToCreate(blog.body.id)).expect(HttpStatus.Created);
 
     expect(post.status).toBe(HttpStatus.Created);
-    expect(post.body).toEqual<PostResponseModel>({
+    expect(post.body).toEqual<PostOutputModel>({
       id: expect.any(String),
       title: post.body.title,
       blogId: blog.body.id,

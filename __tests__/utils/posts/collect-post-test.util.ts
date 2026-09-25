@@ -1,6 +1,6 @@
-import { PostCreateModel } from "../../../src/routers/posts/types/posts-input.type";
+import { PostInputModel } from "../../../src/routers/posts/types/posts-input.type";
 
-export const collectPostToCreate = (blogId: string): PostCreateModel => {
+export const collectPostToCreate = (blogId: string): PostInputModel => {
   return {
     blogId,
     title: "Лорем ипсум долор сит амет",

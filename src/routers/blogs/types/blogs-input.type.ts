@@ -1,10 +1,4 @@
-export type BlogCreateModel = {
-  name: string;
-  description: string;
-  websiteUrl: string;
-};
-
-export type BlogUpdateModel = {
+export type BlogInputModel = {
   name: string;
   description: string;
   websiteUrl: string;

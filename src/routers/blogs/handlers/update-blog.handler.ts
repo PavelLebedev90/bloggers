@@ -4,13 +4,16 @@ import { ValidationErrorMessages } from "../../../core/types/validation-error.ty
 import { blogsRepository } from "../../blogs/repository/blogs.repository";
 import { errorMessage } from "../../../core/utils/error-formatter/error-messages.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
-import { BlogUpdateModel } from "../types/blogs-input.type";
+import { BlogInputModel } from "../types/blogs-input.type";
+import { blogToDBMapper } from "../mappers/blog-to-db.mapper";
 
 export const updateBlogHandler = async (
-  req: Request<{ id: string }, unknown, BlogUpdateModel>,
-  res: Response<BlogUpdateModel | ValidationErrorMessages>,
+  req: Request<{ id: string }, unknown, BlogInputModel>,
+  res: Response<undefined | ValidationErrorMessages>,
 ) => {
-  const isUpdated = await blogsRepository.updateBlog(req.params.id, req.body);
+  const bodyBlog = blogToDBMapper(req.body);
+
+  const isUpdated = await blogsRepository.updateBlog(req.params.id, bodyBlog);
 
   if (!isUpdated) {
     return errorMessage({

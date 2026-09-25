@@ -1,15 +1,14 @@
+import { WithId } from "mongodb";
 import { BlogDBModel } from "../../blogs/types/blogs-db.type";
 import { PostDBModel } from "../types/posts-db.type";
-import { PostCreateModel } from "../types/posts-input.type";
+import { PostInputModel } from "../types/posts-input.type";
 
 export const postToDBMapper = (
-  newPostId: string,
-  post: PostCreateModel,
-  blog: BlogDBModel,
-): PostDBModel => {
+  post: PostInputModel,
+  blog: WithId<BlogDBModel>,
+): Omit<PostDBModel, "createdAt"> => {
   return {
-    id: newPostId,
-    blogId: blog.id,
+    blogId: blog._id.toString(),
     blogName: blog.name,
     content: post.content,
     shortDescription: post.shortDescription,

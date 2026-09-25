@@ -9,7 +9,7 @@ import {
 } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router-path.const";
-import { BlogResponseModel } from "../../../src/routers/blogs/types/blogs-output.type";
+import { BlogOutputModel } from "../../../src/routers/blogs/types/blogs-output.type";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 
 describe("Blogs CRUD", () => {
@@ -26,11 +26,13 @@ describe("Blogs CRUD", () => {
     const blog = await createBlog(collectBlogToCreate()).expect(HttpStatus.Created);
 
     expect(blog.status).toBe(HttpStatus.Created);
-    expect(blog.body).toEqual<BlogResponseModel>({
+    expect(blog.body).toEqual<BlogOutputModel>({
       id: expect.any(String),
       name: blog.body.name,
       description: blog.body.description,
       websiteUrl: blog.body.websiteUrl,
+      createdAt: blog.body.createdAt,
+      isMembership: blog.body.isMembership,
     });
   });
 
