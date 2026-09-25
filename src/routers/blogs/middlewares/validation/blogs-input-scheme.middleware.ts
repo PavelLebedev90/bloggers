@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdRegex } from "../../../../core/utils/regex/object-id.regex";
 
 export const blogCreateScheme = z.object({
   body: z.object({
@@ -21,6 +22,6 @@ export const blogQueryScheme = z.object({
 
 export const blogParamsScheme = z.object({
   params: z.object({
-    id: z.string().trim().nonempty(),
+    id: z.string().trim().nonempty().regex(objectIdRegex),
   }),
 });

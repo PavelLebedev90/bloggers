@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { objectIdRegex } from "../../../../core/utils/regex/object-id.regex";
 
 export const postCreateScheme = z.object({
   body: z.object({
@@ -17,6 +18,6 @@ export const postQueryScheme = z.object({
 
 export const postParamsScheme = z.object({
   params: z.object({
-    id: z.string().trim().nonempty(),
+    id: z.string().trim().nonempty().regex(objectIdRegex),
   }),
 });
