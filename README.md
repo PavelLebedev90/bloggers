@@ -36,8 +36,7 @@ cp .env.example .env
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `BASE_PATH`                              | Префикс всех маршрутов API (например, `/api`)                                                                                    |
 | `AUTH_LOGIN` / `AUTH_PASSWORD`           | Basic Auth для операций записи (create/update/delete)                                                                            |
-| `MONGO_PATH_DEV` / `MONGO_DB_NAME_DEV`   | Подключение к локальной базе для разработки                                                                                      |
-| `MONGO_PATH_TEST` / `MONGO_DB_NAME_TEST` | Отдельная база для e2e-тестов (в том же локальном MongoDB)                                                                       |
+| `MONGO_PATH` / `MONGO_DB_NAME`           | Подключение к локальной базе для разработки и для e2e-тестов                                                                     |
 | `MONGO_PATH_PROD` / `MONGO_DB_NAME_PROD` | Продакшн-подключение (MongoDB Atlas). На проде (Vercel) задаётся через Environment Variables в панели проекта, а не через `.env` |
 
 ### 3. Запустить в режиме разработки
@@ -46,7 +45,7 @@ cp .env.example .env
 pnpm dev
 ```
 
-Локальный MongoDB (Docker-контейнер `bloggers-mongo`, см. `docker-compose.yml`) поднимается автоматически перед стартом сервера и перед прогоном тестов. Сервер поднимется на `http://localhost:3000`, подключаясь к `MONGO_PATH_DEV`.
+Локальный MongoDB (Docker-контейнер `bloggers-mongo`, см. `docker-compose.yml`) поднимается автоматически перед стартом сервера и перед прогоном тестов. Сервер поднимется на `http://localhost:3000`, подключаясь к `MONGO_PATH`.
 
 ## Документация API
 
@@ -70,7 +69,7 @@ Swagger UI доступен по адресу `{BASE_PATH}` (по умолчан
 
 ## Тесты
 
-E2E-тесты используют отдельную базу `MONGO_PATH_TEST` в том же локальном MongoDB — dev-данные не затрагиваются.
+E2E-тесты используют отдельную базу `MONGO_PATH` в том же локальном MongoDB — dev-данные не затрагиваются.
 
 ```bash
 pnpm test

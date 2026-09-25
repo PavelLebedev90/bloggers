@@ -1,4 +1,4 @@
-import { BASE_PATH } from "../../../core/config/setup.config";
+import { config } from "../../../core/config/setup.config";
 
 export const BLOGS_ROUTER = {
   ROOT: "/blogs",
@@ -6,4 +6,4 @@ export const BLOGS_ROUTER = {
   BY_ID: "/:id",
 } as const;
 
-export const BLOGS_ROUTER_PATH = `${BASE_PATH}${BLOGS_ROUTER.ROOT}`;
+export const BLOGS_ROUTER_PATH = `${config.basePath}${BLOGS_ROUTER.ROOT}`;

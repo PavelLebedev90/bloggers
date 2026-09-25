@@ -39,6 +39,7 @@ const config: Config = {
 
   // Выводить подробный результат по каждому тесту, а не только сводку
   verbose: true,
+  setupFiles: ["<rootDir>/jest.setup.ts"],
 };
 
 export default config;

@@ -1,26 +1,20 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-export const PORT = process.env.PORT || 3000;
-
-export const BASE_PATH = process.env.BASE_PATH || "";
-
-export const AUTH_LOGIN = process.env.AUTH_LOGIN;
-export const AUTH_PASSWORD = process.env.AUTH_PASSWORD;
+const PORT = process.env.PORT || 3000;
 
 const isProduction = process.env.NODE_ENV === "production";
-const isTest = process.env.NODE_ENV === "test";
 
-export const MONGO_PATH =
-  (isProduction
-    ? process.env.MONGO_PATH_PROD
-    : isTest
-      ? process.env.MONGO_PATH_TEST
-      : process.env.MONGO_PATH_DEV) || "";
+const checkEnvironment = (name: string) => {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`Missing env variable: ${name}`);
+  }
+  return value;
+};
 
-export const DB_NAME =
-  (isProduction
-    ? process.env.MONGO_DB_NAME_PROD
-    : isTest
-      ? process.env.MONGO_DB_NAME_TEST
-      : process.env.MONGO_DB_NAME_DEV) || "";
+export const config = {
+  port: Number(PORT),
+  basePath: checkEnvironment("BASE_PATH"),
+  authLogin: checkEnvironment("AUTH_LOGIN"),
+  authPassword: checkEnvironment("AUTH_PASSWORD"),
+  mongodbUrl: checkEnvironment(isProduction ? "MONGO_PATH_PROD" : "MONGO_PATH"),
+  mongodbName: checkEnvironment(isProduction ? "MONGO_DB_NAME_PROD" : "MONGO_DB_NAME"),
+};

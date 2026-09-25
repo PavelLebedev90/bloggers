@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { HttpStatus } from "../../types/http-statuses.type";
-import { AUTH_LOGIN, AUTH_PASSWORD } from "../../config/setup.config";
+import { config } from "../../config/setup.config";
 
 export const baseAuthorizationMiddleWare = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
@@ -19,11 +19,11 @@ export const baseAuthorizationMiddleWare = (req: Request, res: Response, next: N
 
   const [login, password] = tokenToText.split(":");
 
-  if (login !== AUTH_LOGIN) {
+  if (login !== config.authLogin) {
     res.sendStatus(HttpStatus.Unauthorized);
     return;
   }
-  if (password !== AUTH_PASSWORD) {
+  if (password !== config.authPassword) {
     res.sendStatus(HttpStatus.Unauthorized);
     return;
   }
