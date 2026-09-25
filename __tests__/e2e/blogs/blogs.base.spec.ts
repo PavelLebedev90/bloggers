@@ -11,6 +11,7 @@ import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router-path.const";
 import { BlogOutputModel } from "../../../src/routers/blogs/types/blogs-output.type";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
+import { ObjectId } from "mongodb";
 
 describe("Blogs CRUD", () => {
   setupDbLifecycle();
@@ -65,7 +66,7 @@ describe("Blogs CRUD", () => {
   });
 
   it("should return 404 when requesting a non-existing blog by id", async () => {
-    const blog = await getBlogById("99999");
+    const blog = await getBlogById(new ObjectId().toString());
 
     expect(blog.status).toBe(HttpStatus.NotFound);
   });
@@ -94,7 +95,7 @@ describe("Blogs CRUD", () => {
   });
 
   it("should return 404 when updating a non-existing blog", async () => {
-    const updateRes = await updateBlogById("9999", collectBlogToCreate());
+    const updateRes = await updateBlogById(new ObjectId().toString(), collectBlogToCreate());
 
     expect(updateRes.status).toBe(HttpStatus.NotFound);
   });
@@ -111,7 +112,7 @@ describe("Blogs CRUD", () => {
   });
 
   it("should return 404 when deleting a non-existing blog", async () => {
-    const deleteRes = await deleteBlogById("9999");
+    const deleteRes = await deleteBlogById(new ObjectId().toString());
 
     expect(deleteRes.status).toBe(HttpStatus.NotFound);
   });

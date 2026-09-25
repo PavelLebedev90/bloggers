@@ -13,6 +13,7 @@ import {
   updatePostById,
 } from "../../utils/posts/crud-post-test.util";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
+import { ObjectId } from "mongodb";
 
 describe("Posts CRUD", () => {
   setupDbLifecycle();
@@ -32,6 +33,7 @@ describe("Posts CRUD", () => {
     expect(post.status).toBe(HttpStatus.Created);
     expect(post.body).toEqual<PostOutputModel>({
       id: expect.any(String),
+      createdAt: expect.any(String),
       title: post.body.title,
       blogId: blog.body.id,
       blogName: blog.body.name,
@@ -75,12 +77,12 @@ describe("Posts CRUD", () => {
   });
 
   it("should return 404 when requesting a non-existing post by id", async () => {
-    const post = await getPostById("99999");
+    const post = await getPostById(new ObjectId().toString());
 
     expect(post.status).toBe(HttpStatus.NotFound);
   });
   it("should return 404 when requesting a non-existing blog by blogId", async () => {
-    const createdPost = await createPost(collectPostToCreate("999"));
+    const createdPost = await createPost(collectPostToCreate(new ObjectId().toString()));
     expect(createdPost.status).toBe(HttpStatus.NotFound);
   });
 
@@ -112,7 +114,10 @@ describe("Posts CRUD", () => {
   it("should return 404 when updating a non-existing post", async () => {
     const blog = await createBlog(collectBlogToCreate()).expect(HttpStatus.Created);
 
-    const updateRes = await updatePostById("9999", collectPostToCreate(blog.body.id));
+    const updateRes = await updatePostById(
+      new ObjectId().toString(),
+      collectPostToCreate(blog.body.id),
+    );
 
     expect(updateRes.status).toBe(HttpStatus.NotFound);
   });
@@ -120,7 +125,10 @@ describe("Posts CRUD", () => {
     const blog = await createBlog(collectBlogToCreate()).expect(HttpStatus.Created);
     const post = await createPost(collectPostToCreate(blog.body.id)).expect(HttpStatus.Created);
 
-    const updateRes = await updatePostById(post.body.id, collectPostToCreate("9999"));
+    const updateRes = await updatePostById(
+      post.body.id,
+      collectPostToCreate(new ObjectId().toString()),
+    );
 
     expect(updateRes.status).toBe(HttpStatus.NotFound);
   });
@@ -138,7 +146,7 @@ describe("Posts CRUD", () => {
   });
 
   it("should return 404 when deleting a non-existing post", async () => {
-    const deleteRes = await deletePostById("9999");
+    const deleteRes = await deletePostById(new ObjectId().toString());
 
     expect(deleteRes.status).toBe(HttpStatus.NotFound);
   });

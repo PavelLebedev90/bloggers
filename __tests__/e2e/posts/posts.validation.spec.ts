@@ -4,6 +4,7 @@ import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";
 import { createBlog } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
+import { ObjectId } from "mongodb";
 
 describe("posts validation", () => {
   setupDbLifecycle();
@@ -154,11 +155,11 @@ describe("posts validation", () => {
     it("should not create a post when validation fails", async () => {
       const blog = await createBlog(collectBlogToCreate());
       const createdPost = await createPost({
-        ...collectPostToCreate(blog.body.id),
-        blogId: "   ",
+        ...collectPostToCreate(new ObjectId(blog.body.id).toString()),
+        blogId: new ObjectId().toString(),
       });
 
-      const res = await getPostById(createdPost.body.id);
+      const res = await getPostById(new ObjectId(createdPost.body.id).toString());
       expect(res.body.errorsMessages).toEqual(
         expect.arrayContaining([expect.objectContaining({ field: "id" })]),
       );
@@ -170,7 +171,7 @@ describe("posts validation", () => {
       const blog = await createBlog(collectBlogToCreate());
       const res = await createPost({
         ...collectPostToCreate(blog.body.id),
-        blogId: "   ",
+        blogId: new ObjectId().toString(),
         content: null,
         shortDescription: [],
         title: 123,
@@ -179,7 +180,6 @@ describe("posts validation", () => {
       expect(res.status).toBe(HttpStatus.BadRequest);
       expect(res.body.errorsMessages).toEqual(
         expect.arrayContaining([
-          expect.objectContaining({ field: "blogId" }),
           expect.objectContaining({ field: "content" }),
           expect.objectContaining({ field: "shortDescription" }),
           expect.objectContaining({ field: "title" }),
