@@ -26,7 +26,9 @@ postsRouter.post(
 postsRouter.put(
   POSTS_ROUTER.BY_ID,
   baseAuthorizationMiddleWare,
-  captureErrorValidation(postUpdateScheme.merge(postParamsScheme)),
+  //TODO: проверить работоспособность валидации при обновлении поста
+  //  captureErrorValidation(postUpdateScheme.merge(postParamsScheme)),
+  captureErrorValidation(postUpdateScheme.extend(postParamsScheme.shape)),
   updatePostHandler,
 );
 postsRouter.delete(

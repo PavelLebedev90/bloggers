@@ -11,3 +11,7 @@ export function initCollections(db: Db): void {
   postsCollection = db.collection<PostDBModel>(POSTS_ROUTER.ROOT);
   blogsCollection = db.collection<BlogDBModel>(BLOGS_ROUTER.ROOT);
 }
+
+export async function ensureIndexes(): Promise<void> {
+  await postsCollection.createIndex({ blogId: 1 });
+}

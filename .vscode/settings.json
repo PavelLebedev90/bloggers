@@ -21,6 +21,7 @@
 
   // При сохранении также попросить ESLint автоматически исправить то, что он умеет чинить (--fix)
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+    "source.fixAll.eslint": "explicit",
+    "source.removeUnusedImports": "explicit"
   }
 }

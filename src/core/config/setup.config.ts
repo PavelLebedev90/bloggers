@@ -1,6 +1,6 @@
 const PORT = process.env.PORT || 3000;
 
-const isProduction = process.env.NODE_ENV === "production";
+export const isProduction = process.env.NODE_ENV === "production";
 
 const checkEnvironment = (name: string) => {
   const value = process.env[name];

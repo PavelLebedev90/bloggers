@@ -1,6 +1,6 @@
 import { Db, MongoClient } from "mongodb";
 import os from "node:os";
-import { initCollections } from "./collections";
+import { ensureIndexes, initCollections } from "./collections";
 import { config } from "../core/config/setup.config";
 
 export let client: MongoClient;
@@ -14,6 +14,7 @@ export async function runDB(url: string): Promise<void> {
     await client.connect();
 
     await db.command({ ping: 1 });
+    await ensureIndexes();
     console.log("✅ Environment", url, config.mongodbName);
     console.log("✅ Connected to the database");
   } catch (e: unknown) {

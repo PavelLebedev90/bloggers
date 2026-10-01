@@ -7,11 +7,14 @@ import { blogsRouter } from "./routers/blogs/blogs.router";
 import { BLOGS_ROUTER_PATH } from "./routers/blogs/const/blogs-router-path.const";
 import { setupSwagger } from "./core/swagger/setup-swagger";
 import { globalErrorMiddleware } from "./core/middlewares/errors/global-error.middleware";
+import { isProduction } from "./core/config/setup.config";
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
 
-  app.use(TESTING_ROUTER_PATH, testingRouter);
+  if (!isProduction) {
+    app.use(TESTING_ROUTER_PATH, testingRouter);
+  }
   app.use(POSTS_ROUTER_PATH, postsRouter);
   app.use(BLOGS_ROUTER_PATH, blogsRouter);
 
