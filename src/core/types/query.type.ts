@@ -2,7 +2,7 @@ export type PaginationMetaView = {
   totalCount: number;
   pageSize: number;
   page: number;
-  pageCount: number;
+  pagesCount: number;
 };
 
 export enum SortDirection {

@@ -20,6 +20,6 @@ export const getAllPostsHandler = async (
     page: res.locals.query.pageNumber,
     pageSize: res.locals.query.pageSize,
     totalCount: totalCount,
-    pageCount: Math.ceil(totalCount / res.locals.query.pageSize),
+    pagesCount: Math.ceil(totalCount / res.locals.query.pageSize),
   });
 };
