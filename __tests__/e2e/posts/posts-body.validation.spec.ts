@@ -1,5 +1,5 @@
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
-import { createPost, getPostById } from "../../utils/posts/crud-post-test.util";
+import { createPost } from "../../utils/posts/crud-post-test.util";
 import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";
 import { createBlog } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
@@ -159,9 +159,8 @@ describe("posts validation", () => {
         blogId: new ObjectId().toString(),
       });
 
-      const res = await getPostById(new ObjectId(createdPost.body.id).toString());
-      expect(res.body.errorsMessages).toEqual(
-        expect.arrayContaining([expect.objectContaining({ field: "id" })]),
+      expect(createdPost.body.errorsMessages).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: "blog id" })]),
       );
     });
   });

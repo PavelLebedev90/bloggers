@@ -4,7 +4,7 @@ import { PostInputModel } from "../../../src/routers/posts/types/posts-input.typ
 import { app } from "../../consts/express.const";
 import { requestWithAuthHeader } from "../middlewares/request-auth-header.middleware";
 
-type PostInputModelTestDto = {
+export type PostInputModelTestDto = {
   [K in keyof PostInputModel]?: unknown;
 };
 

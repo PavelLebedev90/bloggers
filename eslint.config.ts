@@ -1,4 +1,4 @@
-import { defineConfig, globalIgnores } from "eslint/config";
+import { defineConfig } from "eslint/config";
 import tsParser from "@typescript-eslint/parser";
 import tsPlugin from "@typescript-eslint/eslint-plugin";
 import prettierConfig from "eslint-config-prettier";
@@ -48,6 +48,14 @@ export default defineConfig([
       // ...tsPlugin.configs.strict.rules, // Ещё более строгий набор сверх recommended (стилевые и потенциально спорные проверки)
       ...prettierConfig.rules, // Отключает все правила ESLint, конфликтующие с Prettier (форматирование должно решаться только Prettier'ом)
       "prettier/prettier": "error", // Несоответствие Prettier-форматированию считать ошибкой ESLint (а не только warning при `prettier --check`)
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^__",
+          varsIgnorePattern: "^__",
+          caughtErrorsIgnorePattern: "^__",
+        },
+      ],
     },
 
     // ===== Прочие настройки блока конфига =====
@@ -59,7 +67,7 @@ export default defineConfig([
   // {
   //   files: ["**/*.test.ts", "**/__tests__/**/*.ts"],
   //   languageOptions: { globals: { ...globals.jest } }, // Глобальные переменные Jest (describe, it, expect) для тестовых файлов
-  //   rules: { "@typescript-eslint/no-explicit-any": "off" }, // Точечное ослабление правил только для тестов
+  // rules: { "@typescript-eslint/no-explicit-any": "off" }, // Точечное ослабление правил только для тестов
   // },
   // js.configs.recommended, // Пример подключения готового пресета конфигурации целиком как отдельного элемента массива
 ]);

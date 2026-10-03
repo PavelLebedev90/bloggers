@@ -1,20 +1,38 @@
-const PORT = process.env.PORT || 3000;
+import { z } from "zod";
 
-export const isProduction = process.env.NODE_ENV === "production";
+const envSchema = z
+  .object({
+    PORT: z.coerce.number().default(3000),
+    NODE_ENV: z.string().optional(),
+    BASE_PATH: z.string().min(1),
+    AUTH_LOGIN: z.string().min(1),
+    AUTH_PASSWORD: z.string().min(1),
+    MONGO_PATH: z.string().min(1).optional(),
+    MONGO_PATH_PROD: z.string().min(1).optional(),
+    MONGO_DB_NAME: z.string().min(1).optional(),
+    MONGO_DB_NAME_PROD: z.string().min(1).optional(),
+  })
+  .superRefine((env, ctx) => {
+    const production = env.NODE_ENV === "production";
+    const requiredKeys = production
+      ? (["MONGO_PATH_PROD", "MONGO_DB_NAME_PROD"] as const)
+      : (["MONGO_PATH", "MONGO_DB_NAME"] as const);
+    for (const key of requiredKeys) {
+      if (!env[key]) {
+        ctx.addIssue({ code: "custom", path: [key], message: `Missing env variable: ${key}` });
+      }
+    }
+  });
 
-const checkEnvironment = (name: string) => {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`Missing env variable: ${name}`);
-  }
-  return value;
-};
+const env = envSchema.parse(process.env);
+
+export const isProduction = env.NODE_ENV === "production";
 
 export const config = {
-  port: Number(PORT),
-  basePath: checkEnvironment("BASE_PATH"),
-  authLogin: checkEnvironment("AUTH_LOGIN"),
-  authPassword: checkEnvironment("AUTH_PASSWORD"),
-  mongodbUrl: checkEnvironment(isProduction ? "MONGO_PATH_PROD" : "MONGO_PATH"),
-  mongodbName: checkEnvironment(isProduction ? "MONGO_DB_NAME_PROD" : "MONGO_DB_NAME"),
+  port: env.PORT,
+  basePath: env.BASE_PATH,
+  authLogin: env.AUTH_LOGIN,
+  authPassword: env.AUTH_PASSWORD,
+  mongodbUrl: isProduction ? (env.MONGO_PATH_PROD as string) : (env.MONGO_PATH as string),
+  mongodbName: isProduction ? (env.MONGO_DB_NAME_PROD as string) : (env.MONGO_DB_NAME as string),
 };

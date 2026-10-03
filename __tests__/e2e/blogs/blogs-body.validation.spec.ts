@@ -1,8 +1,7 @@
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
-import { createBlog, getBlogById } from "../../utils/blogs/crud-blog-test.util";
+import { createBlog } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
-import { ObjectId } from "mongodb";
 
 describe("blogs validation", () => {
   setupDbLifecycle();
@@ -102,9 +101,8 @@ describe("blogs validation", () => {
 
     it("should not create a blog when validation fails", async () => {
       const createdBlog = await createBlog({ ...collectBlogToCreate(), name: null });
-      const res = await getBlogById(new ObjectId(createdBlog.body.id).toString());
-      expect(res.body.errorsMessages).toEqual(
-        expect.arrayContaining([expect.objectContaining({ field: "id" })]),
+      expect(createdBlog.body.errorsMessages).toEqual(
+        expect.arrayContaining([expect.objectContaining({ field: "name" })]),
       );
     });
   });

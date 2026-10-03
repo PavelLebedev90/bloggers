@@ -22,7 +22,7 @@ describe("Posts CRUD", () => {
     const res = await request(app).get(POSTS_ROUTER_PATH);
 
     expect(res.status).toBe(HttpStatus.Ok);
-    expect(res.body).toEqual([]);
+    expect(res.body.items).toEqual([]);
   });
 
   it("should create a new post and return it", async () => {
@@ -46,15 +46,15 @@ describe("Posts CRUD", () => {
     const blog = await createBlog(collectBlogToCreate()).expect(HttpStatus.Created);
 
     await createPost(collectPostToCreate(blog.body.id)).expect(HttpStatus.Created);
-    await createPost({ ...collectPostToCreate(blog.body.id), title: "New" }).expect(
+    const post = await createPost({ ...collectPostToCreate(blog.body.id), title: "New" }).expect(
       HttpStatus.Created,
     );
 
     const res = await request(app).get(POSTS_ROUTER_PATH);
 
     expect(res.status).toBe(HttpStatus.Ok);
-    expect(res.body).toHaveLength(2);
-    expect(res.body[1].title).toBe("New");
+    expect(res.body.items).toHaveLength(2);
+    expect(post.body.title).toBe("New");
   });
 
   it("should return a post by id", async () => {

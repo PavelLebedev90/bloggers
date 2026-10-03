@@ -16,37 +16,37 @@ describe("testing all-data", () => {
     await createBlog(collectBlogToCreate());
 
     const listBeforeRes = await request(app).get(BLOGS_ROUTER_PATH);
-    expect(listBeforeRes.body).toHaveLength(1);
+    expect(listBeforeRes.body.items).toHaveLength(1);
 
     const deleteRes = await request(app).delete(TESTING_ALL_DATA);
     expect(deleteRes.status).toBe(HttpStatus.NoContent);
 
     const listAfterRes = await request(app).get(BLOGS_ROUTER_PATH);
     expect(listAfterRes.status).toBe(HttpStatus.Ok);
-    expect(listAfterRes.body).toEqual([]);
+    expect(listAfterRes.body.items).toEqual([]);
   });
 
   it("should clear all posts and blogs from the DB", async () => {
     const blog = await createBlog(collectBlogToCreate());
 
     const blogsBeforeRes = await request(app).get(BLOGS_ROUTER_PATH);
-    expect(blogsBeforeRes.body).toHaveLength(1);
+    expect(blogsBeforeRes.body.items).toHaveLength(1);
 
-    await createPost(collectPostToCreate(blog.body.id));
+    await createPost(collectPostToCreate(blog.body.id)).expect(HttpStatus.Created);
 
     const postsBeforeRes = await request(app).get(POSTS_ROUTER_PATH);
-    expect(postsBeforeRes.body).toHaveLength(1);
+    expect(postsBeforeRes.body.items).toHaveLength(1);
 
     const deleteRes = await request(app).delete(TESTING_ALL_DATA);
     expect(deleteRes.status).toBe(HttpStatus.NoContent);
 
     const listBlogsAfterRes = await request(app).get(BLOGS_ROUTER_PATH);
     expect(listBlogsAfterRes.status).toBe(HttpStatus.Ok);
-    expect(listBlogsAfterRes.body).toEqual([]);
+    expect(listBlogsAfterRes.body.items).toEqual([]);
 
     const listPostsAfterRes = await request(app).get(POSTS_ROUTER_PATH);
     expect(listPostsAfterRes.status).toBe(HttpStatus.Ok);
-    expect(listPostsAfterRes.body).toEqual([]);
+    expect(listPostsAfterRes.body.items).toEqual([]);
   });
 
   it("should be idempotent when the DB is already empty", async () => {
@@ -56,6 +56,6 @@ describe("testing all-data", () => {
     expect(deleteRes.status).toBe(HttpStatus.NoContent);
 
     const listRes = await request(app).get(BLOGS_ROUTER_PATH);
-    expect(listRes.body).toEqual([]);
+    expect(listRes.body.items).toEqual([]);
   });
 });

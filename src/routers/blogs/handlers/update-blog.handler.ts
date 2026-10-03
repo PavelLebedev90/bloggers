@@ -1,27 +1,21 @@
 import { Response, Request } from "express";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
-import { blogsRepository } from "../../blogs/repository/blogs.repository";
-import { errorMessage } from "../../../core/utils/error-formatter/error-messages.formatter";
-import { ERROR_MESSAGES } from "../../../core/consts/error-messages.const";
 import { BlogInputModel } from "../types/blogs-input.type";
 import { blogToDBMapper } from "../mappers/blog-to-db.mapper";
+import { blogsService } from "../service/blogs.service";
 
 export const updateBlogHandler = async (
-  req: Request<{ id: string }, unknown, BlogInputModel>,
-  res: Response<undefined | ValidationErrorMessages>,
+  _req: Request,
+  res: Response<
+    undefined | ValidationErrorMessages,
+    {
+      params: { id: string };
+      body: BlogInputModel;
+    }
+  >,
 ) => {
-  const bodyBlog = blogToDBMapper(req.body);
-
-  const isUpdated = await blogsRepository.updateBlog(req.params.id, bodyBlog);
-
-  if (!isUpdated) {
-    return errorMessage({
-      res,
-      httpStatus: HttpStatus.NotFound,
-      errors: [ERROR_MESSAGES.notFoundMessage("id", "blog")],
-    });
-  }
-
+  const bodyBlog = blogToDBMapper(res.locals.body);
+  await blogsService.updateBlog(res.locals.params.id, bodyBlog);
   res.sendStatus(HttpStatus.NoContent);
 };

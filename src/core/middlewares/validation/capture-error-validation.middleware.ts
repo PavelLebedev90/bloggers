@@ -5,21 +5,24 @@ import { HttpStatus } from "../../types/http-statuses.type";
 import { ValidationError } from "../../types/validation-error.type";
 
 export const captureErrorValidation = (schema: z.ZodObject) => {
-  return async (req: Request, res: Response, next: NextFunction) => {
+  return async (req: Request<unknown, unknown, unknown>, res: Response, next: NextFunction) => {
     try {
       const sanitizedResult = await schema.parseAsync(
         {
           body: req.body,
           query: req.query,
           params: req.params,
-          cookies: req.cookies,
+          cookies: req.cookies as z.infer<typeof schema>["cookies"],
         },
         {
           reportInput: true,
         },
       );
 
-      req.body = sanitizedResult.body;
+      res.locals.body = sanitizedResult.body;
+      res.locals.query = sanitizedResult.query;
+      res.locals.params = sanitizedResult.params;
+      res.locals.cookies = sanitizedResult.cookies;
       next();
     } catch (error) {
       if (error instanceof ZodError) {

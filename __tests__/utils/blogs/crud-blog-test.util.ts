@@ -3,6 +3,7 @@ import { app } from "../../consts/express.const";
 import { BlogInputModel } from "../../../src/routers/blogs/types/blogs-input.type";
 import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router-path.const";
 import { requestWithAuthHeader } from "../middlewares/request-auth-header.middleware";
+import { PostInputModelTestDto } from "../posts/crud-post-test.util";
 
 type BlogInputModelTestDto = {
   [K in keyof BlogInputModel]?: unknown;
@@ -10,6 +11,9 @@ type BlogInputModelTestDto = {
 
 export const createBlog = (blog: BlogInputModelTestDto): Test => {
   return requestWithAuthHeader(app).post(BLOGS_ROUTER_PATH).send(blog);
+};
+export const createPostByBlogId = (blogId: string, post: PostInputModelTestDto): Test => {
+  return requestWithAuthHeader(app).post(`${BLOGS_ROUTER_PATH}/${blogId}/posts`).send(post);
 };
 export const getBlogById = (id: string): Test => {
   return request(app).get(`${BLOGS_ROUTER_PATH}/${id}`);

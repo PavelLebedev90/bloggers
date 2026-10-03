@@ -3,6 +3,7 @@ import { HttpStatus } from "../../../src/core/types/http-statuses.type";
 import { app } from "../../consts/express.const";
 import {
   createBlog,
+  createPostByBlogId,
   deleteBlogById,
   getBlogById,
   updateBlogById,
@@ -12,6 +13,8 @@ import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router
 import { BlogOutputModel } from "../../../src/routers/blogs/types/blogs-output.type";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 import { ObjectId } from "mongodb";
+import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";
+import { createPost } from "../../utils/posts/crud-post-test.util";
 
 describe("Blogs CRUD", () => {
   setupDbLifecycle();
@@ -20,7 +23,7 @@ describe("Blogs CRUD", () => {
     const res = await request(app).get(BLOGS_ROUTER_PATH);
 
     expect(res.status).toBe(HttpStatus.Ok);
-    expect(res.body).toEqual([]);
+    expect(res.body.items).toEqual([]);
   });
 
   it("should create a new blog and return it", async () => {
@@ -39,13 +42,15 @@ describe("Blogs CRUD", () => {
 
   it("should return the list of blogs after creation", async () => {
     await createBlog(collectBlogToCreate()).expect(HttpStatus.Created);
-    await createBlog({ ...collectBlogToCreate(), name: "New" }).expect(HttpStatus.Created);
+    const blog = await createBlog({ ...collectBlogToCreate(), name: "New" }).expect(
+      HttpStatus.Created,
+    );
 
     const res = await request(app).get(BLOGS_ROUTER_PATH);
 
     expect(res.status).toBe(HttpStatus.Ok);
-    expect(res.body).toHaveLength(2);
-    expect(res.body[1].name).toBe("New");
+    expect(res.body.items).toHaveLength(2);
+    expect(blog.body.name).toBe("New");
   });
 
   it("should return a blog by id", async () => {
@@ -115,5 +120,50 @@ describe("Blogs CRUD", () => {
     const deleteRes = await deleteBlogById(new ObjectId().toString());
 
     expect(deleteRes.status).toBe(HttpStatus.NotFound);
+  });
+
+  it("should create a post by blog id", async () => {
+    const blog = await createBlog(collectBlogToCreate()).expect(HttpStatus.Created);
+    const postData = collectPostToCreate(blog.body.id);
+
+    const res = await createPostByBlogId(blog.body.id, postData).expect(HttpStatus.Created);
+
+    expect(res.status).toBe(HttpStatus.Created);
+    expect(res.body).toEqual({
+      id: expect.any(String),
+      title: postData.title,
+      shortDescription: postData.shortDescription,
+      content: postData.content,
+      blogId: blog.body.id,
+      blogName: blog.body.name,
+      createdAt: expect.any(String),
+    });
+  });
+
+  it("should get posts by blog id", async () => {
+    const blog = await createBlog(collectBlogToCreate()).expect(HttpStatus.Created);
+    const postData = collectPostToCreate(blog.body.id);
+    await createPost(postData).expect(HttpStatus.Created);
+    await createPost(postData).expect(HttpStatus.Created);
+    await createPost(postData).expect(HttpStatus.Created);
+
+    const res = await request(app).get(`${BLOGS_ROUTER_PATH}/${blog.body.id}/posts`);
+
+    expect(res.status).toBe(HttpStatus.Ok);
+    expect(res.body.items).toHaveLength(3);
+    expect(res.body.items[0]).toMatchObject({
+      title: postData.title,
+      shortDescription: postData.shortDescription,
+      content: postData.content,
+      blogId: blog.body.id,
+      blogName: blog.body.name,
+    });
+  });
+
+  it("should return 404 for posts endpoints with a non-existing blog id", async () => {
+    const blogId = new ObjectId().toString();
+
+    await createPostByBlogId(blogId, collectPostToCreate(blogId)).expect(HttpStatus.NotFound);
+    await request(app).get(`${BLOGS_ROUTER_PATH}/${blogId}/posts`).expect(HttpStatus.NotFound);
   });
 });
