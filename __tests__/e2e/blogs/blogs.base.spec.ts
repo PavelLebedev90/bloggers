@@ -9,12 +9,12 @@ import {
   updateBlogById,
 } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
-import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router-path.const";
-import { BlogOutputModel } from "../../../src/routers/blogs/types/blogs-output.type";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 import { ObjectId } from "mongodb";
 import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";
 import { createPost } from "../../utils/posts/crud-post-test.util";
+import { BlogOutputModel } from "../../../src/modules/blogs/types/blogs-output.type";
+import { BLOGS_ROUTER_PATH } from "../../../src/modules/blogs/const/blogs-router-path.const";
 
 describe("Blogs CRUD", () => {
   setupDbLifecycle();

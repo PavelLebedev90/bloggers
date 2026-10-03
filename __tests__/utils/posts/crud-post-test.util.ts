@@ -1,6 +1,6 @@
 import request, { Test } from "supertest";
-import { POSTS_ROUTER_PATH } from "../../../src/routers/posts/const/posts-router-path.const";
-import { PostInputModel } from "../../../src/routers/posts/types/posts-input.type";
+import { POSTS_ROUTER_PATH } from "../../../src/modules/posts/const/posts-router-path.const";
+import { PostInputModel } from "../../../src/modules/posts/types/posts-input.type";
 import { app } from "../../consts/express.const";
 import { requestWithAuthHeader } from "../middlewares/request-auth-header.middleware";
 

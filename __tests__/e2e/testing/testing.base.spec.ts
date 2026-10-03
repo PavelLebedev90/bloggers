@@ -1,14 +1,14 @@
 import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
 import { app } from "../../consts/express.const";
-import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router-path.const";
-import { TESTING_ALL_DATA } from "../../../src/routers/testing/consts/testing-router-path.const";
-import { POSTS_ROUTER_PATH } from "../../../src/routers/posts/const/posts-router-path.const";
+import { TESTING_ALL_DATA } from "../../../src/modules/testing/consts/testing-router-path.const";
+import { POSTS_ROUTER_PATH } from "../../../src/modules/posts/const/posts-router-path.const";
 import { createPost } from "../../utils/posts/crud-post-test.util";
 import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";
 import { createBlog } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
+import { BLOGS_ROUTER_PATH } from "../../../src/modules/blogs/const/blogs-router-path.const";
 
 describe("testing all-data", () => {
   setupDbLifecycle();

@@ -1,10 +1,10 @@
 import request from "supertest";
 import { app } from "../../consts/express.const";
-import { PostSortBy } from "../../../src/routers/posts/types/posts-query-input.type";
+import { PostSortBy } from "../../../src/modules/posts/types/posts-query-input.type";
 import { SortDirection } from "../../../src/core/types/query.type";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
-import { POSTS_ROUTER_PATH } from "../../../src/routers/posts/const/posts-router-path.const";
+import { POSTS_ROUTER_PATH } from "../../../src/modules/posts/const/posts-router-path.const";
 
 describe("GET /posts query validation", () => {
   setupDbLifecycle();

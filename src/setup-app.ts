@@ -1,13 +1,13 @@
 import express, { Express } from "express";
-import { testingRouter } from "./routers/testing/testing.router";
-import { TESTING_ROUTER_PATH } from "./routers/testing/consts/testing-router-path.const";
-import { POSTS_ROUTER_PATH } from "./routers/posts/const/posts-router-path.const";
-import { postsRouter } from "./routers/posts/posts.router";
-import { blogsRouter } from "./routers/blogs/blogs.router";
-import { BLOGS_ROUTER_PATH } from "./routers/blogs/const/blogs-router-path.const";
+import { testingRouter } from "./routers/testing.router";
+import { TESTING_ROUTER_PATH } from "./modules/testing/consts/testing-router-path.const";
+import { POSTS_ROUTER_PATH } from "./modules/posts/const/posts-router-path.const";
+import { postsRouter } from "./routers/posts.router";
 import { setupSwagger } from "./core/swagger/setup-swagger";
 import { globalErrorMiddleware } from "./core/middlewares/errors/global-error.middleware";
 import { isProduction } from "./core/config/setup.config";
+import { BLOGS_ROUTER_PATH } from "./modules/blogs/const/blogs-router-path.const";
+import { blogsRouter } from "./routers/blogs.router";
 
 export const setupApp = (app: Express) => {
   app.use(express.json());

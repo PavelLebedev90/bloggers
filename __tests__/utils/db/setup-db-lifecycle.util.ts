@@ -2,7 +2,7 @@ import request from "supertest";
 import { app } from "../../consts/express.const";
 import { client, runDB } from "../../../src/db/mongo.db";
 import { config } from "../../../src/core/config/setup.config";
-import { TESTING_ALL_DATA } from "../../../src/routers/testing/consts/testing-router-path.const";
+import { TESTING_ALL_DATA } from "../../../src/modules/testing/consts/testing-router-path.const";
 
 export function setupDbLifecycle() {
   beforeAll(async () => {

@@ -1,8 +1,8 @@
 import request from "supertest";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
 import { app } from "../../consts/express.const";
-import { POSTS_ROUTER_PATH } from "../../../src/routers/posts/const/posts-router-path.const";
-import { PostOutputModel } from "../../../src/routers/posts/types/posts-output.type";
+import { POSTS_ROUTER_PATH } from "../../../src/modules/posts/const/posts-router-path.const";
+import { PostOutputModel } from "../../../src/modules/posts/types/posts-output.type";
 import { createBlog } from "../../utils/blogs/crud-blog-test.util";
 import { collectBlogToCreate } from "../../utils/blogs/collect-blog-test.util";
 import { collectPostToCreate } from "../../utils/posts/collect-post-test.util";

@@ -1,4 +1,4 @@
-import { BlogInputModel } from "../../../src/routers/blogs/types/blogs-input.type";
+import { BlogInputModel } from "../../../src/modules/blogs/types/blogs-input.type";
 
 export const collectBlogToCreate = (): BlogInputModel => {
   return {

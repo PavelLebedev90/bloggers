@@ -43,7 +43,7 @@ export default defineConfig([
 
     // ===== Правила =====
     rules: {
-      ...tsPlugin.configs.recommended.rules, // Базовый рекомендуемый набор правил от @typescript-eslint (без typed-check, т.е. без анализа типов)
+      // ...tsPlugin.configs.recommended.rules, // Базовый рекомендуемый набор правил от @typescript-eslint (без typed-check, т.е. без анализа типов)
       ...tsPlugin.configs["recommended-type-checked"].rules, // Более строгий набор — включает typed-правила (требует parserOptions.project, работает медленнее)
       // ...tsPlugin.configs.strict.rules, // Ещё более строгий набор сверх recommended (стилевые и потенциально спорные проверки)
       ...prettierConfig.rules, // Отключает все правила ESLint, конфликтующие с Prettier (форматирование должно решаться только Prettier'ом)

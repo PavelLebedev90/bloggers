@@ -1,24 +1,24 @@
 import { Router } from "express";
-import { BLOGS_ROUTER } from "./const/blogs-router-path.const";
-import { getAllBlogsHandler } from "./handlers/get-all-blogs.handler";
-import { getBlogHandler } from "./handlers/get-blog.handler";
-import { createBlogHandler } from "./handlers/create-blog.handler";
-import { updateBlogHandler } from "./handlers/update-blog.handler";
-import { deleteBlogHandler } from "./handlers/delete-blog.handler";
-import { baseAuthorizationMiddleWare } from "../../core/middlewares/auth/base-authorization.middleware";
+import { BLOGS_ROUTER } from "../modules/blogs/const/blogs-router-path.const";
+import { getAllBlogsHandler } from "../modules/blogs/handlers/get-all-blogs.handler";
+import { getBlogHandler } from "../modules/blogs/handlers/get-blog.handler";
+import { createBlogHandler } from "../modules/blogs/handlers/create-blog.handler";
+import { updateBlogHandler } from "../modules/blogs/handlers/update-blog.handler";
+import { deleteBlogHandler } from "../modules/blogs/handlers/delete-blog.handler";
+import { baseAuthorizationMiddleWare } from "../core/middlewares/auth/base-authorization.middleware";
 import {
   blogCreateScheme,
   blogParamsScheme,
   blogQueryScheme,
   blogUpdateScheme,
-} from "./middlewares/validation/blogs-input-scheme.middleware";
-import { captureErrorValidation } from "../../core/middlewares/validation/capture-error-validation.middleware";
-import { getPostsByBlogIdHandler } from "./handlers/get-posts-by-blogId.handler";
+} from "../modules/blogs/middlewares/validation/blogs-input-scheme.middleware";
+import { captureErrorValidation } from "../core/middlewares/validation/capture-error-validation.middleware";
+import { getPostsByBlogIdHandler } from "../modules/blogs/handlers/get-posts-by-blogId.handler";
 import {
   postCreateScheme,
   postQueryScheme,
-} from "../posts/middlewares/validation/posts-input-scheme.middleware";
-import { createPostByBlogIdHandler } from "./handlers/create-post-by-blogId.handler";
+} from "../modules/posts/middlewares/validation/posts-input-scheme.middleware";
+import { createPostByBlogIdHandler } from "../modules/blogs/handlers/create-post-by-blogId.handler";
 
 export const blogsRouter: Router = Router();
 

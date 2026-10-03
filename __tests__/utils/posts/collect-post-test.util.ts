@@ -1,4 +1,4 @@
-import { PostInputModel } from "../../../src/routers/posts/types/posts-input.type";
+import { PostInputModel } from "../../../src/modules/posts/types/posts-input.type";
 
 export const collectPostToCreate = (blogId: string): PostInputModel => {
   return {

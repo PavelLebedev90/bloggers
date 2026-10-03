@@ -1,18 +1,18 @@
 import { Router } from "express";
-import { POSTS_ROUTER } from "./const/posts-router-path.const";
-import { getPostHandler } from "./handlers/get-post.handler";
-import { getAllPostsHandler } from "./handlers/get-all-posts.handler";
-import { createPostHandler } from "./handlers/create-post.handler";
-import { updatePostHandler } from "./handlers/update-post.handler";
-import { deletePostHandler } from "./handlers/delete-post.handler";
-import { baseAuthorizationMiddleWare } from "../../core/middlewares/auth/base-authorization.middleware";
-import { captureErrorValidation } from "../../core/middlewares/validation/capture-error-validation.middleware";
+import { POSTS_ROUTER } from "../modules/posts/const/posts-router-path.const";
+import { getPostHandler } from "../modules/posts/handlers/get-post.handler";
+import { getAllPostsHandler } from "../modules/posts/handlers/get-all-posts.handler";
+import { createPostHandler } from "../modules/posts/handlers/create-post.handler";
+import { updatePostHandler } from "../modules/posts/handlers/update-post.handler";
+import { deletePostHandler } from "../modules/posts/handlers/delete-post.handler";
+import { baseAuthorizationMiddleWare } from "../core/middlewares/auth/base-authorization.middleware";
+import { captureErrorValidation } from "../core/middlewares/validation/capture-error-validation.middleware";
 import {
   postCreateSchemeWithBlogId,
   postParamsScheme,
   postQueryScheme,
   postUpdateScheme,
-} from "./middlewares/validation/posts-input-scheme.middleware";
+} from "../modules/posts/middlewares/validation/posts-input-scheme.middleware";
 
 export const postsRouter: Router = Router();
 

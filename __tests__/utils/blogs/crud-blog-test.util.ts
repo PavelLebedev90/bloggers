@@ -1,9 +1,9 @@
 import request, { Test } from "supertest";
 import { app } from "../../consts/express.const";
-import { BlogInputModel } from "../../../src/routers/blogs/types/blogs-input.type";
-import { BLOGS_ROUTER_PATH } from "../../../src/routers/blogs/const/blogs-router-path.const";
 import { requestWithAuthHeader } from "../middlewares/request-auth-header.middleware";
 import { PostInputModelTestDto } from "../posts/crud-post-test.util";
+import { BlogInputModel } from "../../../src/modules/blogs/types/blogs-input.type";
+import { BLOGS_ROUTER_PATH } from "../../../src/modules/blogs/const/blogs-router-path.const";
 
 type BlogInputModelTestDto = {
   [K in keyof BlogInputModel]?: unknown;
