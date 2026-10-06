@@ -3,7 +3,7 @@ import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { PostOutputModelWithMeta } from "../types/posts-output.type";
 import { postsToOutputMapper } from "../mappers/post-to-output.mapper";
 import { PostQueryInputModel } from "../types/posts-query-input.type";
-import { postsService } from "../service/posts.service";
+import { postsQueryRepository } from "../repository/posts-query.repository";
 
 export const getAllPostsHandler = async (
   _req: Request,
@@ -14,7 +14,7 @@ export const getAllPostsHandler = async (
     }
   >,
 ) => {
-  const { items, totalCount } = await postsService.getAll(res.locals.query);
+  const { items, totalCount } = await postsQueryRepository.getAll(res.locals.query);
   res.status(HttpStatus.Ok).send({
     items: postsToOutputMapper(items),
     page: res.locals.query.pageNumber,

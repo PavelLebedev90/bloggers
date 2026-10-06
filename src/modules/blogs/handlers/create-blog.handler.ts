@@ -6,6 +6,7 @@ import { BlogOutputModel } from "../types/blogs-output.type";
 import { blogToDBMapper } from "../mappers/blog-to-db.mapper";
 import { blogToOutputMapper } from "../mappers/blog-to-output.mapper";
 import { blogsService } from "../service/blogs.service";
+import { blogsQueryRepository } from "../repository/blogs-query.repository";
 
 export const createBlogHandler = async (
   _req: Request,
@@ -17,10 +18,11 @@ export const createBlogHandler = async (
   >,
 ) => {
   const bodyBlog = blogToDBMapper(res.locals.body);
-  const newBlog = await blogsService.createBlog({
+  const newBlogId = await blogsService.createBlog({
     ...bodyBlog,
     createdAt: new Date(),
     isMembership: false,
   });
+  const newBlog = await blogsQueryRepository.getBlog(newBlogId);
   res.status(HttpStatus.Created).send(blogToOutputMapper(newBlog));
 };

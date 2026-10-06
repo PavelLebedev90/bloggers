@@ -3,7 +3,7 @@ import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { BlogOutputModelWithMeta } from "../types/blogs-output.type";
 import { blogsToOutputMapper } from "../mappers/blog-to-output.mapper";
 import { BlogQueryInputModel } from "../types/blogs-query-input.type";
-import { blogsService } from "../service/blogs.service";
+import { blogsQueryRepository } from "../repository/blogs-query.repository";
 
 export const getAllBlogsHandler = async (
   _req: Request,
@@ -14,7 +14,7 @@ export const getAllBlogsHandler = async (
     }
   >,
 ) => {
-  const { items, totalCount } = await blogsService.getAll(res.locals.query);
+  const { items, totalCount } = await blogsQueryRepository.getAll(res.locals.query);
   res.status(HttpStatus.Ok).send({
     items: blogsToOutputMapper(items),
     page: res.locals.query.pageNumber,

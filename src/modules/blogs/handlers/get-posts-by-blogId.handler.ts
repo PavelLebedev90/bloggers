@@ -3,7 +3,7 @@ import { PostOutputModelWithMeta } from "../../posts/types/posts-output.type";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { PostQueryInputModel } from "../../posts/types/posts-query-input.type";
 import { postsToOutputMapper } from "../../posts/mappers/post-to-output.mapper";
-import { blogsService } from "../service/blogs.service";
+import { blogsQueryRepository } from "../repository/blogs-query.repository";
 
 export const getPostsByBlogIdHandler = async (
   _req: Request,
@@ -15,7 +15,7 @@ export const getPostsByBlogIdHandler = async (
     }
   >,
 ) => {
-  const { items, totalCount } = await blogsService.getAllPostsByBlogId({
+  const { items, totalCount } = await blogsQueryRepository.getAllPostsByBlogId({
     ...res.locals.query,
     blogId: res.locals.params.blogId,
   });
