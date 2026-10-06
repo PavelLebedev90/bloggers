@@ -4,15 +4,15 @@ import { errorMessage } from "../../utils/error-formatter/error-messages.formatt
 import { HttpStatus } from "../../types/http-statuses.type";
 import { ValidationError } from "../../types/validation-error.type";
 
-export const captureErrorValidation = (schema: z.ZodObject) => {
+export const captureErrorValidation = (scheme: z.ZodObject) => {
   return async (req: Request<unknown, unknown, unknown>, res: Response, next: NextFunction) => {
     try {
-      const sanitizedResult = await schema.parseAsync(
+      const sanitizedResult = await scheme.parseAsync(
         {
           body: req.body,
           query: req.query,
           params: req.params,
-          cookies: req.cookies as z.infer<typeof schema>["cookies"],
+          cookies: req.cookies as z.infer<typeof scheme>["cookies"],
         },
         {
           reportInput: true,

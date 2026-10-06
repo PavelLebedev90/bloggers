@@ -1,27 +1,8 @@
 import { blogsCollection } from "../../../db/collections";
 import { BlogDBModel } from "../types/blogs-db.type";
-import { Filter, InsertOneResult, ObjectId } from "mongodb";
-import { BlogQueryInputModel } from "../types/blogs-query-input.type";
+import { InsertOneResult, ObjectId } from "mongodb";
 
 export const blogsRepository = {
-  async getAll(query: BlogQueryInputModel) {
-    const skip = (query.pageNumber - 1) * query.pageSize;
-    const filter: Filter<BlogDBModel> = {};
-    if (query.searchNameTerm) {
-      filter.name = { $regex: query.searchNameTerm, $options: "i" };
-    }
-    const [items, totalCount] = await Promise.all([
-      blogsCollection
-        .find(filter)
-        .sort(query.sortBy, query.sortDirection)
-        .skip(skip)
-        .limit(query.pageSize)
-        .toArray(),
-      blogsCollection.countDocuments(filter),
-    ]);
-
-    return { items, totalCount };
-  },
   async getBlog(blogId: string) {
     return await blogsCollection.findOne({ _id: new ObjectId(blogId) });
   },

@@ -6,9 +6,6 @@ import { postsService } from "../../posts/service/posts.service";
 import { PostInputModel } from "../../posts/types/posts-input.type";
 
 export const blogsService = {
-  // async getAll(query: BlogQueryInputModel) {
-  //   return await blogsRepository.getAll(query);
-  // },
   async getBlog(blogId: string) {
     const blog = await blogsRepository.getBlog(blogId);
 
@@ -17,10 +14,6 @@ export const blogsService = {
     }
     return blog;
   },
-  // async getAllPostsByBlogId(query: Required<PostQueryInputModel>) {
-  //   await this.getBlog(query.blogId);
-  //   return await postsService.getAll(query);
-  // },
   async createBlog(bodyBlog: BlogDBModel) {
     const { insertedId } = await blogsRepository.createBlog(bodyBlog);
     return insertedId.toString();

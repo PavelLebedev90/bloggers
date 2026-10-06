@@ -7,6 +7,10 @@ import { setupSwagger } from "./core/swagger/setup-swagger";
 import { globalErrorMiddleware } from "./core/middlewares/errors/global-error.middleware";
 import { BLOGS_ROUTER_PATH } from "./modules/blogs/const/blogs-router-path.const";
 import { blogsRouter } from "./routers/blogs.router";
+import { usersRouter } from "./routers/users.router";
+import { USERS_ROUTER_PATH } from "./modules/users/const/users-router-path.const";
+import { AUTH_ROUTER_PATH } from "./modules/auth/const/auth-router-path.const";
+import { authRouter } from "./routers/auth.router";
 
 export const setupApp = (app: Express) => {
   app.use(express.json());
@@ -16,6 +20,8 @@ export const setupApp = (app: Express) => {
   // }
   app.use(POSTS_ROUTER_PATH, postsRouter);
   app.use(BLOGS_ROUTER_PATH, blogsRouter);
+  app.use(USERS_ROUTER_PATH, usersRouter);
+  app.use(AUTH_ROUTER_PATH, authRouter);
 
   setupSwagger(app);
 
