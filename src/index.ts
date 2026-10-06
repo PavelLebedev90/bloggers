@@ -1,11 +1,12 @@
 import "dotenv/config";
-import express from "express";
+import express, { Express } from "express";
 import { setupApp } from "./setup-app";
 import { runDB } from "./db/mongo.db";
 import { config } from "./core/config/setup.config";
 
+const app: Express = express();
+
 const bootstrap = async () => {
-  const app = express();
   setupApp(app);
 
   await runDB(config.mongodbUrl);
@@ -17,3 +18,4 @@ const bootstrap = async () => {
 };
 
 void bootstrap();
+export default app;
