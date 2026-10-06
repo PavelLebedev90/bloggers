@@ -28,4 +28,20 @@ export const ERROR_MESSAGES = {
       name: name || "AppError",
     };
   },
+  unauthorized(field: string, entity: string, name?: string): AppError {
+    return {
+      field,
+      message: `${field} by ${entity} is not valid`,
+      statusCode: HttpStatus.Unauthorized,
+      name: name || "AppError",
+    };
+  },
+  conflict(field: string, entity: string, name?: string): AppError {
+    return {
+      field,
+      message: `${field} by ${entity} is already in used`,
+      statusCode: HttpStatus.Conflict,
+      name: name || "AppError",
+    };
+  },
 };

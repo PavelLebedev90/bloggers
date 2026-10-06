@@ -5,6 +5,7 @@ import { PostInputModel } from "../types/posts-input.type";
 import { PostOutputModel } from "../types/posts-output.type";
 import { postToOutputMapper } from "../mappers/post-to-output.mapper";
 import { postsService } from "../service/posts.service";
+import { postsQueryRepository } from "../repository/posts-query.repository";
 
 export const createPostHandler = async (
   _req: Request,
@@ -15,6 +16,7 @@ export const createPostHandler = async (
     }
   >,
 ) => {
-  const newPost = await postsService.createPost(res.locals.body);
+  const createdPostId = await postsService.createPost(res.locals.body);
+  const newPost = await postsQueryRepository.getPost(createdPostId);
   res.status(HttpStatus.Created).send(postToOutputMapper(newPost));
 };

@@ -39,7 +39,7 @@ export const globalErrorMiddleware = (
     httpStatus: HttpStatus.InternalServerError,
     errors: [
       {
-        field: "",
+        field: err instanceof Error ? err.message : "",
         message: "Internal Server Error",
       },
     ],
