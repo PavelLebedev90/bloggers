@@ -10,6 +10,9 @@ export const AUTH_HEADER = `Basic ${AUTH_CREDENTIALS}`;
 
 export const requestWithAuthHeader = (app: Express) => {
   return {
+    get(url: string) {
+      return request(app).get(url).set("authorization", AUTH_HEADER);
+    },
     post(url: string) {
       return request(app).post(url).set("authorization", AUTH_HEADER);
     },
