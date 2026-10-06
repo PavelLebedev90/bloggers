@@ -1,24 +1,58 @@
 tags:
-  - name: Blogs
-    description: API for managing blogs
+  - name: Users
+    description: API for managing users
 
 paths:
-  /api/blogs:
+  /api/users:
     get:
-      summary: Get a list of all blogs
-      tags: [Blogs]
+      summary: Get a list of all users
+      tags: [Users]
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [login, email, createdAt]
+            default: createdAt
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - in: query
+          name: pageNumber
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+        - in: query
+          name: searchLoginTerm
+          schema:
+            type: string
+        - in: query
+          name: searchEmailTerm
+          schema:
+            type: string
       responses:
         200:
-          description: List of all blogs
+          description: List of all users
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Blog"
+                $ref: "#/components/schemas/UserOutputWithMeta"
     post:
-      summary: Create a new blog
-      tags: [Blogs]
+      summary: Create a new user
+      tags: [Users]
       security:
         - BasicAuth: []
       requestBody:
@@ -26,14 +60,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/BlogInput"
+              $ref: "#/components/schemas/UserInput"
       responses:
         201:
-          description: Blog successfully created
+          description: User successfully created
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Blog"
+                $ref: "#/components/schemas/User"
         400:
           description: Validation error
           content:
@@ -41,75 +75,25 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
 
-  /api/blogs/{id}:
-    get:
-      summary: Get a blog by ID
-      tags: [Blogs]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the blog
-          schema:
-            type: string
-            example: "1"
-      responses:
-        200:
-          description: The requested blog
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Blog"
-        404:
-          description: Blog not found
-    put:
-      summary: Update a blog
-      tags: [Blogs]
-      security:
-        - BasicAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the blog
-          schema:
-            type: string
-            example: "1"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/BlogInput"
-      responses:
-        204:
-          description: Blog successfully updated
-        400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
-        404:
-          description: Blog not found
+  /api/users/{id}:
     delete:
-      summary: Delete a blog
-      tags: [Blogs]
+      summary: Delete a user
+      tags: [Users]
       security:
         - BasicAuth: []
       parameters:
         - in: path
           name: id
           required: true
-          description: The unique identifier of the blog
+          description: The unique identifier of the user
           schema:
             type: string
             example: "1"
       responses:
         204:
-          description: Blog successfully deleted
+          description: User successfully deleted
         404:
-          description: Blog not found
+          description: User not found
 
 components:
   securitySchemes:
@@ -117,58 +101,73 @@ components:
       type: http
       scheme: basic
   schemas:
-    Blog:
+    User:
       type: object
       required:
         - id
-        - name
-        - description
-        - websiteUrl
+        - login
+        - email
+        - createdAt
       properties:
         id:
           type: string
           example: "1"
-        name:
+        login:
           type: string
-          minLength: 1
-          maxLength: 15
-          example: "Tech Blog"
-        description:
+          minLength: 3
+          maxLength: 10
+          example: "user1"
+        email:
           type: string
-          minLength: 1
-          maxLength: 500
-          example: "A blog about technology"
-        websiteUrl:
-          type: string
-          minLength: 1
+          format: email
           maxLength: 100
-          format: uri
-          pattern: '^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$'
-          example: "https://example.com"
-    BlogInput:
+          example: "user1@example.com"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00.000Z"
+    UserInput:
       type: object
       required:
-        - name
-        - description
-        - websiteUrl
+        - login
+        - password
+        - email
       properties:
-        name:
+        login:
           type: string
-          minLength: 1
-          maxLength: 15
-          example: "Tech Blog"
-        description:
+          minLength: 3
+          maxLength: 10
+          pattern: "^[a-zA-Z0-9_-]*$"
+          example: "user1"
+        password:
           type: string
-          minLength: 1
-          maxLength: 500
-          example: "A blog about technology"
-        websiteUrl:
+          minLength: 6
+          maxLength: 20
+          example: "qwerty1"
+        email:
           type: string
-          minLength: 1
+          format: email
           maxLength: 100
-          format: uri
-          pattern: '^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$'
-          example: "https://example.com"
+          example: "user1@example.com"
+    UserOutputWithMeta:
+      type: object
+      properties:
+        pagesCount:
+          type: integer
+          example: 1
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        totalCount:
+          type: integer
+          example: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
     ValidationError:
       type: object
       properties:
