@@ -60,6 +60,8 @@ paths:
                 $ref: "#/components/schemas/ValidationErrorResponse"
         401:
           description: Unauthorized - access token is missing, expired or incorrect
+        403:
+          description: Forbidden - attempting to edit a comment that belongs to another user
         404:
           description: Comment not found
     delete:
@@ -80,6 +82,8 @@ paths:
           description: Comment successfully deleted
         401:
           description: Unauthorized - access token is missing, expired or incorrect
+        403:
+          description: Forbidden - attempting to delete a comment that belongs to another user
         404:
           description: Comment not found
 

@@ -12,9 +12,14 @@ export const updateCommentHandler = async (
     {
       params: { commentId: string };
       body: CommentInputModel;
+      userId: string;
     }
   >,
 ) => {
-  await commentsService.updateComment(res.locals.params.commentId, res.locals.body);
+  await commentsService.updateComment(
+    res.locals.userId,
+    res.locals.params.commentId,
+    res.locals.body,
+  );
   res.sendStatus(HttpStatus.NoContent);
 };

@@ -84,3 +84,6 @@ pnpm format       # форматирование prettier
 pnpm build        # сборка в dist/
 pnpm start        # запуск собранной версии (NODE_ENV=production)
 ```
+
+Поднять локальный тоннель cloudflared
+`docker run --rm cloudflare/cloudflared:latest tunnel --no-autoupdate --url http://host.docker.internal:3000`
