@@ -41,6 +41,95 @@ paths:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
 
+  /api/posts/{postId}/comments:
+    get:
+      summary: Get a list of comments for a post
+      tags: [Posts]
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          description: The unique identifier of the post
+          schema:
+            type: string
+            example: "60a7e5f8b4c7e1234567890a"
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [content, createdAt]
+            default: createdAt
+        - in: query
+          name: sortDirection
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - in: query
+          name: pageNumber
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - in: query
+          name: pageSize
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 10
+      responses:
+        200:
+          description: List of comments for the post
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentOutputWithMeta"
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: Post not found
+    post:
+      summary: Create a new comment for a post
+      tags: [Posts]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: postId
+          required: true
+          description: The unique identifier of the post
+          schema:
+            type: string
+            example: "60a7e5f8b4c7e1234567890a"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+      responses:
+        201:
+          description: Comment successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        401:
+          description: Unauthorized - access token is missing, expired or incorrect
+        404:
+          description: Post not found
+
   /api/posts/{id}:
     get:
       summary: Get a post by ID
@@ -116,7 +205,29 @@ components:
     BasicAuth:
       type: http
       scheme: basic
+    BearerAuth:
+      type: http
+      scheme: bearer
   schemas:
+    CommentOutputWithMeta:
+      type: object
+      properties:
+        pagesCount:
+          type: integer
+          example: 1
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        totalCount:
+          type: integer
+          example: 1
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
     Post:
       type: object
       required:

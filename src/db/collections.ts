@@ -5,15 +5,19 @@ import { BlogDBModel } from "../modules/blogs/types/blogs-db.type";
 import { BLOGS_ROUTER } from "../modules/blogs/const/blogs-router-path.const";
 import { UserDBModel } from "../modules/users/types/users-db.type";
 import { USERS_ROUTER } from "../modules/users/const/users-router-path.const";
+import { CommentDBModel } from "../modules/comments/types/comments-db.type";
+import { COMMENTS_ROUTER } from "../modules/comments/const/comments-router-path.const";
 
 export let postsCollection: Collection<PostDBModel>;
 export let blogsCollection: Collection<BlogDBModel>;
 export let usersCollection: Collection<UserDBModel>;
+export let commentsCollection: Collection<CommentDBModel>;
 
 export function initCollections(db: Db): void {
   postsCollection = db.collection<PostDBModel>(POSTS_ROUTER.ROOT);
   blogsCollection = db.collection<BlogDBModel>(BLOGS_ROUTER.ROOT);
   usersCollection = db.collection<UserDBModel>(USERS_ROUTER.ROOT);
+  commentsCollection = db.collection<CommentDBModel>(COMMENTS_ROUTER.ROOT);
 }
 
 export async function ensureIndexes(): Promise<void> {

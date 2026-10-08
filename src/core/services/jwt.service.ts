@@ -13,7 +13,7 @@ export const JWTService = {
       //С какого момента токен действителен
       .setNotBefore(0)
       //Когда токен истекает
-      .setExpirationTime("5min")
+      .setExpirationTime("1d")
       //Без аргумента — текущее время создания токена
       .setIssuedAt()
       .sign(config.secretJWT);

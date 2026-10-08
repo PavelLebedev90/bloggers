@@ -31,8 +31,9 @@ export const postQueryScheme = z.object({
   }),
 });
 
-export const postParamsScheme = z.object({
-  params: z.object({
-    id: z.string().trim().nonempty().regex(objectIdRegex),
-  }),
-});
+export const postParamsScheme = (field: string) =>
+  z.object({
+    params: z.object({
+      [field]: z.string().trim().nonempty().regex(objectIdRegex),
+    }),
+  });
