@@ -7,12 +7,12 @@ import { authService } from "../service/auth.service";
 export const loginHandler = async (
   _req: Request,
   res: Response<
-    ValidationErrorMessages,
+    { accessToken: string } | ValidationErrorMessages,
     {
       body: AuthInputModel;
     }
   >,
 ) => {
-  await authService.login(res.locals.body);
-  res.sendStatus(HttpStatus.NoContent);
+  const accessToken = await authService.login(res.locals.body);
+  res.status(HttpStatus.Ok).send({ accessToken });
 };

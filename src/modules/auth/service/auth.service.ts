@@ -4,6 +4,7 @@ import { AuthInputModel } from "../types/auth-input.type";
 import { AppError } from "../../../core/middlewares/errors/global-error.middleware";
 import { ERROR_MESSAGES } from "../../../core/utils/error-formatter/error-messages.formatter";
 import { authQueryRepository } from "../repository/auth-query.repository";
+import { JWTService } from "../../../core/services/jwt.service";
 
 export const authService = {
   async getUserByLoginOrEmail(loginOrEmail: string) {
@@ -26,6 +27,7 @@ export const authService = {
     if (!passwordVerify) {
       throw new AppError(ERROR_MESSAGES.unauthorized("credentials", bodyAuth.loginOrEmail));
     }
-    return passwordVerify;
+    const token = await JWTService.createToken({ userId: user._id.toString() });
+    return token;
   },
 };

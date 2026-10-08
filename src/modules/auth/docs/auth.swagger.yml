@@ -3,6 +3,21 @@ tags:
     description: API for authentication
 
 paths:
+  /api/auth/me:
+    get:
+      summary: Get information about the current user
+      tags: [Auth]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthOutput"
+        401:
+          description: Unauthorized - access token is missing, expired or incorrect
   /api/auth/login:
     post:
       summary: Login with loginOrEmail and password
@@ -26,7 +41,27 @@ paths:
           description: Unauthorized - incorrect loginOrEmail or password
 
 components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
   schemas:
+    AuthOutput:
+      type: object
+      required:
+        - userId
+        - login
+        - email
+      properties:
+        userId:
+          type: string
+          example: "60a7e5f8b4c7e1234567890a"
+        login:
+          type: string
+          example: "user1"
+        email:
+          type: string
+          example: "user1@example.com"
     AuthInput:
       type: object
       required:

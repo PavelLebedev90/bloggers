@@ -1,0 +1,149 @@
+tags:
+  - name: Comments
+    description: API for managing comments
+
+paths:
+  /api/comments/{commentId}:
+    get:
+      summary: Get a comment by ID
+      tags: [Comments]
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          description: The unique identifier of the comment
+          schema:
+            type: string
+            example: "60a7e5f8b4c7e1234567890a"
+      responses:
+        200:
+          description: The requested comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: Comment not found
+    put:
+      summary: Update a comment by ID
+      tags: [Comments]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          description: The unique identifier of the comment
+          schema:
+            type: string
+            example: "60a7e5f8b4c7e1234567890a"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+      responses:
+        204:
+          description: Comment successfully updated
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        401:
+          description: Unauthorized - access token is missing, expired or incorrect
+        404:
+          description: Comment not found
+    delete:
+      summary: Delete a comment by ID
+      tags: [Comments]
+      security:
+        - BearerAuth: []
+      parameters:
+        - in: path
+          name: commentId
+          required: true
+          description: The unique identifier of the comment
+          schema:
+            type: string
+            example: "60a7e5f8b4c7e1234567890a"
+      responses:
+        204:
+          description: Comment successfully deleted
+        401:
+          description: Unauthorized - access token is missing, expired or incorrect
+        404:
+          description: Comment not found
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    Comment:
+      type: object
+      required:
+        - id
+        - content
+        - commentatorInfo
+        - createdAt
+      properties:
+        id:
+          type: string
+          example: "60a7e5f8b4c7e1234567890a"
+        content:
+          type: string
+          minLength: 20
+          maxLength: 300
+          example: "This is a comment with enough length to pass validation"
+        commentatorInfo:
+          type: object
+          required:
+            - userId
+            - userLogin
+          properties:
+            userId:
+              type: string
+              example: "60a7e5f8b4c7e1234567890b"
+            userLogin:
+              type: string
+              example: "user1"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00.000Z"
+    CommentInput:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 20
+          maxLength: 300
+          example: "This is a comment with enough length to pass validation"
+    ValidationError:
+      type: object
+      properties:
+        field:
+          type: string
+          example: "content"
+        message:
+          type: string
+          example: "Content is required"
+    ValidationErrorResponse:
+      type: object
+      properties:
+        errorMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"

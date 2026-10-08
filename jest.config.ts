@@ -2,8 +2,16 @@ import type { Config } from "jest";
 
 const config: Config = {
   // Пресет ts-jest — компилирует .ts файлы через реальный TypeScript-компилятор
-  // и попутно проверяет типы прямо в тестах (в отличие от swc/babel-транспайлеров)
+  // и попутно проверяет типы прямо в тестах (в отличие от swc/babel-транспайлеров).
   preset: "ts-jest",
+  transform: {
+    // .ts — как раньше, с полной проверкой типов через Program
+    "^.+\\.tsx?$": "ts-jest",
+    // "jose" публикуется как чистый ESM .js без типов (см. transformIgnorePatterns ниже) —
+    // транспилируем его в CommonJS отдельным изолированным проходом с allowJs,
+    // не трогая type-checking основного tsconfig.json
+    "^.+\\.jsx?$": ["ts-jest", { isolatedModules: true, tsconfig: { allowJs: true } }],
+  },
 
   // Окружение выполнения тестов — "node", т.к. это бэкенд без DOM (браузерных API)
   testEnvironment: "node",
@@ -21,6 +29,12 @@ const config: Config = {
 
   // Расширения файлов, которые Jest умеет разрешать при импорте без указания расширения
   moduleFileExtensions: ["ts", "js", "json", "node"],
+
+  // По умолчанию Jest не трансформирует node_modules; "jose" публикуется как чистый ESM,
+  // поэтому его нужно явно разрешить транспилировать в CommonJS. pnpm кладёт пакеты во
+  // вложенные node_modules/.pnpm/<pkg>/node_modules/<pkg> — lookahead должен проверять
+  // именно последний сегмент перед именем пакета, иначе матчится на первом "node_modules/"
+  transformIgnorePatterns: ["/node_modules/(?!(.*/)?jose/)"],
 
   // Очищать состояние всех моков (jest.fn()) перед каждым тестом автоматически
   clearMocks: true,

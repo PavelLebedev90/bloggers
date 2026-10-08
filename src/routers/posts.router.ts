@@ -13,26 +13,44 @@ import {
   postQueryScheme,
   postUpdateScheme,
 } from "../modules/posts/middlewares/validation/posts-input-scheme.middleware";
+import {
+  commentCreateScheme,
+  commentQueryScheme,
+} from "../modules/comments/middlewares/validation/comments-input-scheme.middleware";
+import { getCommentsByPostIdHandler } from "../modules/posts/handlers/get-comments-by-postId.handler";
+import { createCommentByPostIdHandler } from "../modules/posts/handlers/create-comment-by-postId.handler";
+import { bearerAuthorizationMiddleWare } from "../core/middlewares/auth/bearer-authorization.middleware";
 
 export const postsRouter: Router = Router();
 
 postsRouter.get(POSTS_ROUTER.BASE, captureErrorValidation(postQueryScheme), getAllPostsHandler);
-postsRouter.get(POSTS_ROUTER.BY_ID, captureErrorValidation(postParamsScheme), getPostHandler);
+postsRouter.get(POSTS_ROUTER.BY_ID, captureErrorValidation(postParamsScheme("id")), getPostHandler);
+
+postsRouter.get(
+  POSTS_ROUTER.COMMENTS_BY_POST_ID,
+  captureErrorValidation(commentQueryScheme.extend(postParamsScheme("postId").shape)),
+  getCommentsByPostIdHandler,
+);
+postsRouter.post(
+  POSTS_ROUTER.COMMENTS_BY_POST_ID,
+  bearerAuthorizationMiddleWare,
+  captureErrorValidation(commentCreateScheme.extend(postParamsScheme("postId").shape)),
+  createCommentByPostIdHandler,
+);
+
+postsRouter.use(baseAuthorizationMiddleWare);
 postsRouter.post(
   POSTS_ROUTER.BASE,
-  baseAuthorizationMiddleWare,
   captureErrorValidation(postCreateSchemeWithBlogId),
   createPostHandler,
 );
 postsRouter.put(
   POSTS_ROUTER.BY_ID,
-  baseAuthorizationMiddleWare,
-  captureErrorValidation(postUpdateScheme.extend(postParamsScheme.shape)),
+  captureErrorValidation(postUpdateScheme.extend(postParamsScheme("id").shape)),
   updatePostHandler,
 );
 postsRouter.delete(
   POSTS_ROUTER.BY_ID,
-  baseAuthorizationMiddleWare,
-  captureErrorValidation(postParamsScheme),
+  captureErrorValidation(postParamsScheme("id")),
   deletePostHandler,
 );
