@@ -44,4 +44,12 @@ export const ERROR_MESSAGES = {
       name: name || "AppError",
     };
   },
+  forbidden(field: string, entity: string, name?: string): AppError {
+    return {
+      field,
+      message: `You do not have permission to edit or delete ${field} by ${entity}`,
+      statusCode: HttpStatus.Forbidden,
+      name: name || "AppError",
+    };
+  },
 };

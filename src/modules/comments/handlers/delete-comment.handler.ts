@@ -4,8 +4,8 @@ import { commentsService } from "../service/comments.service";
 
 export const deleteCommentHandler = async (
   _req: Request,
-  res: Response<unknown, { params: { commentId: string } }>,
+  res: Response<unknown, { params: { commentId: string }; userId: string }>,
 ) => {
-  await commentsService.deleteComment(res.locals.params.commentId);
+  await commentsService.deleteComment(res.locals.userId, res.locals.params.commentId);
   res.sendStatus(HttpStatus.NoContent);
 };

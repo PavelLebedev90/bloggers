@@ -4,6 +4,7 @@ import { commentsQueryRepository } from "../../comments/repository/comments-quer
 import { commentsToOutputMapper } from "../../comments/mappers/comment-to-output.mapper";
 import { CommentOutputModelWithMeta } from "../../comments/types/comments-output.type";
 import { CommentQueryInputModel } from "../../comments/types/comments-query-input.type";
+import { postsQueryRepository } from "../repository/posts-query.repository";
 
 export const getCommentsByPostIdHandler = async (
   _req: Request,
@@ -16,6 +17,8 @@ export const getCommentsByPostIdHandler = async (
     }
   >,
 ) => {
+  await postsQueryRepository.getPost(res.locals.params.postId);
+
   const { items, totalCount } = await commentsQueryRepository.getAll({
     ...res.locals.query,
     postId: res.locals.params.postId,
