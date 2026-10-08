@@ -7,13 +7,14 @@ import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 describe("Auth login", () => {
   setupDbLifecycle();
 
-  it("should return 204 when logging in with a valid login and password", async () => {
+  it("should return 200 and an access token when logging in with a valid login and password", async () => {
     const user = collectUserToCreate();
     await createUser(user).expect(HttpStatus.Created);
 
     const res = await login({ loginOrEmail: user.login, password: user.password });
 
-    expect(res.status).toBe(HttpStatus.NoContent);
+    expect(res.status).toBe(HttpStatus.Ok);
+    expect(res.body).toEqual({ accessToken: expect.any(String) });
   });
   it("should return 401 when the user does not exist", async () => {
     const res = await login({ loginOrEmail: "unknown1", password: "qwerty1" });
@@ -30,7 +31,7 @@ describe("Auth login", () => {
     expect(res.status).toBe(HttpStatus.Unauthorized);
   });
 
-  it("should return 204 when loginOrEmail has a different case (input is lowercased)", async () => {
+  it("should return 200 when loginOrEmail has a different case (input is lowercased)", async () => {
     const user = collectUserToCreate();
     await createUser(user).expect(HttpStatus.Created);
 
@@ -39,6 +40,7 @@ describe("Auth login", () => {
       password: user.password,
     });
 
-    expect(res.status).toBe(HttpStatus.NoContent);
+    expect(res.status).toBe(HttpStatus.Ok);
+    expect(res.body).toEqual({ accessToken: expect.any(String) });
   });
 });

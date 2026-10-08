@@ -29,27 +29,21 @@ blogsRouter.get(
   captureErrorValidation(postQueryScheme.extend(blogParamsScheme("blogId").shape)),
   getPostsByBlogIdHandler,
 );
+
+blogsRouter.use(baseAuthorizationMiddleWare);
 blogsRouter.post(
   BLOGS_ROUTER.POSTS_BY_BLOG_ID,
-  baseAuthorizationMiddleWare,
   captureErrorValidation(postCreateScheme.extend(blogParamsScheme("blogId").shape)),
   createPostByBlogIdHandler,
 );
-blogsRouter.post(
-  BLOGS_ROUTER.BASE,
-  baseAuthorizationMiddleWare,
-  captureErrorValidation(blogCreateScheme),
-  createBlogHandler,
-);
+blogsRouter.post(BLOGS_ROUTER.BASE, captureErrorValidation(blogCreateScheme), createBlogHandler);
 blogsRouter.put(
   BLOGS_ROUTER.BY_ID,
-  baseAuthorizationMiddleWare,
   captureErrorValidation(blogUpdateScheme.extend(blogParamsScheme("id").shape)),
   updateBlogHandler,
 );
 blogsRouter.delete(
   BLOGS_ROUTER.BY_ID,
-  baseAuthorizationMiddleWare,
   captureErrorValidation(blogParamsScheme("id")),
   deleteBlogHandler,
 );

@@ -13,24 +13,8 @@ import {
 } from "../modules/users/middlewares/validation/users-input-scheme.middleware";
 
 export const usersRouter: Router = Router();
+usersRouter.use(baseAuthorizationMiddleWare);
 
-usersRouter.get(
-  USERS_ROUTER.BASE,
-  baseAuthorizationMiddleWare,
-  captureErrorValidation(userQueryScheme),
-  getAllUsersHandler,
-);
-
-usersRouter.post(
-  USERS_ROUTER.BASE,
-  baseAuthorizationMiddleWare,
-  captureErrorValidation(userCreateScheme),
-  createUserHandler,
-);
-
-usersRouter.delete(
-  USERS_ROUTER.BY_ID,
-  baseAuthorizationMiddleWare,
-  captureErrorValidation(userParamsScheme),
-  deleteUserHandler,
-);
+usersRouter.get(USERS_ROUTER.BASE, captureErrorValidation(userQueryScheme), getAllUsersHandler);
+usersRouter.post(USERS_ROUTER.BASE, captureErrorValidation(userCreateScheme), createUserHandler);
+usersRouter.delete(USERS_ROUTER.BY_ID, captureErrorValidation(userParamsScheme), deleteUserHandler);

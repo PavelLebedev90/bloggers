@@ -13,3 +13,11 @@ type AuthInputModelTestDto = {
 export const login = (credentials: AuthInputModelTestDto): Test => {
   return request(app).post(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.LOGIN}`).send(credentials);
 };
+
+export const getMe = (accessToken?: string): Test => {
+  const req = request(app).get(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.ME}`);
+  if (accessToken !== undefined) {
+    req.set("authorization", `Bearer ${accessToken}`);
+  }
+  return req;
+};

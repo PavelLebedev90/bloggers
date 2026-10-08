@@ -18,21 +18,16 @@ export const postsRouter: Router = Router();
 
 postsRouter.get(POSTS_ROUTER.BASE, captureErrorValidation(postQueryScheme), getAllPostsHandler);
 postsRouter.get(POSTS_ROUTER.BY_ID, captureErrorValidation(postParamsScheme), getPostHandler);
+
+postsRouter.use(baseAuthorizationMiddleWare);
 postsRouter.post(
   POSTS_ROUTER.BASE,
-  baseAuthorizationMiddleWare,
   captureErrorValidation(postCreateSchemeWithBlogId),
   createPostHandler,
 );
 postsRouter.put(
   POSTS_ROUTER.BY_ID,
-  baseAuthorizationMiddleWare,
   captureErrorValidation(postUpdateScheme.extend(postParamsScheme.shape)),
   updatePostHandler,
 );
-postsRouter.delete(
-  POSTS_ROUTER.BY_ID,
-  baseAuthorizationMiddleWare,
-  captureErrorValidation(postParamsScheme),
-  deletePostHandler,
-);
+postsRouter.delete(POSTS_ROUTER.BY_ID, captureErrorValidation(postParamsScheme), deletePostHandler);
