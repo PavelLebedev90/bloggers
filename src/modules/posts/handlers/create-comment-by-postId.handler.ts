@@ -8,6 +8,7 @@ import { CommentOutputModel } from "../../comments/types/comments-output.type";
 import { commentsService } from "../../comments/service/comments.service";
 import { commentsQueryRepository } from "../../comments/repository/comments-query.repository";
 import { commentToOutputMapper } from "../../comments/mappers/comment-to-output.mapper";
+import { postsQueryRepository } from "../repository/posts-query.repository";
 
 export const createCommentByPostIdHandler = async (
   _req: Request,
@@ -21,6 +22,7 @@ export const createCommentByPostIdHandler = async (
   >,
 ) => {
   const user = await usersQueryRepository.getUser(res.locals.userId);
+  await postsQueryRepository.getPost(res.locals.params.postId);
   const dbComment = commentToDBMapper(res.locals.body, user);
   const newCommentId = await commentsService.createComment({
     ...dbComment,
