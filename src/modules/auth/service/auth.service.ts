@@ -16,6 +16,8 @@ import {
   isSuccess,
   okResult,
 } from "../../../core/utils/formatters/result/result.formatter";
+import { JWEService } from "../../../core/services/jwe.service";
+import { userToOutputMapper } from "../../users/mappers/user-to-output.mapper";
 
 export const authService = {
   async getUserByLoginOrEmail(loginOrEmail: string): Promise<Result<WithId<UserDBModel>>> {
@@ -31,7 +33,10 @@ export const authService = {
       data: user,
     });
   },
-  async login(bodyAuth: AuthInputModel): Promise<Result<{ token: string }>> {
+  async login(
+    bodyAuth: AuthInputModel,
+    mode: "jwt" | "jwe" = "jwt",
+  ): Promise<Result<{ token: string }>> {
     const result = await this.getUserByLoginOrEmail(bodyAuth.loginOrEmail);
     if (isSuccess(result)) {
       try {
@@ -50,12 +55,22 @@ export const authService = {
           extensions: [ERROR_MESSAGES.InternalServerError("passwordVerify")],
         });
       }
-
-      const token = await JWTService.createToken({ userId: result.data._id.toString() });
-      return okResult({
-        status: ResultSuccessStatus.Ok,
-        data: { token },
-      });
+      if (mode === "jwt") {
+        const token = await JWTService.createToken({ userId: result.data._id.toString() });
+        return okResult({
+          status: ResultSuccessStatus.Ok,
+          data: { token },
+        });
+      } else {
+        const token = await JWEService.encryptSession({
+          user: userToOutputMapper(result.data),
+          sub: result.data._id.toString(),
+        });
+        return okResult({
+          status: ResultSuccessStatus.Ok,
+          data: { token },
+        });
+      }
     } else {
       return result;
     }

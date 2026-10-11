@@ -2,13 +2,7 @@ import { ResultErrorStatus, ValidationError } from "../types/validation-error.ty
 
 type ErrorMessages = Record<
   ResultErrorStatus,
-  (
-    field: string,
-    entity?: string,
-    options?: Record<string, unknown>,
-  ) => ValidationError & {
-    entity: string | null;
-  }
+  (field: string, entity?: string, options?: Record<string, unknown>) => ValidationError
 >;
 
 const collectEntityField = (field: string, entity?: string) =>

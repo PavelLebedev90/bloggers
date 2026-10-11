@@ -1,10 +1,11 @@
 export type ValidationError = {
   field: string;
   message: string;
+  entity?: string | null;
 };
 
 export type ValidationErrorMessages = {
-  errorsMessages: ValidationError[];
+  errorsMessages: Omit<ValidationError, "entity">[];
 };
 
 export enum ResultSuccessStatus {

@@ -43,5 +43,5 @@ export const isError = <T extends Result<unknown>>(r: T): r is Extract<T, ErrorR
   Object.values(ResultErrorStatus).includes(r.status as ResultErrorStatus);
 
 export const errorMessagesFormatter = (errors: ValidationError[]): ValidationErrorMessages => ({
-  errorsMessages: errors,
+  errorsMessages: errors.map((error) => ({ field: error.field, message: error.message })),
 });
