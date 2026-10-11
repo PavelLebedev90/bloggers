@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { z, ZodError } from "zod";
-import { errorMessage } from "../../utils/error-formatter/error-messages.formatter";
 import { HttpStatus } from "../../types/http-statuses.type";
 import { ValidationError } from "../../types/validation-error.type";
+import { sendError } from "../../utils/formatters/result/send-result.formatter";
 
 export const captureErrorValidation = (scheme: z.ZodObject) => {
   return async (req: Request<unknown, unknown, unknown>, res: Response, next: NextFunction) => {
@@ -41,13 +41,13 @@ export const captureErrorValidation = (scheme: z.ZodObject) => {
           },
           {} as Record<string, ValidationError>,
         );
-        errorMessage({
+        return sendError({
           res,
           httpStatus: HttpStatus.BadRequest,
           errors: Object.values(errorMessages),
         });
       } else {
-        errorMessage({
+        return sendError({
           res,
           httpStatus: HttpStatus.InternalServerError,
           errors: [

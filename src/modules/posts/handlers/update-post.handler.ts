@@ -1,9 +1,12 @@
 import { Response, Request } from "express";
-import { HttpStatus } from "../../../core/types/http-statuses.type";
-import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
+import {
+  ResultSuccessStatus,
+  ValidationErrorMessages,
+} from "../../../core/types/validation-error.type";
 import { PostInputModel } from "../types/posts-input.type";
 import { PostOutputModel } from "../types/posts-output.type";
 import { postsService } from "../service/posts.service";
+import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 
 export const updatePostHandler = async (
   _req: Request,
@@ -15,6 +18,6 @@ export const updatePostHandler = async (
     }
   >,
 ) => {
-  await postsService.updatePost(res.locals.params.id, res.locals.body);
-  res.sendStatus(HttpStatus.NoContent);
+  const result = await postsService.updatePost(res.locals.params.id, res.locals.body);
+  sendResult<ResultSuccessStatus.NoContent>(res, result);
 };

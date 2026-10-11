@@ -6,6 +6,8 @@ import { PostOutputModel } from "../../posts/types/posts-output.type";
 import { blogsService } from "../service/blogs.service";
 import { postToOutputMapper } from "../../posts/mappers/post-to-output.mapper";
 import { postsQueryRepository } from "../../posts/repository/posts-query.repository";
+import { isError } from "../../../core/utils/formatters/result/result.formatter";
+import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 
 export const createPostByBlogIdHandler = async (
   _req: Request,
@@ -17,10 +19,18 @@ export const createPostByBlogIdHandler = async (
     }
   >,
 ) => {
-  const postId = await blogsService.createPostByBlogId({
+  const resultWithPostId = await blogsService.createPostByBlogId({
     ...res.locals.body,
     blogId: res.locals.params.blogId,
   });
-  const post = await postsQueryRepository.getPost(postId);
-  res.status(HttpStatus.Created).send(postToOutputMapper(post));
+  if (isError(resultWithPostId)) {
+    return sendError({
+      res,
+      httpStatus: HttpStatus[resultWithPostId.status],
+      errors: resultWithPostId.extensions,
+    });
+  }
+  const result = await postsQueryRepository.getPost(resultWithPostId.data);
+  if (isError(result)) return sendResult(res, result);
+  sendResult(res, { ...result, status: resultWithPostId.status }, postToOutputMapper);
 };

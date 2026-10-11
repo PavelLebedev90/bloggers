@@ -1,42 +1,89 @@
-import { ERROR_MESSAGES } from "../../../core/utils/error-formatter/error-messages.formatter";
-import { AppError } from "../../../core/middlewares/errors/global-error.middleware";
 import { commentsRepository } from "../repository/comments.repository";
 import { CommentInputModel } from "../types/comments-input.type";
 import { CommentDBModel } from "../types/comments-db.type";
+import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+} from "../../../core/types/validation-error.type";
+import { WithId } from "mongodb";
+import {
+  failResult,
+  isSuccess,
+  okResult,
+} from "../../../core/utils/formatters/result/result.formatter";
 
 export const commentsService = {
-  async getComment(commentId: string) {
+  async getComment(commentId: string): Promise<Result<WithId<CommentDBModel>>> {
     const comments = await commentsRepository.getComment(commentId);
     if (!comments) {
-      throw new AppError(ERROR_MESSAGES.notFoundMessage("comments id", commentId));
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.Unauthorized("comments id", commentId)],
+      });
     }
-    return comments;
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: comments,
+    });
   },
-  async createComment(bodyComment: CommentDBModel) {
+  async createComment(bodyComment: CommentDBModel): Promise<Result<string>> {
     const { insertedId } = await commentsRepository.createComment(bodyComment);
-    return insertedId.toString();
+    return okResult({
+      status: ResultSuccessStatus.Created,
+      data: insertedId.toString(),
+    });
   },
-  async updateComment(userId: string, commentId: string, bodyComment: CommentInputModel) {
-    const comment = await this.getComment(commentId);
-    if (comment.userId !== userId) {
-      throw new AppError(ERROR_MESSAGES.forbidden("comment id", commentId));
-    }
-    const isUpdated = await commentsRepository.updateComment(commentId, bodyComment);
-    if (!isUpdated) {
-      throw new AppError(ERROR_MESSAGES.notFoundMessage("comment id", commentId));
+  async updateComment(
+    userId: string,
+    commentId: string,
+    bodyComment: CommentInputModel,
+  ): Promise<Result<true>> {
+    const result = await this.getComment(commentId);
+    if (isSuccess(result)) {
+      if (result.data.userId !== userId) {
+        return failResult({
+          status: ResultErrorStatus.Forbidden,
+          extensions: [ERROR_MESSAGES.Forbidden("comments id", commentId)],
+        });
+      }
     }
 
-    return isUpdated;
-  },
-  async deleteComment(userId: string, commentId: string) {
-    const comment = await this.getComment(commentId);
-    if (comment.userId !== userId) {
-      throw new AppError(ERROR_MESSAGES.forbidden("comment id", commentId));
+    const isUpdated = await commentsRepository.updateComment(commentId, bodyComment);
+    if (!isUpdated) {
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("comments id", commentId)],
+      });
     }
+
+    return okResult({
+      status: ResultSuccessStatus.NoContent,
+      data: isUpdated,
+    });
+  },
+  async deleteComment(userId: string, commentId: string): Promise<Result<true>> {
+    const result = await this.getComment(commentId);
+    if (isSuccess(result)) {
+      if (result.data.userId !== userId) {
+        return failResult({
+          status: ResultErrorStatus.Forbidden,
+          extensions: [ERROR_MESSAGES.Forbidden("comments id", commentId)],
+        });
+      }
+    }
+
     const isDeleted = await commentsRepository.deleteComment(commentId);
     if (!isDeleted) {
-      throw new AppError(ERROR_MESSAGES.notFoundMessage("comment id", commentId));
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("comments id", commentId)],
+      });
     }
-    return isDeleted;
+    return okResult({
+      status: ResultSuccessStatus.NoContent,
+      data: isDeleted,
+    });
   },
 };

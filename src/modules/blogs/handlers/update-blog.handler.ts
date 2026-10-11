@@ -1,9 +1,12 @@
 import { Response, Request } from "express";
-import { HttpStatus } from "../../../core/types/http-statuses.type";
-import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
+import {
+  ResultSuccessStatus,
+  ValidationErrorMessages,
+} from "../../../core/types/validation-error.type";
 import { BlogInputModel } from "../types/blogs-input.type";
 import { blogToDBMapper } from "../mappers/blog-to-db.mapper";
 import { blogsService } from "../service/blogs.service";
+import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 
 export const updateBlogHandler = async (
   _req: Request,
@@ -16,6 +19,6 @@ export const updateBlogHandler = async (
   >,
 ) => {
   const bodyBlog = blogToDBMapper(res.locals.body);
-  await blogsService.updateBlog(res.locals.params.id, bodyBlog);
-  res.sendStatus(HttpStatus.NoContent);
+  const result = await blogsService.updateBlog(res.locals.params.id, bodyBlog);
+  sendResult<ResultSuccessStatus.NoContent>(res, result);
 };

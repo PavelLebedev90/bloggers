@@ -1,18 +1,16 @@
 import { NextFunction, Request, Response } from "express";
-import { HttpStatus } from "../../types/http-statuses.type";
 import { config } from "../../config/setup.config";
+import { failUnauthorized } from "../../utils/formatters/result/send-result.formatter";
 
 export const baseAuthorizationMiddleWare = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    res.sendStatus(HttpStatus.Unauthorized);
-    return;
+    return failUnauthorized(res);
   }
 
   const [title, token] = authHeader.split(" ");
   if (title !== "Basic" || !token) {
-    res.sendStatus(HttpStatus.Unauthorized);
-    return;
+    return failUnauthorized(res);
   }
 
   const tokenToText = Buffer.from(token, "base64").toString("utf-8");
@@ -20,12 +18,10 @@ export const baseAuthorizationMiddleWare = (req: Request, res: Response, next: N
   const [login, password] = tokenToText.split(":");
 
   if (login !== config.authLogin) {
-    res.sendStatus(HttpStatus.Unauthorized);
-    return;
+    return failUnauthorized(res);
   }
   if (password !== config.authPassword) {
-    res.sendStatus(HttpStatus.Unauthorized);
-    return;
+    return failUnauthorized(res);
   }
   next();
 };

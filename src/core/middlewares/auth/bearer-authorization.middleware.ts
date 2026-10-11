@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { HttpStatus } from "../../types/http-statuses.type";
 import { JWTService } from "../../services/jwt.service";
+import { failUnauthorized } from "../../utils/formatters/result/send-result.formatter";
 
 export const bearerAuthorizationMiddleWare = async (
   req: Request,
@@ -9,17 +9,19 @@ export const bearerAuthorizationMiddleWare = async (
 ) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    res.sendStatus(HttpStatus.Unauthorized);
-    return;
+    return failUnauthorized(res);
   }
 
   const [title, token] = authHeader.split(" ");
   if (title !== "Bearer" || !token) {
-    res.sendStatus(HttpStatus.Unauthorized);
-    return;
+    return failUnauthorized(res);
   }
-  const userId = await JWTService.getPayloadByToken(token);
+  try {
+    const userId = await JWTService.getPayloadByToken(token);
+    res.locals.userId = userId;
+  } catch (__e) {
+    return failUnauthorized(res);
+  }
 
-  res.locals.userId = userId;
   next();
 };

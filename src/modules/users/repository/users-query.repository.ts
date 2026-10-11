@@ -1,12 +1,19 @@
 import { usersCollection } from "../../../db/collections";
-import { Filter, ObjectId } from "mongodb";
+import { Filter, ObjectId, WithId } from "mongodb";
 import { UserDBModel } from "../types/users-db.type";
 import { UserQueryInputModel } from "../types/users-query-input.type";
-import { AppError } from "../../../core/middlewares/errors/global-error.middleware";
-import { ERROR_MESSAGES } from "../../../core/utils/error-formatter/error-messages.formatter";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+} from "../../../core/types/validation-error.type";
+import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
+import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 
 export const usersQueryRepository = {
-  async getAll(query: UserQueryInputModel) {
+  async getAll(
+    query: UserQueryInputModel,
+  ): Promise<Result<{ items: WithId<UserDBModel>[]; totalCount: number }>> {
     const skip = (query.pageNumber - 1) * query.pageSize;
     const filter: Filter<UserDBModel> = {};
     const filterQuery = {
@@ -32,14 +39,23 @@ export const usersQueryRepository = {
       usersCollection.countDocuments(filter),
     ]);
 
-    return { items, totalCount };
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: { items, totalCount },
+    });
   },
-  async getUser(userId: string) {
+  async getUser(userId: string): Promise<Result<WithId<UserDBModel>>> {
     const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
 
     if (!user) {
-      throw new AppError(ERROR_MESSAGES.notFoundMessage("user id", userId));
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("user id", userId)],
+      });
     }
-    return user;
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: user,
+    });
   },
 };

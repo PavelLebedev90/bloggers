@@ -1,12 +1,19 @@
 import { postsCollection } from "../../../db/collections";
-import { Filter, ObjectId } from "mongodb";
+import { Filter, ObjectId, WithId } from "mongodb";
 import { PostDBModel } from "../types/posts-db.type";
 import { PostQueryInputModel } from "../types/posts-query-input.type";
-import { ERROR_MESSAGES } from "../../../core/utils/error-formatter/error-messages.formatter";
-import { AppError } from "../../../core/middlewares/errors/global-error.middleware";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+} from "../../../core/types/validation-error.type";
+import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
+import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 
 export const postsQueryRepository = {
-  async getAll(query: PostQueryInputModel) {
+  async getAll(
+    query: PostQueryInputModel,
+  ): Promise<Result<{ items: WithId<PostDBModel>[]; totalCount: number }>> {
     const skip = (query.pageNumber - 1) * query.pageSize;
     const filter: Filter<PostDBModel> = {};
     if (query.blogId) {
@@ -22,13 +29,19 @@ export const postsQueryRepository = {
       postsCollection.countDocuments(filter),
     ]);
 
-    return { items, totalCount };
+    return okResult({ status: ResultSuccessStatus.Ok, data: { items, totalCount } });
   },
-  async getPost(postId: string) {
+  async getPost(postId: string): Promise<Result<WithId<PostDBModel>>> {
     const post = await postsCollection.findOne({ _id: new ObjectId(postId) });
     if (!post) {
-      throw new AppError(ERROR_MESSAGES.notFoundMessage("post id", postId));
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("post id", postId)],
+      });
     }
-    return post;
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: post,
+    });
   },
 };

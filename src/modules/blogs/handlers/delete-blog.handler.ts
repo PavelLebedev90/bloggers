@@ -1,11 +1,15 @@
 import { Response, Request } from "express";
-import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { blogsService } from "../service/blogs.service";
+import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import {
+  ResultSuccessStatus,
+  ValidationErrorMessages,
+} from "../../../core/types/validation-error.type";
 
 export const deleteBlogHandler = async (
   _req: Request,
-  res: Response<unknown, { params: { id: string } }>,
+  res: Response<undefined | ValidationErrorMessages, { params: { id: string } }>,
 ) => {
-  await blogsService.deleteBlog(res.locals.params.id);
-  res.sendStatus(HttpStatus.NoContent);
+  const result = await blogsService.deleteBlog(res.locals.params.id);
+  sendResult<ResultSuccessStatus.NoContent>(res, result);
 };
