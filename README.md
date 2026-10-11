@@ -87,6 +87,3 @@ pnpm start        # запуск собранной версии (NODE_ENV=produ
 
 Поднять локальный тоннель cloudflared
 `docker run --rm cloudflare/cloudflared:latest tunnel --no-autoupdate --url http://host.docker.internal:3000`
-
-Создать новый JWE-ключ
-`node -e "const c=require('crypto');console.log(new Date().toISOString().slice(0,7)+':'+c.randomBytes(32).toString('base64url'))" # 2026-10:Xq3v...`
