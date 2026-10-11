@@ -1,14 +1,16 @@
 import { Response, Request } from "express";
-import { HttpStatus } from "../../../core/types/http-statuses.type";
-import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
-import { CommentOutputModel } from "../types/comments-output.type";
+import {
+  ResultSuccessStatus,
+  ValidationErrorMessages,
+} from "../../../core/types/validation-error.type";
 import { CommentInputModel } from "../types/comments-input.type";
 import { commentsService } from "../service/comments.service";
+import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 
 export const updateCommentHandler = async (
   _req: Request,
   res: Response<
-    CommentOutputModel | ValidationErrorMessages,
+    undefined | ValidationErrorMessages,
     {
       params: { commentId: string };
       body: CommentInputModel;
@@ -16,10 +18,10 @@ export const updateCommentHandler = async (
     }
   >,
 ) => {
-  await commentsService.updateComment(
+  const result = await commentsService.updateComment(
     res.locals.userId,
     res.locals.params.commentId,
     res.locals.body,
   );
-  res.sendStatus(HttpStatus.NoContent);
+  sendResult<ResultSuccessStatus.NoContent>(res, result);
 };

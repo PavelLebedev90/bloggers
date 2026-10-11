@@ -9,6 +9,8 @@ import { commentsService } from "../../comments/service/comments.service";
 import { commentsQueryRepository } from "../../comments/repository/comments-query.repository";
 import { commentToOutputMapper } from "../../comments/mappers/comment-to-output.mapper";
 import { postsQueryRepository } from "../repository/posts-query.repository";
+import { isError } from "../../../core/utils/formatters/result/result.formatter";
+import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 
 export const createCommentByPostIdHandler = async (
   _req: Request,
@@ -21,14 +23,36 @@ export const createCommentByPostIdHandler = async (
     }
   >,
 ) => {
-  const user = await usersQueryRepository.getUser(res.locals.userId);
-  await postsQueryRepository.getPost(res.locals.params.postId);
-  const dbComment = commentToDBMapper(res.locals.body, user);
-  const newCommentId = await commentsService.createComment({
+  const userResult = await usersQueryRepository.getUser(res.locals.userId);
+  if (isError(userResult)) {
+    return sendError({
+      res,
+      httpStatus: HttpStatus[userResult.status],
+      errors: userResult.extensions,
+    });
+  }
+  const postResult = await postsQueryRepository.getPost(res.locals.params.postId);
+  if (isError(postResult)) {
+    return sendError({
+      res,
+      httpStatus: HttpStatus[postResult.status],
+      errors: postResult.extensions,
+    });
+  }
+  const dbComment = commentToDBMapper(res.locals.body, userResult.data);
+  const resultWithCommentId = await commentsService.createComment({
     ...dbComment,
     createdAt: new Date(),
     postId: res.locals.params.postId,
   });
-  const newComment = await commentsQueryRepository.getComment(newCommentId);
-  res.status(HttpStatus.Created).send(commentToOutputMapper(newComment));
+  if (isError(resultWithCommentId)) {
+    return sendError({
+      res,
+      httpStatus: HttpStatus[resultWithCommentId.status],
+      errors: resultWithCommentId.extensions,
+    });
+  }
+  const result = await commentsQueryRepository.getComment(resultWithCommentId.data);
+  if (isError(result)) return sendResult(res, result);
+  sendResult(res, { ...result, status: resultWithCommentId.status }, commentToOutputMapper);
 };

@@ -1,11 +1,12 @@
 import { Response, Request } from "express";
-import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { usersService } from "../service/users.service";
+import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { ResultSuccessStatus } from "../../../core/types/validation-error.type";
 
 export const deleteUserHandler = async (
   _req: Request,
   res: Response<unknown, { params: { id: string } }>,
 ) => {
-  await usersService.deleteUser(res.locals.params.id);
-  res.sendStatus(HttpStatus.NoContent);
+  const result = await usersService.deleteUser(res.locals.params.id);
+  sendResult<ResultSuccessStatus.NoContent>(res, result);
 };

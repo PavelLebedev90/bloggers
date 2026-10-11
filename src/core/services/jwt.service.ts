@@ -1,7 +1,5 @@
 import { jwtVerify, SignJWT } from "jose";
 import { config } from "../config/setup.config";
-import { AppError } from "../middlewares/errors/global-error.middleware";
-import { ERROR_MESSAGES } from "../utils/error-formatter/error-messages.formatter";
 
 export const JWTService = {
   async createToken(user: { userId: string }) {
@@ -20,14 +18,10 @@ export const JWTService = {
     return token;
   },
   async getPayloadByToken(token: string): Promise<string> {
-    try {
-      const { payload } = await jwtVerify(token, config.secretJWT, {
-        algorithms: ["HS256"],
-        typ: "JWT",
-      });
-      return payload.userId as string;
-    } catch (__e) {
-      throw new AppError(ERROR_MESSAGES.unauthorized("credentials", "user"));
-    }
+    const { payload } = await jwtVerify(token, config.secretJWT, {
+      algorithms: ["HS256"],
+      typ: "JWT",
+    });
+    return payload.userId as string;
   },
 };

@@ -1,14 +1,26 @@
 import { blogsCollection } from "../../../db/collections";
 import { BlogDBModel } from "../types/blogs-db.type";
-import { Filter, ObjectId } from "mongodb";
+import { Filter, ObjectId, WithId } from "mongodb";
 import { BlogQueryInputModel } from "../types/blogs-query-input.type";
-import { ERROR_MESSAGES } from "../../../core/utils/error-formatter/error-messages.formatter";
-import { AppError } from "../../../core/middlewares/errors/global-error.middleware";
 import { PostQueryInputModel } from "../../posts/types/posts-query-input.type";
 import { postsQueryRepository } from "../../posts/repository/posts-query.repository";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+} from "../../../core/types/validation-error.type";
+import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import { PostDBModel } from "../../posts/types/posts-db.type";
+import {
+  failResult,
+  isError,
+  okResult,
+} from "../../../core/utils/formatters/result/result.formatter";
 
 export const blogsQueryRepository = {
-  async getAll(query: BlogQueryInputModel) {
+  async getAll(
+    query: BlogQueryInputModel,
+  ): Promise<Result<{ items: WithId<BlogDBModel>[]; totalCount: number }>> {
     const skip = (query.pageNumber - 1) * query.pageSize;
     const filter: Filter<BlogDBModel> = {};
     if (query.searchNameTerm) {
@@ -24,18 +36,26 @@ export const blogsQueryRepository = {
       blogsCollection.countDocuments(filter),
     ]);
 
-    return { items, totalCount };
+    return okResult({ data: { items, totalCount }, status: ResultSuccessStatus.Ok });
   },
-  async getBlog(blogId: string) {
+  async getBlog(blogId: string): Promise<Result<WithId<BlogDBModel>>> {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
 
     if (!blog) {
-      throw new AppError(ERROR_MESSAGES.notFoundMessage("blog id", blogId));
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.Unauthorized("blog id", blogId)],
+      });
     }
-    return blog;
+    return okResult({ data: blog, status: ResultSuccessStatus.Ok });
   },
-  async getAllPostsByBlogId(query: Required<PostQueryInputModel>) {
-    await this.getBlog(query.blogId);
+  async getAllPostsByBlogId(
+    query: Required<PostQueryInputModel>,
+  ): Promise<Result<{ items: WithId<PostDBModel>[]; totalCount: number }>> {
+    const result = await this.getBlog(query.blogId);
+    if (isError(result)) {
+      return result;
+    }
     return await postsQueryRepository.getAll(query);
   },
 };
