@@ -1,6 +1,5 @@
 import { usersRepository } from "../repository/users.repository";
 import { UserDBModel } from "../types/users-db.type";
-import { hash } from "argon2";
 import { config } from "../../../core/config/setup.config";
 import { MongoServerError, WithId } from "mongodb";
 import {
@@ -10,6 +9,7 @@ import {
 } from "../../../core/types/validation-error.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import { hashAdapter } from "../../../core/adapters/hash.adapter";
 
 export const usersService = {
   async getUserByLoginOrEmail(
@@ -30,8 +30,7 @@ export const usersService = {
   async createUser(
     bodyUser: Omit<UserDBModel, "passwordHash"> & { password: string },
   ): Promise<Result<string>> {
-    const passwordHash = await hash(bodyUser.password, { secret: config.secretPepper });
-
+    const passwordHash = await hashAdapter.hash(bodyUser.password, { secret: config.secretPepper });
     try {
       const userId = await usersRepository.createUser({
         login: bodyUser.login,

@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { JWTService } from "../../services/jwt.service";
+import { JWTAdapter } from "../../adapters/jwt.adapter";
 import { failUnauthorized } from "../../utils/formatters/result/send-result.formatter";
 
 export const bearerAuthorizationMiddleWare = async (
@@ -17,7 +17,7 @@ export const bearerAuthorizationMiddleWare = async (
     return failUnauthorized(res);
   }
   try {
-    const userId = await JWTService.getPayloadByToken(token);
+    const userId = await JWTAdapter.getPayloadByToken(token);
     res.locals.userId = userId;
   } catch (__e) {
     return failUnauthorized(res);

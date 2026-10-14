@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { JweKidError, JWEService } from "../../services/jwe.service";
+import { JweKidError, JWEAdapter } from "../../adapters/jwe.adapter";
 import { errors } from "jose";
 import { failUnauthorized } from "../../utils/formatters/result/send-result.formatter";
 
@@ -21,10 +21,10 @@ export async function bearerJWEAuthorizationMiddleWare(
   }
 
   try {
-    const { payload, kidStatus } = await JWEService.decryptSession(token);
+    const { payload, kidStatus } = await JWEAdapter.decryptSession(token);
 
     if (kidStatus === "deprecated") {
-      const freshToken = await JWEService.reencrypt(payload);
+      const freshToken = await JWEAdapter.reencrypt(payload);
       res.setHeader("X-Access-Token", freshToken);
     }
     res.locals.user = payload.user;

@@ -16,7 +16,7 @@ export class JweKidError extends Error {
 }
 
 /** Создать токен текущим ключом */
-export const JWEService = {
+export const JWEAdapter = {
   async encryptSession(claims: JWTPayload & { sub: string }, expiresIn = "15m") {
     return new EncryptJWT(claims)
       .setProtectedHeader({ alg: ALG, enc: ENC, kid: currentKid })

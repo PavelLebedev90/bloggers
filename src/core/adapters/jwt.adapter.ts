@@ -1,7 +1,7 @@
 import { jwtVerify, SignJWT } from "jose";
 import { config } from "../config/setup.config";
 
-export const JWTService = {
+export const JWTAdapter = {
   async createToken(user: { userId: string }) {
     const token = await new SignJWT(user)
       //Алгоритм и мета данные

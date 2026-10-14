@@ -17,6 +17,10 @@ const envSchema = z
   })
   .superRefine((env, ctx) => {
     const production = env.NODE_ENV === "production";
+    const test = env.NODE_ENV === "test";
+    if (test) {
+      return;
+    }
     const requiredKeys = production
       ? (["MONGO_PATH_PROD", "MONGO_DB_NAME_PROD"] as const)
       : (["MONGO_PATH", "MONGO_DB_NAME"] as const);
