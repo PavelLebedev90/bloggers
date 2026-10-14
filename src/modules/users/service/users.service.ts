@@ -2,7 +2,7 @@ import { usersRepository } from "../repository/users.repository";
 import { UserDBModel } from "../types/users-db.type";
 import { hash } from "argon2";
 import { config } from "../../../core/config/setup.config";
-import { MongoServerError } from "mongodb";
+import { MongoServerError, WithId } from "mongodb";
 import {
   Result,
   ResultErrorStatus,
@@ -12,10 +12,26 @@ import { failResult, okResult } from "../../../core/utils/formatters/result/resu
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 
 export const usersService = {
+  async getUserByLoginOrEmail(
+    loginOrEmail: string | { login: string; email: string },
+  ): Promise<Result<WithId<UserDBModel>>> {
+    const user = await usersRepository.getUserByLoginOrEmail(loginOrEmail);
+    if (!user) {
+      return failResult({
+        status: ResultErrorStatus.Unauthorized,
+        extensions: [ERROR_MESSAGES.Unauthorized("loginOrEmail", JSON.stringify(loginOrEmail))],
+      });
+    }
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: user,
+    });
+  },
   async createUser(
     bodyUser: Omit<UserDBModel, "passwordHash"> & { password: string },
   ): Promise<Result<string>> {
     const passwordHash = await hash(bodyUser.password, { secret: config.secretPepper });
+
     try {
       const userId = await usersRepository.createUser({
         login: bodyUser.login,
