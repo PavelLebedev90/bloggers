@@ -1,5 +1,5 @@
 import { usersRepository } from "../repository/users.repository";
-import { UserDBModel } from "../types/users-db.type";
+import { UserDBModel, UserModel } from "../types/users-db.type";
 import { config } from "../../../core/config/setup.config";
 import { MongoServerError, WithId } from "mongodb";
 import {
@@ -10,6 +10,7 @@ import {
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 import { hashAdapter } from "../../../core/adapters/hash.adapter";
+import { userEmailConfirmationToDBMapper } from "../mappers/user-email-confirmation.mapper";
 
 export const usersService = {
   async getUserByLoginOrEmail(
@@ -27,15 +28,32 @@ export const usersService = {
       data: user,
     });
   },
+  async getUserByEmailConfirmationCode(
+    emailConfirmationCode: string,
+  ): Promise<Result<WithId<UserDBModel>>> {
+    const user = await usersRepository.getUserByEmailConfirmationCode(emailConfirmationCode);
+    if (!user) {
+      return failResult({
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.BadRequest("emailConfirmationCode", emailConfirmationCode)],
+      });
+    }
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: user,
+    });
+  },
   async createUser(
-    bodyUser: Omit<UserDBModel, "passwordHash"> & { password: string },
+    bodyUser: UserModel & { password: string },
+    options: { isConfirmed: boolean },
   ): Promise<Result<string>> {
     const passwordHash = await hashAdapter.hash(bodyUser.password, { secret: config.secretPepper });
     try {
       const userId = await usersRepository.createUser({
+        ...userEmailConfirmationToDBMapper({ isConfirmed: options.isConfirmed }),
         login: bodyUser.login,
         email: bodyUser.email,
-        createdAt: bodyUser.createdAt,
+        createdAt: new Date(),
         passwordHash,
       });
       return okResult({
@@ -58,6 +76,22 @@ export const usersService = {
       }
       throw e;
     }
+  },
+  async updateUser(
+    userId: string,
+    bodyUser: Omit<UserDBModel, "createdAt" | "passwordHash">,
+  ): Promise<Result<true>> {
+    const isUpdated = await usersRepository.updateUser(userId, bodyUser);
+    if (!isUpdated) {
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("user id", userId)],
+      });
+    }
+    return okResult({
+      status: ResultSuccessStatus.NoContent,
+      data: isUpdated,
+    });
   },
   async deleteUser(userId: string): Promise<Result<true>> {
     const isDeleted = await usersRepository.deleteUser(userId);

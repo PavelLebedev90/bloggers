@@ -11,6 +11,7 @@ import { commentToOutputMapper } from "../../comments/mappers/comment-to-output.
 import { postsQueryRepository } from "../repository/posts-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { JWTPayload } from "../../../core/adapters/jwt.adapter";
 
 export const createCommentByPostIdHandler = async (
   _req: Request,
@@ -18,12 +19,12 @@ export const createCommentByPostIdHandler = async (
     CommentOutputModel | ValidationErrorMessages,
     {
       params: { postId: string };
-      userId: string;
+      user: JWTPayload;
       body: CommentInputModel;
     }
   >,
 ) => {
-  const userResult = await usersQueryRepository.getUser(res.locals.userId);
+  const userResult = await usersQueryRepository.getUser(res.locals.user.userId);
   if (isError(userResult)) {
     return sendError({
       res,

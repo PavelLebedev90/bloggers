@@ -17,9 +17,7 @@ import { commentsRouter } from "./routers/comments.router";
 export const setupApp = (app: Express) => {
   app.use(express.json());
 
-  // if (!isProduction) {
   app.use(TESTING_ROUTER_PATH, testingRouter);
-  // }
   app.use(POSTS_ROUTER_PATH, postsRouter);
   app.use(BLOGS_ROUTER_PATH, blogsRouter);
   app.use(USERS_ROUTER_PATH, usersRouter);

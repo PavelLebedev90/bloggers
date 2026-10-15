@@ -1,7 +1,11 @@
 import { Router, Request, Response } from "express";
 import { captureErrorValidation } from "../core/middlewares/validation/capture-error-validation.middleware";
 import { AUTH_ROUTER } from "../modules/auth/const/auth-router-path.const";
-import { authScheme } from "../modules/auth/middlewares/validation/auth-input-scheme.middleware";
+import {
+  authConfirmationScheme,
+  authEmailResendingScheme,
+  authScheme,
+} from "../modules/auth/middlewares/validation/auth-input-scheme.middleware";
 import { loginHandler } from "../modules/auth/handlers/login-auth.handler";
 import { getMeHandler } from "../modules/auth/handlers/get-me-auth.handler";
 import { bearerAuthorizationMiddleWare } from "../core/middlewares/auth/bearer-authorization.middleware";
@@ -17,11 +21,30 @@ import {
 import { AuthOutputModel } from "../modules/auth/types/auth-output.type";
 import { usersQueryRepository } from "../modules/users/repository/users-query.repository";
 import { UserOutputModel } from "../modules/users/types/users-output.type";
+import { userCreateScheme } from "../modules/users/middlewares/validation/users-input-scheme.middleware";
+import { registrationAuthHandler } from "../modules/auth/handlers/registration-auth.handler";
+import { registrationConfirmAuthHandler } from "../modules/auth/handlers/registration-confirm-auth.handler";
+import { registrationEmailResendingAuthHandler } from "../modules/auth/handlers/registration-email-resending-auth.handler";
 
 export const authRouter: Router = Router();
 
 authRouter.get(AUTH_ROUTER.ME, bearerAuthorizationMiddleWare, getMeHandler);
 authRouter.post(AUTH_ROUTER.LOGIN, captureErrorValidation(authScheme), loginHandler);
+authRouter.post(
+  AUTH_ROUTER.REGISTRATION,
+  captureErrorValidation(userCreateScheme),
+  registrationAuthHandler,
+);
+authRouter.post(
+  AUTH_ROUTER.REGISTRATION_CONFIRM,
+  captureErrorValidation(authConfirmationScheme),
+  registrationConfirmAuthHandler,
+);
+authRouter.post(
+  AUTH_ROUTER.REGISTRATION_EMAIL_RESENDING,
+  captureErrorValidation(authEmailResendingScheme),
+  registrationEmailResendingAuthHandler,
+);
 
 authRouter.get(
   `${AUTH_ROUTER.ME}/jwe`,

@@ -6,6 +6,7 @@ import {
 import { CommentInputModel } from "../types/comments-input.type";
 import { commentsService } from "../service/comments.service";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { JWTPayload } from "../../../core/adapters/jwt.adapter";
 
 export const updateCommentHandler = async (
   _req: Request,
@@ -14,12 +15,12 @@ export const updateCommentHandler = async (
     {
       params: { commentId: string };
       body: CommentInputModel;
-      userId: string;
+      user: JWTPayload;
     }
   >,
 ) => {
   const result = await commentsService.updateComment(
-    res.locals.userId,
+    res.locals.user.userId,
     res.locals.params.commentId,
     res.locals.body,
   );

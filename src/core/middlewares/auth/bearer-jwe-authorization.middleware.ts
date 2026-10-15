@@ -2,6 +2,8 @@ import type { Request, Response, NextFunction } from "express";
 import { JweKidError, JWEAdapter } from "../../adapters/jwe.adapter";
 import { errors } from "jose";
 import { failUnauthorized } from "../../utils/formatters/result/send-result.formatter";
+import { WithId } from "mongodb";
+import { UserDBModel } from "../../../modules/users/types/users-db.type";
 
 export const SESSION_COOKIE = "session";
 
@@ -27,7 +29,7 @@ export async function bearerJWEAuthorizationMiddleWare(
       const freshToken = await JWEAdapter.reencrypt(payload);
       res.setHeader("X-Access-Token", freshToken);
     }
-    res.locals.user = payload.user;
+    res.locals.user = payload.user as WithId<UserDBModel>;
     next();
   } catch (err) {
     if (err instanceof JweKidError) {

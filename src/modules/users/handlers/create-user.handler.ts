@@ -20,11 +20,13 @@ export const createUserHandler = async (
   >,
 ) => {
   const bodyUser = userToDBMapper(res.locals.body);
-  const resultWithUserId = await usersService.createUser({
-    ...bodyUser,
-    createdAt: new Date(),
-    password: res.locals.body.password,
-  });
+  const resultWithUserId = await usersService.createUser(
+    {
+      ...bodyUser,
+      password: res.locals.body.password,
+    },
+    { isConfirmed: true },
+  );
   if (isError(resultWithUserId)) {
     return sendError({
       res,
