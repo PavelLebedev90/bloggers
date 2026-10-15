@@ -1,6 +1,16 @@
-export type UserDBModel = {
+export type UserModel = {
   login: string;
   email: string;
-  createdAt: Date;
-  passwordHash: string;
 };
+
+export type UserEmailConfirmation = {
+  emailConfirmationCode: string | null;
+  emailConfirmationExpirationDate: Date | null;
+  emailConfirmationIsConfirmed: boolean;
+};
+
+export type UserDBModel = UserModel &
+  UserEmailConfirmation & {
+    createdAt: Date;
+    passwordHash: string;
+  };

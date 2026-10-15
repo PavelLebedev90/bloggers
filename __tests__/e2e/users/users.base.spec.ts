@@ -7,6 +7,8 @@ import { createUser, deleteUserById, getAllUsers } from "../../utils/users/crud-
 import { collectUserToCreate } from "../../utils/users/collect-user-test.util";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
 import { UserOutputModel } from "../../../src/modules/users/types/users-output.type";
+import { usersCollection } from "../../../src/db/collections";
+import { login } from "../../utils/auth/crud-auth-test.util";
 
 describe("Users CRUD", () => {
   setupDbLifecycle();
@@ -62,7 +64,22 @@ describe("Users CRUD", () => {
       expect(res.body).not.toHaveProperty("passwordHash");
     });
 
-    it("should return 409 when login is already taken", async () => {
+    it("should create a user with email already confirmed and allow immediate login", async () => {
+      const userData = collectUserToCreate();
+      await createUser(userData).expect(HttpStatus.Created);
+
+      const createdUser = await usersCollection.findOne({ login: userData.login });
+      expect(createdUser?.emailConfirmationIsConfirmed).toBe(true);
+      expect(createdUser?.emailConfirmationCode).toBeNull();
+
+      const loginRes = await login({
+        loginOrEmail: userData.login,
+        password: userData.password,
+      });
+      expect(loginRes.status).toBe(HttpStatus.Ok);
+    });
+
+    it("should return 400 when login is already taken", async () => {
       await createUser(collectUserToCreate()).expect(HttpStatus.Created);
 
       const res = await createUser({
@@ -70,10 +87,10 @@ describe("Users CRUD", () => {
         email: "another@example.com",
       });
 
-      expect(res.status).toBe(HttpStatus.Conflict);
+      expect(res.status).toBe(HttpStatus.BadRequest);
     });
 
-    it("should return 409 when email is already taken", async () => {
+    it("should return 400 when email is already taken", async () => {
       await createUser(collectUserToCreate()).expect(HttpStatus.Created);
 
       const res = await createUser({
@@ -81,7 +98,7 @@ describe("Users CRUD", () => {
         login: "user2",
       });
 
-      expect(res.status).toBe(HttpStatus.Conflict);
+      expect(res.status).toBe(HttpStatus.BadRequest);
     });
   });
 

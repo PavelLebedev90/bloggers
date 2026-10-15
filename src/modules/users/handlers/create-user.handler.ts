@@ -20,11 +20,13 @@ export const createUserHandler = async (
   >,
 ) => {
   const bodyUser = userToDBMapper(res.locals.body);
-  const resultWithUserId = await usersService.createUser({
-    ...bodyUser,
-    createdAt: new Date(),
-    password: res.locals.body.password,
-  });
+  const resultWithUserId = await usersService.createUser(
+    {
+      ...bodyUser,
+      password: res.locals.body.password,
+    },
+    { isConfirmed: true },
+  );
   if (isError(resultWithUserId)) {
     return sendError({
       res,
@@ -32,7 +34,7 @@ export const createUserHandler = async (
       errors: resultWithUserId.extensions,
     });
   }
-  const result = await usersQueryRepository.getUser(resultWithUserId.data);
+  const result = await usersQueryRepository.getUser(resultWithUserId.data.userId);
   if (isError(result)) return sendResult(res, result);
   sendResult(res, { ...result, status: resultWithUserId.status }, userToOutputMapper);
 };

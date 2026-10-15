@@ -2,13 +2,9 @@ import { postsCollection } from "../../../db/collections";
 import { Filter, ObjectId, WithId } from "mongodb";
 import { PostDBModel } from "../types/posts-db.type";
 import { PostQueryInputModel } from "../types/posts-query-input.type";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
-import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 
 export const postsQueryRepository = {
   async getAll(

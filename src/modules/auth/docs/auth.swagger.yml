@@ -18,6 +18,25 @@ paths:
                 $ref: "#/components/schemas/AuthOutput"
         401:
           description: Unauthorized - access token is missing, expired or incorrect
+        404:
+          description: The user from the token no longer exists
+  /api/auth/me/jwe:
+    get:
+      summary: Get information about the current user (JWE session token)
+      tags: [Auth]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthOutput"
+        401:
+          description: Unauthorized - access token is missing, expired or incorrect
+        404:
+          description: The user from the token no longer exists
   /api/auth/login:
     post:
       summary: Login with loginOrEmail and password
@@ -29,8 +48,12 @@ paths:
             schema:
               $ref: "#/components/schemas/AuthInput"
       responses:
-        204:
-          description: Login successful
+        200:
+          description: Login successful, returns JWT access token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenOutput"
         400:
           description: Validation error
           content:
@@ -39,6 +62,88 @@ paths:
                 $ref: "#/components/schemas/ValidationErrorResponse"
         401:
           description: Unauthorized - incorrect loginOrEmail or password
+  /api/auth/login/jwe:
+    post:
+      summary: Login with loginOrEmail and password, returns a JWE session token
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        200:
+          description: Login successful, returns JWE session token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenOutput"
+        400:
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        401:
+          description: Unauthorized - incorrect loginOrEmail or password
+  /api/auth/registration:
+    post:
+      summary: Register a new user and send a confirmation email
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+      responses:
+        204:
+          description: Input data is accepted, confirmation email has been sent
+        400:
+          description: Validation error, or login/email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+  /api/auth/registration-confirmation:
+    post:
+      summary: Confirm registration using the code sent by email
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationConfirmationInput"
+      responses:
+        204:
+          description: Email was verified, account is activated
+        400:
+          description: Validation error, or confirmation code is incorrect, already applied, or does not exist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+  /api/auth/registration-email-resending:
+    post:
+      summary: Resend the registration confirmation email
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegistrationEmailResendingInput"
+      responses:
+        204:
+          description: Input data is accepted, confirmation email has been re-sent
+        400:
+          description: Validation error, email does not exist, or email is already confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
 
 components:
   securitySchemes:
@@ -77,6 +182,33 @@ components:
           minLength: 6
           maxLength: 20
           example: "qwerty1"
+    AuthTokenOutput:
+      type: object
+      required:
+        - accessToken
+      properties:
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...."
+    RegistrationConfirmationInput:
+      type: object
+      required:
+        - code
+      properties:
+        code:
+          type: string
+          format: uuid
+          description: Confirmation code sent to the user's email
+          example: "e8b8c3f0-1a2b-4c3d-9e0f-1234567890ab"
+    RegistrationEmailResendingInput:
+      type: object
+      required:
+        - email
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user1@example.com"
     ValidationError:
       type: object
       properties:

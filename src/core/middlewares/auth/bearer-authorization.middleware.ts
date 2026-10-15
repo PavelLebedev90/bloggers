@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { JWTService } from "../../services/jwt.service";
-import { failUnauthorized } from "../../utils/formatters/result/send-result.formatter";
+import { JWTAdapter } from "../../adapters/jwt.adapter";
+import { failUnauthorized, sendError } from "../../utils/formatters/result/send-result.formatter";
+import { HttpStatus } from "../../types/http-statuses.type";
+import { ERROR_MESSAGES } from "../../consts/message/error.message.const";
 
 export const bearerAuthorizationMiddleWare = async (
   req: Request,
@@ -17,8 +19,17 @@ export const bearerAuthorizationMiddleWare = async (
     return failUnauthorized(res);
   }
   try {
-    const userId = await JWTService.getPayloadByToken(token);
-    res.locals.userId = userId;
+    const user = await JWTAdapter.getPayloadByToken(token);
+
+    if (!user.isEmailConfirmed) {
+      return sendError({
+        res,
+        httpStatus: HttpStatus.Forbidden,
+        errors: [ERROR_MESSAGES.Forbidden("emailConfirmationIsConfirmed", "false")],
+      });
+    }
+
+    res.locals.user = user;
   } catch (__e) {
     return failUnauthorized(res);
   }

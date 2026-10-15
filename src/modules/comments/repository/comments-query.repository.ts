@@ -3,12 +3,8 @@ import { commentsCollection } from "../../../db/collections";
 import { CommentQueryInputModel } from "../types/comments-query-input.type";
 import { CommentDBModel } from "../types/comments-db.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
-import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
+import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 
 export const commentsQueryRepository = {
   async getAll(

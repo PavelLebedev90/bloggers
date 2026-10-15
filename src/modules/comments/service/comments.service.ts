@@ -1,12 +1,8 @@
 import { commentsRepository } from "../repository/comments.repository";
 import { CommentInputModel } from "../types/comments-input.type";
 import { CommentDBModel } from "../types/comments-db.type";
-import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
+import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { WithId } from "mongodb";
 import {
   failResult,

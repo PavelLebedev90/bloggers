@@ -1,12 +1,10 @@
 import { Response, Request } from "express";
-import {
-  ResultSuccessStatus,
-  ValidationErrorMessages,
-} from "../../../core/types/validation-error.type";
+import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { BlogInputModel } from "../types/blogs-input.type";
 import { blogToDBMapper } from "../mappers/blog-to-db.mapper";
 import { blogsService } from "../service/blogs.service";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { ResultSuccessStatus } from "../../../core/types/result.type";
 
 export const updateBlogHandler = async (
   _req: Request,

@@ -1,7 +1,7 @@
 import { Response, Request } from "express";
 import { postsService } from "../service/posts.service";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
-import { ResultSuccessStatus } from "../../../core/types/validation-error.type";
+import { ResultSuccessStatus } from "../../../core/types/result.type";
 
 export const deletePostHandler = async (
   _req: Request,

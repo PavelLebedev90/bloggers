@@ -1,8 +1,13 @@
 import { jwtVerify, SignJWT } from "jose";
-import { config } from "../config/setup.config";
+import { jwtEnv } from "../config/jwt.config";
 
-export const JWTService = {
-  async createToken(user: { userId: string }) {
+export type JWTPayload = {
+  isEmailConfirmed: boolean;
+  userId: string;
+};
+
+export const JWTAdapter = {
+  async createToken(user: JWTPayload) {
     const token = await new SignJWT(user)
       //Алгоритм и мета данные
       .setProtectedHeader({ alg: "HS256", typ: "JWT" })
@@ -14,14 +19,14 @@ export const JWTService = {
       .setExpirationTime("1d")
       //Без аргумента — текущее время создания токена
       .setIssuedAt()
-      .sign(config.secretJWT);
+      .sign(jwtEnv.JWT_SECRET);
     return token;
   },
-  async getPayloadByToken(token: string): Promise<string> {
-    const { payload } = await jwtVerify(token, config.secretJWT, {
+  async getPayloadByToken(token: string): Promise<JWTPayload> {
+    const { payload } = await jwtVerify<JWTPayload>(token, jwtEnv.JWT_SECRET, {
       algorithms: ["HS256"],
       typ: "JWT",
     });
-    return payload.userId as string;
+    return payload;
   },
 };

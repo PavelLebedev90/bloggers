@@ -1,4 +1,5 @@
-import { ResultErrorStatus, ValidationError } from "../types/validation-error.type";
+import { ResultErrorStatus } from "../../types/result.type";
+import { ValidationError } from "../../types/validation-error.type";
 
 type ErrorMessages = Record<
   ResultErrorStatus,

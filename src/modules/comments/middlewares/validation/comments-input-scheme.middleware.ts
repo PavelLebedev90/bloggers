@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { objectIdRegex } from "../../../../core/utils/regex/object-id.regex";
+import { objectIdRegex } from "../../../../core/consts/regex/regex.const";
 import { CommentSortBy } from "../../types/comments-query-input.type";
 import { SortDirection } from "../../../../core/types/query.type";
 

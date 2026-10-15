@@ -1,13 +1,9 @@
 import { Response } from "express";
 import { HttpStatus } from "../../../types/http-statuses.type";
-import {
-  Result,
-  ResultSuccessStatus,
-  SuccessResult,
-  ValidationError,
-} from "../../../types/validation-error.type";
+import { ValidationError } from "../../../types/validation-error.type";
 import { errorMessagesFormatter, isError } from "./result.formatter";
-import { ERROR_MESSAGES } from "../../../consts/error.messages.const";
+import { ERROR_MESSAGES } from "../../../consts/message/error.message.const";
+import { Result, ResultSuccessStatus, SuccessResult } from "../../../types/result.type";
 
 // Тип data успешной части результата (с дистрибутивным Result раскладывается по объединению)
 type SuccessData<R> = R extends SuccessResult<infer D> ? D : never;

@@ -1,6 +1,6 @@
 import { SignJWT } from "jose";
 import { HttpStatus } from "../../../src/core/types/http-statuses.type";
-import { config } from "../../../src/core/config/setup.config";
+import { jwtEnv } from "../../../src/core/config/jwt.config";
 import { getMe, login } from "../../utils/auth/crud-auth-test.util";
 import { createUser, deleteUserById } from "../../utils/users/crud-user-test.util";
 import { collectUserToCreate } from "../../utils/users/collect-user-test.util";
@@ -13,7 +13,7 @@ const createExpiredToken = async (userId: string): Promise<string> => {
     .setSubject(userId)
     .setIssuedAt(Math.floor(Date.now() / 1000) - 60)
     .setExpirationTime(Math.floor(Date.now() / 1000) - 1)
-    .sign(config.secretJWT);
+    .sign(jwtEnv.JWT_SECRET);
 };
 
 describe("GET /auth/me", () => {

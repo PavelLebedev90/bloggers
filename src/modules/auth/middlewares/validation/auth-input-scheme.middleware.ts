@@ -8,3 +8,15 @@ export const authScheme = z.object({
     password: z.string().trim().min(6).max(20),
   }),
 });
+
+export const authConfirmationScheme = z.object({
+  body: z.object({
+    code: z.uuid(),
+  }),
+});
+
+export const authEmailResendingScheme = z.object({
+  body: z.object({
+    email: emailScheme,
+  }),
+});
