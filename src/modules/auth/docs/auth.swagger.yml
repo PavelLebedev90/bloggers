@@ -18,6 +18,8 @@ paths:
                 $ref: "#/components/schemas/AuthOutput"
         401:
           description: Unauthorized - access token is missing, expired or incorrect
+        404:
+          description: The user from the token no longer exists
   /api/auth/me/jwe:
     get:
       summary: Get information about the current user (JWE session token)
@@ -33,6 +35,8 @@ paths:
                 $ref: "#/components/schemas/AuthOutput"
         401:
           description: Unauthorized - access token is missing, expired or incorrect
+        404:
+          description: The user from the token no longer exists
   /api/auth/login:
     post:
       summary: Login with loginOrEmail and password
@@ -116,7 +120,7 @@ paths:
         204:
           description: Email was verified, account is activated
         400:
-          description: Validation error, or confirmation code is incorrect, expired or already applied
+          description: Validation error, or confirmation code is incorrect, already applied, or does not exist
           content:
             application/json:
               schema:
@@ -135,7 +139,7 @@ paths:
         204:
           description: Input data is accepted, confirmation email has been re-sent
         400:
-          description: Validation error, or email is already confirmed, or the current confirmation code has not expired yet
+          description: Validation error, email does not exist, or email is already confirmed
           content:
             application/json:
               schema:

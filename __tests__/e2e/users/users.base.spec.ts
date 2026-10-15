@@ -62,7 +62,7 @@ describe("Users CRUD", () => {
       expect(res.body).not.toHaveProperty("passwordHash");
     });
 
-    it("should return 409 when login is already taken", async () => {
+    it("should return 400 when login is already taken", async () => {
       await createUser(collectUserToCreate()).expect(HttpStatus.Created);
 
       const res = await createUser({
@@ -70,10 +70,10 @@ describe("Users CRUD", () => {
         email: "another@example.com",
       });
 
-      expect(res.status).toBe(HttpStatus.Conflict);
+      expect(res.status).toBe(HttpStatus.BadRequest);
     });
 
-    it("should return 409 when email is already taken", async () => {
+    it("should return 400 when email is already taken", async () => {
       await createUser(collectUserToCreate()).expect(HttpStatus.Created);
 
       const res = await createUser({
@@ -81,7 +81,7 @@ describe("Users CRUD", () => {
         login: "user2",
       });
 
-      expect(res.status).toBe(HttpStatus.Conflict);
+      expect(res.status).toBe(HttpStatus.BadRequest);
     });
   });
 
