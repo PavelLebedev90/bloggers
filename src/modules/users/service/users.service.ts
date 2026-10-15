@@ -1,6 +1,6 @@
 import { usersRepository } from "../repository/users.repository";
 import { UserDBModel, UserModel } from "../types/users-db.type";
-import { config } from "../../../core/config/setup.config";
+import { hashEnv } from "../../../core/config/hash.config";
 import { MongoServerError, WithId } from "mongodb";
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
@@ -42,11 +42,16 @@ export const usersService = {
   async createUser(
     bodyUser: UserModel & { password: string },
     options: { isConfirmed: boolean },
-  ): Promise<Result<string>> {
-    const passwordHash = await hashAdapter.hash(bodyUser.password, { secret: config.secretPepper });
+  ): Promise<Result<{ userId: string; emailConfirmationCode: string | null }>> {
+    const passwordHash = await hashAdapter.hash(bodyUser.password, {
+      secret: hashEnv.PEPPER,
+    });
     try {
+      const emailConfirmationFields = userEmailConfirmationToDBMapper({
+        isConfirmed: options.isConfirmed,
+      });
       const userId = await usersRepository.createUser({
-        ...userEmailConfirmationToDBMapper({ isConfirmed: options.isConfirmed }),
+        ...emailConfirmationFields,
         login: bodyUser.login,
         email: bodyUser.email,
         createdAt: new Date(),
@@ -54,7 +59,7 @@ export const usersService = {
       });
       return okResult({
         status: ResultSuccessStatus.Created,
-        data: userId,
+        data: { userId, emailConfirmationCode: emailConfirmationFields.emailConfirmationCode },
       });
     } catch (e) {
       if (e instanceof MongoServerError && e.code === 11000) {

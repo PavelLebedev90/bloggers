@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const DEFAULT_JWE_USSUER = "myapp";
+
 const secret32 = z
   .string()
   .regex(/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/, "секрет: ожидается 32 байта в base64url")
@@ -36,6 +38,6 @@ const jweKeys = z
 export const jweEnv = z
   .object({
     JWE_KEYS: jweKeys,
-    JWE_ISSUER: z.string().default("myapp"),
+    JWE_ISSUER: z.string().default(DEFAULT_JWE_USSUER),
   })
   .parse(process.env);

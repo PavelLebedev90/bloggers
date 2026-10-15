@@ -1,4 +1,4 @@
-import { config } from "../../../core/config/setup.config";
+import { hashEnv } from "../../../core/config/hash.config";
 import { AuthInputModel } from "../types/auth-input.type";
 import { JWTAdapter } from "../../../core/adapters/jwt.adapter";
 
@@ -15,6 +15,8 @@ import { hashAdapter } from "../../../core/adapters/hash.adapter";
 import { UserInputModel } from "../../users/types/users-input.type";
 import { userEmailConfirmationToDBMapper } from "../../users/mappers/user-email-confirmation.mapper";
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
+import { smtpAdapter } from "../../../core/adapters/smtp.adapter";
+import { emailTemplates } from "../../../core/mailer/email-templates";
 
 export const authService = {
   async login(
@@ -28,7 +30,7 @@ export const authService = {
           result.data.passwordHash,
           bodyAuth.password,
           {
-            secret: config.secretPepper,
+            secret: hashEnv.PEPPER,
           },
         );
         if (!passwordVerify) {
@@ -66,15 +68,29 @@ export const authService = {
       return result;
     }
   },
-  async createUser(bodyUser: UserInputModel): Promise<Result<string>> {
-    const user = await usersService.createUser(bodyUser, { isConfirmed: false });
-    if (isSuccess(user)) {
-      try {
-        // const smtp = true;
-      } catch (__e) {}
-      return user;
+  async createUser(
+    bodyUser: UserInputModel,
+  ): Promise<Result<{ userId: string; emailConfirmationCode: string | null }>> {
+    const result = await usersService.createUser(bodyUser, { isConfirmed: false });
+    const emailConfirmationCode = result.data?.emailConfirmationCode;
+    if (isSuccess(result) && emailConfirmationCode) {
+      smtpAdapter
+        .sendMail({
+          to: bodyUser.email,
+          ...emailTemplates.registrationConfirmation({
+            login: bodyUser.login,
+            code: emailConfirmationCode,
+          }),
+        })
+        .catch((error: unknown) =>
+          console.error("Failed to send registration confirmation email", {
+            userId: result.data.userId,
+            email: bodyUser.email,
+            error,
+          }),
+        );
     }
-    return user;
+    return result;
   },
   async registrationConfirmAuth(emailConfirmationCode: string): Promise<Result<true>> {
     const user = await usersService.getUserByEmailConfirmationCode(emailConfirmationCode);
@@ -114,16 +130,31 @@ export const authService = {
         extensions: [ERROR_MESSAGES.Forbidden("emailConfirmationIsConfirmed")],
       });
     }
-    const isUpdatedUser = await usersService.updateUser(user.data._id.toString(), {
-      ...userEmailConfirmationToDBMapper({ isConfirmed: false }),
+    const emailConfirmationFields = userEmailConfirmationToDBMapper({ isConfirmed: false });
+    const result = await usersService.updateUser(user.data._id.toString(), {
+      ...emailConfirmationFields,
       login: user.data.login,
       email: user.data.email,
     });
 
-    try {
-      // const smtp = true;
-    } catch (__e) {}
+    if (isSuccess(result) && emailConfirmationFields.emailConfirmationCode) {
+      smtpAdapter
+        .sendMail({
+          to: user.data.email,
+          ...emailTemplates.registrationConfirmation({
+            login: user.data.login,
+            code: emailConfirmationFields.emailConfirmationCode,
+          }),
+        })
+        .catch((error: unknown) =>
+          console.error("Failed to send registration confirmation email (resend)", {
+            userId: user.data._id.toString(),
+            email: user.data.email,
+            error,
+          }),
+        );
+    }
 
-    return isUpdatedUser;
+    return result;
   },
 };

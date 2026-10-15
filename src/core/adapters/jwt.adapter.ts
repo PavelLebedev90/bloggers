@@ -1,5 +1,5 @@
 import { jwtVerify, SignJWT } from "jose";
-import { config } from "../config/setup.config";
+import { jwtEnv } from "../config/jwt.config";
 
 export type JWTPayload = {
   isEmailConfirmed: boolean;
@@ -19,11 +19,11 @@ export const JWTAdapter = {
       .setExpirationTime("1d")
       //Без аргумента — текущее время создания токена
       .setIssuedAt()
-      .sign(config.secretJWT);
+      .sign(jwtEnv.JWT_SECRET);
     return token;
   },
   async getPayloadByToken(token: string): Promise<JWTPayload> {
-    const { payload } = await jwtVerify<JWTPayload>(token, config.secretJWT, {
+    const { payload } = await jwtVerify<JWTPayload>(token, jwtEnv.JWT_SECRET, {
       algorithms: ["HS256"],
       typ: "JWT",
     });

@@ -34,7 +34,7 @@ export const createUserHandler = async (
       errors: resultWithUserId.extensions,
     });
   }
-  const result = await usersQueryRepository.getUser(resultWithUserId.data);
+  const result = await usersQueryRepository.getUser(resultWithUserId.data.userId);
   if (isError(result)) return sendResult(res, result);
   sendResult(res, { ...result, status: resultWithUserId.status }, userToOutputMapper);
 };
