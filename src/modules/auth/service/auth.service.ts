@@ -1,11 +1,7 @@
 import { config } from "../../../core/config/setup.config";
 import { AuthInputModel } from "../types/auth-input.type";
 import { JWTAdapter } from "../../../core/adapters/jwt.adapter";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
+
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 import {
   failResult,
@@ -18,6 +14,7 @@ import { usersService } from "../../users/service/users.service";
 import { hashAdapter } from "../../../core/adapters/hash.adapter";
 import { UserInputModel } from "../../users/types/users-input.type";
 import { userEmailConfirmationToDBMapper } from "../../users/mappers/user-email-confirmation.mapper";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 
 export const authService = {
   async login(

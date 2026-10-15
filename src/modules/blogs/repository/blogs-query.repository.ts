@@ -4,11 +4,7 @@ import { Filter, ObjectId, WithId } from "mongodb";
 import { BlogQueryInputModel } from "../types/blogs-query-input.type";
 import { PostQueryInputModel } from "../../posts/types/posts-query-input.type";
 import { postsQueryRepository } from "../../posts/repository/posts-query.repository";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 import { PostDBModel } from "../../posts/types/posts-db.type";
 import {

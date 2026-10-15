@@ -1,12 +1,10 @@
 import { Response, Request } from "express";
-import {
-  ResultSuccessStatus,
-  ValidationErrorMessages,
-} from "../../../core/types/validation-error.type";
+import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { PostInputModel } from "../types/posts-input.type";
 import { PostOutputModel } from "../types/posts-output.type";
 import { postsService } from "../service/posts.service";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { ResultSuccessStatus } from "../../../core/types/result.type";
 
 export const updatePostHandler = async (
   _req: Request,

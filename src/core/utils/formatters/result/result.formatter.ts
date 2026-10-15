@@ -4,9 +4,8 @@ import {
   ResultErrorStatus,
   ResultSuccessStatus,
   SuccessResult,
-  ValidationError,
-  ValidationErrorMessages,
-} from "../../../types/validation-error.type";
+} from "../../../types/result.type";
+import { ValidationError, ValidationErrorMessages } from "../../../types/validation-error.type";
 
 export const okResult = <T>({
   data,

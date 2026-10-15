@@ -2,11 +2,7 @@ import { usersRepository } from "../repository/users.repository";
 import { UserDBModel, UserModel } from "../types/users-db.type";
 import { config } from "../../../core/config/setup.config";
 import { MongoServerError, WithId } from "mongodb";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 import { hashAdapter } from "../../../core/adapters/hash.adapter";

@@ -2,11 +2,7 @@ import { usersCollection } from "../../../db/collections";
 import { Filter, ObjectId, WithId } from "mongodb";
 import { UserDBModel } from "../types/users-db.type";
 import { UserQueryInputModel } from "../types/users-query-input.type";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 

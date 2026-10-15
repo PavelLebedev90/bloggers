@@ -1,12 +1,10 @@
 import { Response, Request } from "express";
-import {
-  ResultSuccessStatus,
-  ValidationErrorMessages,
-} from "../../../core/types/validation-error.type";
+import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 import { UserInputModel } from "../../users/types/users-input.type";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { authService } from "../service/auth.service";
+import { ResultSuccessStatus } from "../../../core/types/result.type";
 
 export const registrationAuthHandler = async (
   _req: Request,

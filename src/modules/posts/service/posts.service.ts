@@ -7,11 +7,7 @@ import {
   isError,
   okResult,
 } from "../../../core/utils/formatters/result/result.formatter";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 
 export const postsService = {

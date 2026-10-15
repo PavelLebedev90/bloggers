@@ -3,13 +3,9 @@ import { blogsRepository } from "../repository/blogs.repository";
 import { postsService } from "../../posts/service/posts.service";
 import { PostInputModel } from "../../posts/types/posts-input.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
-import {
-  Result,
-  ResultErrorStatus,
-  ResultSuccessStatus,
-} from "../../../core/types/validation-error.type";
 import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
 import { WithId } from "mongodb";
+import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 
 export const blogsService = {
   async getBlog(blogId: string): Promise<Result<WithId<BlogDBModel>>> {
