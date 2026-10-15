@@ -5,8 +5,9 @@ Backend-сервис для управления блогами и постам�
 ## Стек
 
 - Node.js, Express 5
-- MongoDB (драйвер `mongodb@6`)
+- MongoDB (драйвер `mongodb@7`), `mongodb-memory-server` для тестов
 - TypeScript, Zod (валидация)
+- JWT и JWE (`jose`) — аутентификация, `argon2` — хеширование паролей
 - Jest + Supertest (e2e-тесты)
 - Swagger (OpenAPI-документация)
 
@@ -35,9 +36,12 @@ cp .env.example .env
 | Переменная                               | Назначение                                                                                                                       |
 | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | `BASE_PATH`                              | Префикс всех маршрутов API (например, `/api`)                                                                                    |
-| `AUTH_LOGIN` / `AUTH_PASSWORD`           | Basic Auth для операций записи (create/update/delete)                                                                            |
+| `AUTH_LOGIN` / `AUTH_PASSWORD`           | Basic Auth для операций записи (create/update/delete) над блогами, постами и пользователями                                      |
 | `MONGO_PATH` / `MONGO_DB_NAME`           | Подключение к локальной базе для разработки                                                                                      |
 | `MONGO_PATH_PROD` / `MONGO_DB_NAME_PROD` | Продакшн-подключение (MongoDB Atlas). На проде (Vercel) задаётся через Environment Variables в панели проекта, а не через `.env` |
+| `PEPPER`                                 | Секрет для хеширования паролей (argon2), 64 hex-символа (32 байта)                                                               |
+| `JWT_SECRET`                             | Секрет для подписи JWT access-токена, base64url-строка (32 байта)                                                                |
+| `JWE_KEYS`                               | Набор ключей для шифрования JWE-сессии вида `YYYY-MM:key,...` (поддержка ротации ключей по месяцам)                              |
 
 ### 3. Запустить в режиме разработки
 
@@ -53,19 +57,36 @@ Swagger UI доступен по адресу `{BASE_PATH}` (по умолчан
 
 ### Основные маршруты
 
-| Метод  | Путь                    | Auth  | Описание                              |
-| ------ | ----------------------- | ----- | ------------------------------------- |
-| GET    | `/api/blogs`            | —     | Список блогов                         |
-| GET    | `/api/blogs/:id`        | —     | Блог по id                            |
-| POST   | `/api/blogs`            | Basic | Создать блог                          |
-| PUT    | `/api/blogs/:id`        | Basic | Обновить блог                         |
-| DELETE | `/api/blogs/:id`        | Basic | Удалить блог                          |
-| GET    | `/api/posts`            | —     | Список постов                         |
-| GET    | `/api/posts/:id`        | —     | Пост по id                            |
-| POST   | `/api/posts`            | Basic | Создать пост                          |
-| PUT    | `/api/posts/:id`        | Basic | Обновить пост                         |
-| DELETE | `/api/posts/:id`        | Basic | Удалить пост                          |
-| DELETE | `/api/testing/all-data` | —     | Очистить всю базу (только для тестов) |
+| Метод  | Путь                                     | Auth   | Описание                                            |
+| ------ | ---------------------------------------- | ------ | --------------------------------------------------- |
+| GET    | `/api/blogs`                             | —      | Список блогов                                       |
+| GET    | `/api/blogs/:id`                         | —      | Блог по id                                          |
+| GET    | `/api/blogs/:blogId/posts`               | —      | Список постов блога                                 |
+| POST   | `/api/blogs/:blogId/posts`               | Basic  | Создать пост в блоге                                |
+| POST   | `/api/blogs`                             | Basic  | Создать блог                                        |
+| PUT    | `/api/blogs/:id`                         | Basic  | Обновить блог                                       |
+| DELETE | `/api/blogs/:id`                         | Basic  | Удалить блог                                        |
+| GET    | `/api/posts`                             | —      | Список постов                                       |
+| GET    | `/api/posts/:id`                         | —      | Пост по id                                          |
+| GET    | `/api/posts/:postId/comments`            | —      | Список комментариев к посту                         |
+| POST   | `/api/posts/:postId/comments`            | Bearer | Добавить комментарий к посту                        |
+| POST   | `/api/posts`                             | Basic  | Создать пост                                        |
+| PUT    | `/api/posts/:id`                         | Basic  | Обновить пост                                       |
+| DELETE | `/api/posts/:id`                         | Basic  | Удалить пост                                        |
+| GET    | `/api/comments/:id`                      | —      | Комментарий по id                                   |
+| PUT    | `/api/comments/:id`                      | Bearer | Обновить свой комментарий                           |
+| DELETE | `/api/comments/:id`                      | Bearer | Удалить свой комментарий                            |
+| GET    | `/api/users`                             | Basic  | Список пользователей (пагинация, поиск, сортировка) |
+| POST   | `/api/users`                             | Basic  | Создать пользователя                                |
+| DELETE | `/api/users/:id`                         | Basic  | Удалить пользователя                                |
+| GET    | `/api/auth/me`                           | Bearer | Текущий пользователь (JWT)                          |
+| GET    | `/api/auth/me/jwe`                       | Bearer | Текущий пользователь (JWE-сессия)                   |
+| POST   | `/api/auth/login`                        | —      | Логин по login/email и паролю, выдаёт JWT           |
+| POST   | `/api/auth/login/jwe`                    | —      | Логин по login/email и паролю, выдаёт JWE-токен     |
+| POST   | `/api/auth/registration`                 | —      | Регистрация нового пользователя                     |
+| POST   | `/api/auth/registration-confirmation`    | —      | Подтверждение регистрации по коду из письма         |
+| POST   | `/api/auth/registration-email-resending` | —      | Повторная отправка письма с кодом подтверждения     |
+| DELETE | `/api/testing/all-data`                  | —      | Очистить всю базу (только для тестов)               |
 
 ## Тесты
 
