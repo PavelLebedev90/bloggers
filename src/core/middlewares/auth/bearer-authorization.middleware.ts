@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { JWTAdapter } from "../../adapters/jwt.adapter";
 import { failUnauthorized, sendError } from "../../utils/formatters/result/send-result.formatter";
 import { HttpStatus } from "../../types/http-statuses.type";
-import { ERROR_MESSAGES } from "../../consts/error.messages.const";
+import { ERROR_MESSAGES } from "../../consts/message/error.message.const";
 
 export const bearerAuthorizationMiddleWare = async (
   req: Request,

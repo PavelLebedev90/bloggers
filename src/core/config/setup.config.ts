@@ -1,5 +1,6 @@
 import { base64url } from "jose";
 import { z } from "zod";
+import { JWTRegex, pepperRegex } from "../consts/regex/regex.const";
 
 const envSchema = z
   .object({
@@ -12,8 +13,8 @@ const envSchema = z
     MONGO_PATH_PROD: z.string().min(1).optional(),
     MONGO_DB_NAME: z.string().min(1).optional(),
     MONGO_DB_NAME_PROD: z.string().min(1).optional(),
-    PEPPER: z.string().regex(RegExp(/^[0-9a-fA-F]{64}$/)),
-    JWT_SECRET: z.string().regex(RegExp(/^[A-Za-z0-9_-]{42}[AEIMQUYcgkosw048]$/)),
+    PEPPER: z.string().regex(pepperRegex),
+    JWT_SECRET: z.string().regex(JWTRegex),
   })
   .superRefine((env, ctx) => {
     const production = env.NODE_ENV === "production";

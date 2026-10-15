@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { objectIdRegex } from "../../../../core/utils/regex/object-id.regex";
+import { objectIdRegex } from "../../../../core/consts/regex/regex.const";
 import { SortDirection } from "../../../../core/types/query.type";
 import { UserSortBy } from "../../types/users-query-input.type";
 import { loginScheme } from "../../../../core/utils/schemes/login-scheme";

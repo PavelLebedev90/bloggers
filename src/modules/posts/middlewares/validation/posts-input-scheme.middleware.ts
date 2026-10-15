@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { objectIdRegex } from "../../../../core/utils/regex/object-id.regex";
+import { objectIdRegex } from "../../../../core/consts/regex/regex.const";
 import { SortDirection } from "../../../../core/types/query.type";
 import { PostSortBy } from "../../types/posts-query-input.type";
 

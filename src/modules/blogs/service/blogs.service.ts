@@ -3,7 +3,7 @@ import { blogsRepository } from "../repository/blogs.repository";
 import { postsService } from "../../posts/service/posts.service";
 import { PostInputModel } from "../../posts/types/posts-input.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
-import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { WithId } from "mongodb";
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 

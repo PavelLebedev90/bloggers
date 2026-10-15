@@ -5,7 +5,7 @@ import { BlogQueryInputModel } from "../types/blogs-query-input.type";
 import { PostQueryInputModel } from "../../posts/types/posts-query-input.type";
 import { postsQueryRepository } from "../../posts/repository/posts-query.repository";
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
-import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { PostDBModel } from "../../posts/types/posts-db.type";
 import {
   failResult,

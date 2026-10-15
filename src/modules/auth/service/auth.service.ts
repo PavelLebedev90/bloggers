@@ -2,7 +2,7 @@ import { config } from "../../../core/config/setup.config";
 import { AuthInputModel } from "../types/auth-input.type";
 import { JWTAdapter } from "../../../core/adapters/jwt.adapter";
 
-import { ERROR_MESSAGES } from "../../../core/consts/error.messages.const";
+import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import {
   failResult,
   isError,
