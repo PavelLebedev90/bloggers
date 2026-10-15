@@ -96,8 +96,14 @@ export const authService = {
     const user = await usersService.getUserByEmailConfirmationCode(emailConfirmationCode);
     if (isError(user)) {
       return failResult({
-        status: ResultErrorStatus.NotFound,
-        extensions: [ERROR_MESSAGES.NotFound("emailConfirmationCode", emailConfirmationCode)],
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.BadRequest("code", emailConfirmationCode)],
+      });
+    }
+    if (user.data.emailConfirmationIsConfirmed) {
+      return failResult({
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.NotFound("code", emailConfirmationCode)],
       });
     }
     const isUpdatedUser = await usersService.updateUser(user.data._id.toString(), {
@@ -108,26 +114,18 @@ export const authService = {
     return isUpdatedUser;
   },
   async registrationEmailResendingAuth(email: string): Promise<Result<true>> {
-    const user = await usersService.getUserByLoginOrEmail({ email, login: "" });
+    const user = await usersService.getUserByLoginOrEmail({ email, login: "null" });
     if (isError(user)) {
       return failResult({
-        status: ResultErrorStatus.NotFound,
-        extensions: [ERROR_MESSAGES.NotFound("email", email)],
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.BadRequest("email", email)],
       });
     }
-    if (
-      user.data.emailConfirmationExpirationDate &&
-      user.data.emailConfirmationExpirationDate > new Date()
-    ) {
-      return failResult({
-        status: ResultErrorStatus.Forbidden,
-        extensions: [ERROR_MESSAGES.Forbidden("emailConfirmationExpirationDate")],
-      });
-    }
+
     if (user.data.emailConfirmationIsConfirmed) {
       return failResult({
-        status: ResultErrorStatus.Forbidden,
-        extensions: [ERROR_MESSAGES.Forbidden("emailConfirmationIsConfirmed")],
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.BadRequest("email")],
       });
     }
     const emailConfirmationFields = userEmailConfirmationToDBMapper({ isConfirmed: false });

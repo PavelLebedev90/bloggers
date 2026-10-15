@@ -31,7 +31,7 @@ export const usersService = {
     if (!user) {
       return failResult({
         status: ResultErrorStatus.BadRequest,
-        extensions: [ERROR_MESSAGES.BadRequest("emailConfirmationCode", emailConfirmationCode)],
+        extensions: [ERROR_MESSAGES.BadRequest("code", emailConfirmationCode)],
       });
     }
     return okResult({
@@ -66,13 +66,13 @@ export const usersService = {
         const keyPattern = e.keyPattern as Record<string, string>;
         if (keyPattern?.email as string)
           return failResult({
-            status: ResultErrorStatus.Conflict,
-            extensions: [ERROR_MESSAGES.Conflict("email", bodyUser.email)],
+            status: ResultErrorStatus.BadRequest,
+            extensions: [ERROR_MESSAGES.BadRequest("email", bodyUser.email)],
           });
         if (keyPattern?.login as string)
           return failResult({
-            status: ResultErrorStatus.Conflict,
-            extensions: [ERROR_MESSAGES.Conflict("login", bodyUser.login)],
+            status: ResultErrorStatus.BadRequest,
+            extensions: [ERROR_MESSAGES.BadRequest("login", bodyUser.login)],
           });
       }
       throw e;
