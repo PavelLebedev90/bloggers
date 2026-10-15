@@ -10,6 +10,7 @@
     "predev": "pnpm db:up",
     "dev": "cross-env NODE_ENV=development nodemon",
     "dev:prod": "cross-env NODE_ENV=production nodemon",
+    "dev:tunnel": "docker run --rm cloudflare/cloudflared:latest tunnel --no-autoupdate --url http://host.docker.internal:3000",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "test": "cross-env NODE_ENV=test jest",
     "typecheck": "tsc --noEmit",
