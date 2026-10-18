@@ -23,10 +23,10 @@ export async function bearerJWEAuthorizationMiddleWare(
   }
 
   try {
-    const { payload, kidStatus } = await JWEAdapter.decryptSession(token);
+    const { payload, kidStatus } = await JWEAdapter.decryptSession(token, "access_token");
 
     if (kidStatus === "deprecated") {
-      const freshToken = await JWEAdapter.reencrypt(payload);
+      const freshToken = await JWEAdapter.reencrypt(payload, "access_token");
       res.setHeader("X-Access-Token", freshToken);
     }
     res.locals.user = payload.user as WithId<UserDBModel>;

@@ -7,17 +7,21 @@ import { UserDBModel } from "../modules/users/types/users-db.type";
 import { USERS_ROUTER } from "../modules/users/const/users-router-path.const";
 import { CommentDBModel } from "../modules/comments/types/comments-db.type";
 import { COMMENTS_ROUTER } from "../modules/comments/const/comments-router-path.const";
+import { TokenBlackList } from "../modules/tokenBlackList/types/tokenBlackList-db";
+import { TOKEN_BLACK_LIST_ROUTER } from "../modules/tokenBlackList/const/tokenBlackList-router-path.const";
 
 export let postsCollection: Collection<PostDBModel>;
 export let blogsCollection: Collection<BlogDBModel>;
 export let usersCollection: Collection<UserDBModel>;
 export let commentsCollection: Collection<CommentDBModel>;
+export let tokenBlackListCollection: Collection<TokenBlackList>;
 
 export function initCollections(db: Db): void {
   postsCollection = db.collection<PostDBModel>(POSTS_ROUTER.ROOT);
   blogsCollection = db.collection<BlogDBModel>(BLOGS_ROUTER.ROOT);
   usersCollection = db.collection<UserDBModel>(USERS_ROUTER.ROOT);
   commentsCollection = db.collection<CommentDBModel>(COMMENTS_ROUTER.ROOT);
+  tokenBlackListCollection = db.collection<TokenBlackList>(TOKEN_BLACK_LIST_ROUTER.ROOT);
 }
 
 export async function ensureIndexes(): Promise<void> {
@@ -26,4 +30,5 @@ export async function ensureIndexes(): Promise<void> {
     { key: { email: 1 }, name: "email_unique", unique: true },
     { key: { login: 1 }, name: "login_unique", unique: true },
   ]);
+  await tokenBlackListCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }

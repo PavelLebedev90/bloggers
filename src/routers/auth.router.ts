@@ -25,11 +25,16 @@ import { userCreateScheme } from "../modules/users/middlewares/validation/users-
 import { registrationAuthHandler } from "../modules/auth/handlers/registration-auth.handler";
 import { registrationConfirmAuthHandler } from "../modules/auth/handlers/registration-confirm-auth.handler";
 import { registrationEmailResendingAuthHandler } from "../modules/auth/handlers/registration-email-resending-auth.handler";
+import { logoutHandler } from "../modules/auth/handlers/logout-auth.handler";
+import { refreshTokenHandler } from "../modules/auth/handlers/refresh-token-auth.handler";
+import { cookieRefreshTokenMiddleWare } from "../core/middlewares/auth/cookie-refresh-token.middleware";
 
 export const authRouter: Router = Router();
 
 authRouter.get(AUTH_ROUTER.ME, bearerAuthorizationMiddleWare, getMeHandler);
 authRouter.post(AUTH_ROUTER.LOGIN, captureErrorValidation(authScheme), loginHandler);
+authRouter.post(AUTH_ROUTER.LOGOUT, cookieRefreshTokenMiddleWare, logoutHandler);
+authRouter.post(AUTH_ROUTER.REFRESH_TOKEN, cookieRefreshTokenMiddleWare, refreshTokenHandler);
 authRouter.post(
   AUTH_ROUTER.REGISTRATION,
   captureErrorValidation(userCreateScheme),

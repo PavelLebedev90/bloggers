@@ -4,14 +4,14 @@ import { usersQueryRepository } from "../../users/repository/users-query.reposit
 import { AuthOutputModel } from "../types/auth-output.type";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 import { authToOutputMapper } from "../mappers/auth-to-output.mapper";
-import { JWTPayload } from "../../../core/adapters/jwt.adapter";
+import { JWTUserInfo } from "../../../core/adapters/jwt.adapter";
 
 export const getMeHandler = async (
   _req: Request,
   res: Response<
     AuthOutputModel | ValidationErrorMessages,
     {
-      user: JWTPayload;
+      user: JWTUserInfo;
     }
   >,
 ) => {

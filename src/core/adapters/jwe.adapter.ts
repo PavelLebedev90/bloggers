@@ -14,21 +14,27 @@ export class JweKidError extends Error {
     super(`JWE kid: ${reason}`);
   }
 }
-
+type Typ = "access_token" | "refresh_token";
 /** Создать токен текущим ключом */
 export const JWEAdapter = {
-  async encryptSession(claims: JWTPayload & { sub: string }, expiresIn = "15m") {
-    return new EncryptJWT(claims)
-      .setProtectedHeader({ alg: ALG, enc: ENC, kid: currentKid })
+  async encryptSession(claims: JWTPayload & { sub: string }, typ: Typ) {
+    const ttlTime = typ === "access_token" ? jweEnv.ACCESS_TTL_SEC : jweEnv.REFRESH_TTL_SEC;
+    const exp = new Date(Date.now() + ttlTime * 1000);
+    const token = await new EncryptJWT(claims)
+      .setProtectedHeader({ alg: ALG, enc: ENC, kid: currentKid, typ })
       .setIssuer(ISSUER)
       .setAudience(ISSUER)
       .setIssuedAt()
       .setJti(randomUUID())
-      .setExpirationTime(expiresIn)
+      .setExpirationTime(exp)
       .encrypt(keys.get(currentKid)!);
+    return {
+      token,
+      exp,
+    };
   },
   /** Проверить kid, расшифровать, проверить claims */
-  async decryptSession(token: string) {
+  async decryptSession(token: string, typ: Typ) {
     // 1. Прочитать заголовок без ключа
     let header;
     try {
@@ -47,19 +53,20 @@ export const JWEAdapter = {
     const { payload } = await jwtDecrypt(token, key, {
       keyManagementAlgorithms: [ALG],
       contentEncryptionAlgorithms: [ENC],
+      typ,
       issuer: ISSUER,
       audience: ISSUER,
       requiredClaims: ["sub", "jti", "exp"],
-      clockTolerance: 5,
+      // clockTolerance: 5,
     });
 
     const kidStatus: KidStatus = header.kid === currentKid ? "current" : "deprecated";
     return { payload, kid: header.kid, kidStatus };
   },
   /** Перешифровать текущим ключом, не меняя claims (exp остаётся прежним) */
-  async reencrypt(payload: JWTPayload) {
+  async reencrypt(payload: JWTPayload, typ: Typ) {
     return new EncryptJWT(payload)
-      .setProtectedHeader({ alg: ALG, enc: ENC, kid: currentKid })
+      .setProtectedHeader({ alg: ALG, enc: ENC, kid: currentKid, typ })
       .encrypt(keys.get(currentKid)!);
   },
 };
