@@ -1,9 +1,9 @@
 import { z } from "zod";
+import { isProduction, isTest } from "./node.config";
 
 const envSchema = z
   .object({
     PORT: z.coerce.number().default(3000),
-    NODE_ENV: z.string().optional(),
     BASE_PATH: z.string().min(1),
     AUTH_LOGIN: z.string().min(1),
     AUTH_PASSWORD: z.string().min(1),
@@ -13,12 +13,10 @@ const envSchema = z
     MONGO_DB_NAME_PROD: z.string().min(1).optional(),
   })
   .superRefine((env, ctx) => {
-    const production = env.NODE_ENV === "production";
-    const test = env.NODE_ENV === "test";
-    if (test) {
+    if (isTest) {
       return;
     }
-    const requiredKeys = production
+    const requiredKeys = isProduction
       ? (["MONGO_PATH_PROD", "MONGO_DB_NAME_PROD"] as const)
       : (["MONGO_PATH", "MONGO_DB_NAME"] as const);
     for (const key of requiredKeys) {
@@ -29,8 +27,6 @@ const envSchema = z
   });
 
 const env = envSchema.parse(process.env);
-
-export const isProduction = env.NODE_ENV === "production";
 
 export const config = {
   port: env.PORT,

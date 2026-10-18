@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isTest } from "./node.config";
 
 const DEFAULT_SMTP_HOST = "smtp.gmail.com";
 const DEFAULT_SMTP_PORT = 465;
@@ -13,8 +14,8 @@ export const smtpEnv = z
       .string()
       .default(DEFAULT_SMTP_SECURE)
       .transform((s) => s === "true"),
-    SMTP_USER: z.string().min(1),
-    SMTP_PASS: z.string().min(1),
+    SMTP_USER: isTest ? z.string().optional() : z.string().min(1),
+    SMTP_PASS: isTest ? z.string().optional() : z.string().min(1),
     SMTP_FROM: z.string().min(1).optional(),
     SMTP_CONFIRMATION_URL: z.url().default(DEFAULT_SMTP_CONFIRMATION_URL),
   })
