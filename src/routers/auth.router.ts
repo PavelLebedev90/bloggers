@@ -14,10 +14,7 @@ import { AuthInputModel } from "../modules/auth/types/auth-input.type";
 import { ValidationErrorMessages } from "../core/types/validation-error.type";
 import { authService } from "../modules/auth/service/auth.service";
 import { sendResult } from "../core/utils/formatters/result/send-result.formatter";
-import {
-  authTokenToOutputMapper,
-  authToOutputMapper,
-} from "../modules/auth/mappers/auth-to-output.mapper";
+import { authTokenToOutputMapper } from "../modules/auth/mappers/auth-to-output.mapper";
 import { AuthOutputModel } from "../modules/auth/types/auth-output.type";
 import { usersQueryRepository } from "../modules/users/repository/users-query.repository";
 import { UserOutputModel } from "../modules/users/types/users-output.type";
@@ -64,7 +61,7 @@ authRouter.get(
     >,
   ) => {
     const user = await usersQueryRepository.getUser(res.locals.user.id);
-    sendResult(res, user, authToOutputMapper);
+    sendResult({ res, result: user });
   },
 );
 authRouter.post(
@@ -80,6 +77,6 @@ authRouter.post(
     >,
   ) => {
     const result = await authService.login(res.locals.body, "jwe");
-    sendResult(res, result, authTokenToOutputMapper);
+    sendResult({ res, result, mapper: authTokenToOutputMapper });
   },
 );

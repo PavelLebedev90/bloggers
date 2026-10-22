@@ -7,7 +7,6 @@ import { postsService } from "../service/posts.service";
 import { postsQueryRepository } from "../repository/posts-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
-import { postToOutputMapper } from "../mappers/post-to-output.mapper";
 
 export const createPostHandler = async (
   _req: Request,
@@ -27,6 +26,5 @@ export const createPostHandler = async (
     });
   }
   const result = await postsQueryRepository.getPost(resultWithPostId.data);
-  if (isError(result)) return sendResult(res, result);
-  sendResult(res, { ...result, status: resultWithPostId.status }, postToOutputMapper);
+  sendResult({ res, result, overwriteSuccessStatus: resultWithPostId.status });
 };

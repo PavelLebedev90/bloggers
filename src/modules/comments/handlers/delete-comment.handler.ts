@@ -3,7 +3,6 @@ import { commentsService } from "../service/comments.service";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 import { JWTUserInfo } from "../../../core/adapters/jwt.adapter";
-import { ResultSuccessStatus } from "../../../core/types/result.type";
 
 export const deleteCommentHandler = async (
   _req: Request,
@@ -16,5 +15,5 @@ export const deleteCommentHandler = async (
     res.locals.user.userId,
     res.locals.params.commentId,
   );
-  sendResult<ResultSuccessStatus.NoContent>(res, result);
+  sendResult({ res, result });
 };

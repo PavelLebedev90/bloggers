@@ -3,7 +3,6 @@ import { ValidationErrorMessages } from "../../../core/types/validation-error.ty
 import { BlogInputModel } from "../types/blogs-input.type";
 import { BlogOutputModel } from "../types/blogs-output.type";
 import { blogToDBMapper } from "../mappers/blog-to-db.mapper";
-import { blogToOutputMapper } from "../mappers/blog-to-output.mapper";
 import { blogsService } from "../service/blogs.service";
 import { blogsQueryRepository } from "../repository/blogs-query.repository";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
@@ -33,6 +32,9 @@ export const createBlogHandler = async (
     });
   }
   const result = await blogsQueryRepository.getBlog(resultWithBlogId.data);
-  if (isError(result)) return sendResult(res, result);
-  sendResult(res, { ...result, status: resultWithBlogId.status }, blogToOutputMapper);
+  sendResult({
+    res,
+    result,
+    overwriteSuccessStatus: resultWithBlogId.status,
+  });
 };

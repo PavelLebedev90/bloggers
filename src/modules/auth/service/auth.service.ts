@@ -22,6 +22,7 @@ import { tokenBlackListService } from "../../tokenBlackList/service/tokenBlackLi
 import { WithId } from "mongodb";
 import { UserDBModel } from "../../users/types/users-db.type";
 import { TokenBlackList } from "../../tokenBlackList/types/tokenBlackList-db";
+import { UserOutputModel } from "../../users/types/users-output.type";
 
 export const authService = {
   async login(bodyAuth: AuthInputModel, mode: "jwt" | "jwe" = "jwt"): Promise<Result<Tokens>> {
@@ -52,11 +53,7 @@ export const authService = {
       return result;
     }
   },
-  async logout(
-    refreshToken: string,
-    exp: number,
-    user: WithId<UserDBModel>,
-  ): Promise<Result<string>> {
+  async logout(refreshToken: string, exp: number, userId: string): Promise<Result<string>> {
     const resultIsBlack = await tokenBlackListService.getBlackTokenByTOken(refreshToken);
     if (!!resultIsBlack.data) {
       return failResult({
@@ -68,7 +65,7 @@ export const authService = {
       createdAt: new Date(),
       expiresAt: new Date(exp * 1000),
       token: refreshToken,
-      userId: user._id.toString(),
+      userId: userId,
     };
     const result = await tokenBlackListService.create(blackList);
     return result;
@@ -76,7 +73,7 @@ export const authService = {
   async refreshToken(
     refreshToken: string,
     exp: number,
-    user: WithId<UserDBModel>,
+    user: UserOutputModel,
     mode: "jwt" | "jwe" = "jwt",
   ): Promise<Result<Tokens>> {
     const resultIsBlack = await tokenBlackListService.getBlackTokenByTOken(refreshToken);
@@ -91,7 +88,7 @@ export const authService = {
       createdAt: new Date(),
       expiresAt: new Date(exp * 1000),
       token: refreshToken,
-      userId: user._id.toString(),
+      userId: user.id,
     };
     const result = await tokenBlackListService.create(blackList);
     if (isError(result)) {
@@ -100,7 +97,14 @@ export const authService = {
         extensions: [ERROR_MESSAGES.Unauthorized("token")],
       });
     }
-    return await this.composeTokens(user, mode);
+    const userFromDB = await usersService.getUserByLoginOrEmail(user.login);
+    if (isError(userFromDB)) {
+      return failResult({
+        status: ResultErrorStatus.Unauthorized,
+        extensions: [ERROR_MESSAGES.Unauthorized("token")],
+      });
+    }
+    return await this.composeTokens(userFromDB.data, mode);
   },
   async createUser(
     bodyUser: UserInputModel,

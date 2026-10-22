@@ -4,7 +4,6 @@ import { ValidationErrorMessages } from "../../../core/types/validation-error.ty
 import { PostInputModel } from "../../posts/types/posts-input.type";
 import { PostOutputModel } from "../../posts/types/posts-output.type";
 import { blogsService } from "../service/blogs.service";
-import { postToOutputMapper } from "../../posts/mappers/post-to-output.mapper";
 import { postsQueryRepository } from "../../posts/repository/posts-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
@@ -31,6 +30,5 @@ export const createPostByBlogIdHandler = async (
     });
   }
   const result = await postsQueryRepository.getPost(resultWithPostId.data);
-  if (isError(result)) return sendResult(res, result);
-  sendResult(res, { ...result, status: resultWithPostId.status }, postToOutputMapper);
+  sendResult({ res, result, overwriteSuccessStatus: resultWithPostId.status });
 };

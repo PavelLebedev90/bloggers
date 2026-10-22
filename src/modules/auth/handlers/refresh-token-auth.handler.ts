@@ -31,7 +31,8 @@ export const refreshTokenHandler = async (
     res.locals.cookie.exp,
     userResult.data,
   );
-  if (isError(result)) return sendResult(res, result);
+  if (isError(result))
+    return sendError({ res, httpStatus: HttpStatus[result.status], errors: result.extensions });
   setRefreshCookie(req, res, result.data.refreshToken.token, result.data.refreshToken.exp);
-  sendResult(res, result, authTokenToOutputMapper);
+  sendResult({ res, result, mapper: authTokenToOutputMapper });
 };

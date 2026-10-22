@@ -26,13 +26,10 @@ export const logoutHandler = async (
     return sendError({ res, httpStatus: HttpStatus.Unauthorized, errors: userResult.extensions });
   }
   const refreshToken = req.cookies[cookieEnv.REFRESH_NAME] as string;
-  const result = await authService.logout(refreshToken, res.locals.cookie.exp, userResult.data);
+  const result = await authService.logout(refreshToken, res.locals.cookie.exp, userResult.data.id);
   if (isError(result)) {
     return sendError({ res, httpStatus: HttpStatus.Unauthorized, errors: result.extensions });
   }
   clearRefreshCookie(req, res);
-  sendResult<ResultSuccessStatus.NoContent>(res, {
-    ...result,
-    status: ResultSuccessStatus.NoContent,
-  });
+  sendResult({ res, result, overwriteSuccessStatus: ResultSuccessStatus.NoContent });
 };

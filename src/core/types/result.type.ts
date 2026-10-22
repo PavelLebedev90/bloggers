@@ -1,5 +1,9 @@
 import { ValidationError } from "./validation-error.type";
 
+export enum TypeResult {
+  SUCCESS = "SUCCESS",
+  ERROR = "ERROR",
+}
 export enum ResultSuccessStatus {
   Ok = "Ok",
   Created = "Created",
@@ -16,14 +20,16 @@ export enum ResultErrorStatus {
 }
 
 export type ErrorResult = {
+  type: TypeResult.ERROR;
   status: ResultErrorStatus;
   data: null;
   errorMessage: string;
   extensions: ValidationError[];
 };
 export type SuccessResult<T> = {
+  type: TypeResult.SUCCESS;
   status: ResultSuccessStatus;
   data: T;
 };
 
-export type Result<T> = (T extends unknown ? SuccessResult<T> : never) | ErrorResult;
+export type Result<T> = SuccessResult<T> | ErrorResult;
