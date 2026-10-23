@@ -1,15 +1,17 @@
 import { postsCollection } from "../../../db/collections";
-import { Filter, ObjectId, WithId } from "mongodb";
+import { Filter, ObjectId } from "mongodb";
 import { PostDBModel } from "../types/posts-db.type";
 import { PostQueryInputModel } from "../types/posts-query-input.type";
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
+import { postsToOutputMapper, postToOutputMapper } from "../mappers/post-to-output.mapper";
+import { PostOutputModel } from "../types/posts-output.type";
 
 export const postsQueryRepository = {
   async getAll(
     query: PostQueryInputModel,
-  ): Promise<Result<{ items: WithId<PostDBModel>[]; totalCount: number }>> {
+  ): Promise<Result<{ items: PostOutputModel[]; totalCount: number }>> {
     const skip = (query.pageNumber - 1) * query.pageSize;
     const filter: Filter<PostDBModel> = {};
     if (query.blogId) {
@@ -25,9 +27,12 @@ export const postsQueryRepository = {
       postsCollection.countDocuments(filter),
     ]);
 
-    return okResult({ status: ResultSuccessStatus.Ok, data: { items, totalCount } });
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: { items: postsToOutputMapper(items), totalCount },
+    });
   },
-  async getPost(postId: string): Promise<Result<WithId<PostDBModel>>> {
+  async getPost(postId: string): Promise<Result<PostOutputModel>> {
     const post = await postsCollection.findOne({ _id: new ObjectId(postId) });
     if (!post) {
       return failResult({
@@ -37,7 +42,7 @@ export const postsQueryRepository = {
     }
     return okResult({
       status: ResultSuccessStatus.Ok,
-      data: post,
+      data: postToOutputMapper(post),
     });
   },
 };

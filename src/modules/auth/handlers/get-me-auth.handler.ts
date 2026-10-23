@@ -3,18 +3,18 @@ import { ValidationErrorMessages } from "../../../core/types/validation-error.ty
 import { usersQueryRepository } from "../../users/repository/users-query.repository";
 import { AuthOutputModel } from "../types/auth-output.type";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { JWTUserInfo } from "../../../core/adapters/jwt.adapter";
 import { authToOutputMapper } from "../mappers/auth-to-output.mapper";
-import { JWTPayload } from "../../../core/adapters/jwt.adapter";
 
 export const getMeHandler = async (
   _req: Request,
   res: Response<
     AuthOutputModel | ValidationErrorMessages,
     {
-      user: JWTPayload;
+      user: JWTUserInfo;
     }
   >,
 ) => {
   const user = await usersQueryRepository.getUser(res.locals.user.userId);
-  sendResult(res, user, authToOutputMapper);
+  sendResult({ res, result: user, mapper: authToOutputMapper });
 };

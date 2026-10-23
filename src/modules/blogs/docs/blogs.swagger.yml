@@ -1,21 +1,35 @@
-tags:
-  - name: Blogs
-    description: API for managing blogs
-
 paths:
   /api/blogs:
     get:
-      summary: Get a list of all blogs
+      summary: Get a paginated list of blogs
       tags: [Blogs]
+      security: []
+      parameters:
+        - in: query
+          name: sortBy
+          required: false
+          schema:
+            type: string
+            enum: [name, createdAt, websiteUrl, description]
+            default: createdAt
+        - $ref: "#/components/parameters/SortDirection"
+        - $ref: "#/components/parameters/PageNumber"
+        - $ref: "#/components/parameters/PageSize"
+        - in: query
+          name: searchNameTerm
+          required: false
+          description: Case-insensitive search by part of the blog name
+          schema:
+            type: string
       responses:
         200:
-          description: List of all blogs
+          description: Paginated list of blogs
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Blog"
+                $ref: "#/components/schemas/BlogsPaginated"
+        400:
+          $ref: "#/components/responses/BadRequest"
     post:
       summary: Create a new blog
       tags: [Blogs]
@@ -35,24 +49,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/Blog"
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
 
   /api/blogs/{id}:
     get:
-      summary: Get a blog by ID
+      summary: Get a blog by id
       tags: [Blogs]
+      security: []
       parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the blog
-          schema:
-            type: string
-            example: "1"
+        - $ref: "#/components/parameters/BlogId"
       responses:
         200:
           description: The requested blog
@@ -60,21 +67,17 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Blog"
+        400:
+          $ref: "#/components/responses/BadRequest"
         404:
-          description: Blog not found
+          $ref: "#/components/responses/NotFound"
     put:
-      summary: Update a blog
+      summary: Update an existing blog
       tags: [Blogs]
       security:
         - BasicAuth: []
       parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the blog
-          schema:
-            type: string
-            example: "1"
+        - $ref: "#/components/parameters/BlogId"
       requestBody:
         required: true
         content:
@@ -85,37 +88,109 @@ paths:
         204:
           description: Blog successfully updated
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
         404:
-          description: Blog not found
+          $ref: "#/components/responses/NotFound"
     delete:
       summary: Delete a blog
       tags: [Blogs]
       security:
         - BasicAuth: []
       parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the blog
-          schema:
-            type: string
-            example: "1"
+        - $ref: "#/components/parameters/BlogId"
       responses:
         204:
           description: Blog successfully deleted
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
         404:
-          description: Blog not found
+          $ref: "#/components/responses/NotFound"
+
+  /api/blogs/{blogId}/posts:
+    get:
+      summary: Get a paginated list of posts for a blog
+      tags: [Blogs]
+      security: []
+      parameters:
+        - in: path
+          name: blogId
+          required: true
+          description: The unique identifier of the blog (MongoDB ObjectId)
+          schema:
+            type: string
+            pattern: "^[0-9a-fA-F]{24}$"
+            example: "60a7e5f8b4c7e1234567890a"
+        - in: query
+          name: sortBy
+          required: false
+          schema:
+            type: string
+            enum: [title, createdAt, shortDescription, blogName, content]
+            default: createdAt
+        - $ref: "#/components/parameters/SortDirection"
+        - $ref: "#/components/parameters/PageNumber"
+        - $ref: "#/components/parameters/PageSize"
+      responses:
+        200:
+          description: Paginated list of posts for the blog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostsPaginated"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+    post:
+      summary: Create a new post for a blog
+      description: blogId is taken from the path, so it must not be sent in the body.
+      tags: [Blogs]
+      security:
+        - BasicAuth: []
+      parameters:
+        - in: path
+          name: blogId
+          required: true
+          description: The unique identifier of the blog (MongoDB ObjectId)
+          schema:
+            type: string
+            pattern: "^[0-9a-fA-F]{24}$"
+            example: "60a7e5f8b4c7e1234567890a"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInputWithoutBlogId"
+      responses:
+        201:
+          description: Post successfully created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Post"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
 
 components:
-  securitySchemes:
-    BasicAuth:
-      type: http
-      scheme: basic
+  parameters:
+    BlogId:
+      in: path
+      name: id
+      required: true
+      description: The unique identifier of the blog (MongoDB ObjectId)
+      schema:
+        type: string
+        pattern: "^[0-9a-fA-F]{24}$"
+        example: "60a7e5f8b4c7e1234567890a"
   schemas:
     Blog:
       type: object
@@ -124,10 +199,12 @@ components:
         - name
         - description
         - websiteUrl
+        - createdAt
+        - isMembership
       properties:
         id:
           type: string
-          example: "1"
+          example: "60a7e5f8b4c7e1234567890a"
         name:
           type: string
           minLength: 1
@@ -145,6 +222,13 @@ components:
           format: uri
           pattern: '^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$'
           example: "https://example.com"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00.000Z"
+        isMembership:
+          type: boolean
+          example: false
     BlogInput:
       type: object
       required:
@@ -169,19 +253,14 @@ components:
           format: uri
           pattern: '^https://([a-zA-Z0-9_-]+\.)+[a-zA-Z0-9_-]+(\/[a-zA-Z0-9_-]+)*\/?$'
           example: "https://example.com"
-    ValidationError:
-      type: object
-      properties:
-        field:
-          type: string
-          example: "clientName"
-        message:
-          type: string
-          example: "Client name is required"
-    ValidationErrorResponse:
-      type: object
-      properties:
-        errorMessages:
-          type: array
-          items:
-            $ref: "#/components/schemas/ValidationError"
+    BlogsPaginated:
+      allOf:
+        - $ref: "#/components/schemas/PaginationMeta"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Blog"

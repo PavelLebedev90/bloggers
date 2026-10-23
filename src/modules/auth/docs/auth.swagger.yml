@@ -1,8 +1,100 @@
-tags:
-  - name: Auth
-    description: API for authentication
-
 paths:
+  /api/auth/login:
+    post:
+      summary: Login with loginOrEmail and password
+      description: >
+        On success returns a JWT access token in the body and sets the refresh token
+        in an httpOnly cookie (`refreshToken`, Secure, SameSite=Strict).
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        200:
+          description: Login successful, returns the JWT access token
+          headers:
+            Set-Cookie:
+              description: httpOnly refresh token cookie
+              schema:
+                type: string
+                example: "refreshToken=eyJhbGciOi...; Path=/; HttpOnly; Secure; SameSite=Strict"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenOutput"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          description: Unauthorized - incorrect loginOrEmail or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/refresh-token:
+    post:
+      summary: Issue a new pair of tokens
+      description: >
+        Requires a valid `refreshToken` cookie. The presented refresh token is added to
+        the blacklist and a new access token plus a new refresh token cookie are issued.
+      tags: [Auth]
+      security:
+        - RefreshTokenCookie: []
+      responses:
+        200:
+          description: New access token issued, a new refresh token cookie is set
+          headers:
+            Set-Cookie:
+              description: New httpOnly refresh token cookie
+              schema:
+                type: string
+                example: "refreshToken=eyJhbGciOi...; Path=/; HttpOnly; Secure; SameSite=Strict"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenOutput"
+        401:
+          description: >
+            Unauthorized - the refresh token cookie is missing, expired, incorrect,
+            already blacklisted, or the user no longer exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /api/auth/logout:
+    post:
+      summary: Log out the current session
+      description: >
+        Requires a valid `refreshToken` cookie. The refresh token is added to the
+        blacklist and the cookie is cleared.
+      tags: [Auth]
+      security:
+        - RefreshTokenCookie: []
+      responses:
+        204:
+          description: Logged out, the refresh token cookie has been cleared
+          headers:
+            Set-Cookie:
+              description: Cleared refresh token cookie
+              schema:
+                type: string
+                example: "refreshToken=; Path=/; HttpOnly; Secure; SameSite=Strict; Max-Age=0"
+        401:
+          description: >
+            Unauthorized - the refresh token cookie is missing, expired, incorrect,
+            already blacklisted, or the user no longer exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
   /api/auth/me:
     get:
       summary: Get information about the current user
@@ -17,80 +109,29 @@ paths:
               schema:
                 $ref: "#/components/schemas/AuthOutput"
         401:
-          description: Unauthorized - access token is missing, expired or incorrect
-        404:
-          description: The user from the token no longer exists
-  /api/auth/me/jwe:
-    get:
-      summary: Get information about the current user (JWE session token)
-      tags: [Auth]
-      security:
-        - BearerAuth: []
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthOutput"
-        401:
-          description: Unauthorized - access token is missing, expired or incorrect
-        404:
-          description: The user from the token no longer exists
-  /api/auth/login:
-    post:
-      summary: Login with loginOrEmail and password
-      tags: [Auth]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AuthInput"
-      responses:
-        200:
-          description: Login successful, returns JWT access token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthTokenOutput"
-        400:
-          description: Validation error
+          description: Unauthorized - the access token is missing, expired or incorrect
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
-        401:
-          description: Unauthorized - incorrect loginOrEmail or password
-  /api/auth/login/jwe:
-    post:
-      summary: Login with loginOrEmail and password, returns a JWE session token
-      tags: [Auth]
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AuthInput"
-      responses:
-        200:
-          description: Login successful, returns JWE session token
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AuthTokenOutput"
-        400:
-          description: Validation error
+        403:
+          description: Forbidden - the user's email is not confirmed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
-        401:
-          description: Unauthorized - incorrect loginOrEmail or password
+        404:
+          description: The user from the token no longer exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
   /api/auth/registration:
     post:
       summary: Register a new user and send a confirmation email
       tags: [Auth]
+      security: []
       requestBody:
         required: true
         content:
@@ -99,17 +140,19 @@ paths:
               $ref: "#/components/schemas/UserInput"
       responses:
         204:
-          description: Input data is accepted, confirmation email has been sent
+          description: Input data is accepted, a confirmation email has been sent
         400:
-          description: Validation error, or login/email already exists
+          description: Validation error, or the login/email already exists
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
+
   /api/auth/registration-confirmation:
     post:
       summary: Confirm registration using the code sent by email
       tags: [Auth]
+      security: []
       requestBody:
         required: true
         content:
@@ -118,17 +161,23 @@ paths:
               $ref: "#/components/schemas/RegistrationConfirmationInput"
       responses:
         204:
-          description: Email was verified, account is activated
+          description: Email was verified, the account is activated
         400:
-          description: Validation error, or confirmation code is incorrect, already applied, or does not exist
+          description: >
+            Validation error, or the confirmation code is incorrect, does not exist,
+            or has already been applied
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          $ref: "#/components/responses/NotFound"
+
   /api/auth/registration-email-resending:
     post:
       summary: Resend the registration confirmation email
       tags: [Auth]
+      security: []
       requestBody:
         required: true
         content:
@@ -137,9 +186,77 @@ paths:
               $ref: "#/components/schemas/RegistrationEmailResendingInput"
       responses:
         204:
-          description: Input data is accepted, confirmation email has been re-sent
+          description: Input data is accepted, the confirmation email has been re-sent
         400:
-          description: Validation error, email does not exist, or email is already confirmed
+          description: >
+            Validation error, the email does not exist, or the email is already confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          $ref: "#/components/responses/NotFound"
+
+  /api/auth/login/jwe:
+    post:
+      summary: Login with loginOrEmail and password, returns a JWE session token
+      description: Experimental JWE-based alternative to POST /api/auth/login. No refresh cookie is set.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthInput"
+      responses:
+        200:
+          description: Login successful, returns the JWE session token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthTokenOutput"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          description: Unauthorized - incorrect loginOrEmail or password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        500:
+          $ref: "#/components/responses/InternalServerError"
+
+  /api/auth/me/jwe:
+    get:
+      summary: Get information about the current user (JWE session token)
+      description: >
+        Experimental JWE-based alternative to GET /api/auth/me. Returns the full user
+        model rather than the compact AuthOutput shape. If the encryption key used by
+        the token is deprecated, a refreshed token is returned in the `X-Access-Token` header.
+      tags: [Auth]
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Success
+          headers:
+            X-Access-Token:
+              description: A re-encrypted session token, present only when the token's key is deprecated
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        401:
+          description: Unauthorized - the session token is missing, expired or incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          description: The user from the token no longer exists
           content:
             application/json:
               schema:
@@ -147,10 +264,27 @@ paths:
 
 components:
   securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
+    RefreshTokenCookie:
+      type: apiKey
+      in: cookie
+      name: refreshToken
+      description: httpOnly refresh token cookie set by POST /api/auth/login
   schemas:
+    AuthInput:
+      type: object
+      required:
+        - loginOrEmail
+        - password
+      properties:
+        loginOrEmail:
+          type: string
+          description: The user's login (3-10 chars) or email. Is lower-cased and trimmed by the server.
+          example: "user1"
+        password:
+          type: string
+          minLength: 6
+          maxLength: 20
+          example: "qwerty1"
     AuthOutput:
       type: object
       required:
@@ -166,22 +300,8 @@ components:
           example: "user1"
         email:
           type: string
+          format: email
           example: "user1@example.com"
-    AuthInput:
-      type: object
-      required:
-        - loginOrEmail
-        - password
-      properties:
-        loginOrEmail:
-          type: string
-          description: User's login or email
-          example: "user1"
-        password:
-          type: string
-          minLength: 6
-          maxLength: 20
-          example: "qwerty1"
     AuthTokenOutput:
       type: object
       required:
@@ -208,20 +328,6 @@ components:
         email:
           type: string
           format: email
+          maxLength: 100
+          pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
           example: "user1@example.com"
-    ValidationError:
-      type: object
-      properties:
-        field:
-          type: string
-          example: "clientName"
-        message:
-          type: string
-          example: "Client name is required"
-    ValidationErrorResponse:
-      type: object
-      properties:
-        errorMessages:
-          type: array
-          items:
-            $ref: "#/components/schemas/ValidationError"

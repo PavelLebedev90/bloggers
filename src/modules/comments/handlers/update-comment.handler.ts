@@ -3,8 +3,7 @@ import { ValidationErrorMessages } from "../../../core/types/validation-error.ty
 import { CommentInputModel } from "../types/comments-input.type";
 import { commentsService } from "../service/comments.service";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
-import { JWTPayload } from "../../../core/adapters/jwt.adapter";
-import { ResultSuccessStatus } from "../../../core/types/result.type";
+import { JWTUserInfo } from "../../../core/adapters/jwt.adapter";
 
 export const updateCommentHandler = async (
   _req: Request,
@@ -13,7 +12,7 @@ export const updateCommentHandler = async (
     {
       params: { commentId: string };
       body: CommentInputModel;
-      user: JWTPayload;
+      user: JWTUserInfo;
     }
   >,
 ) => {
@@ -22,5 +21,5 @@ export const updateCommentHandler = async (
     res.locals.params.commentId,
     res.locals.body,
   );
-  sendResult<ResultSuccessStatus.NoContent>(res, result);
+  sendResult({ res, result });
 };

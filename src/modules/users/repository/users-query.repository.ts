@@ -1,15 +1,17 @@
 import { usersCollection } from "../../../db/collections";
-import { Filter, ObjectId, WithId } from "mongodb";
+import { Filter, ObjectId } from "mongodb";
 import { UserDBModel } from "../types/users-db.type";
 import { UserQueryInputModel } from "../types/users-query-input.type";
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
+import { UserOutputModel } from "../types/users-output.type";
+import { usersToOutputMapper, userToOutputMapper } from "../mappers/user-to-output.mapper";
 
 export const usersQueryRepository = {
   async getAll(
     query: UserQueryInputModel,
-  ): Promise<Result<{ items: WithId<UserDBModel>[]; totalCount: number }>> {
+  ): Promise<Result<{ items: UserOutputModel[]; totalCount: number }>> {
     const skip = (query.pageNumber - 1) * query.pageSize;
     const filter: Filter<UserDBModel> = {};
     const filterQuery = {
@@ -37,10 +39,10 @@ export const usersQueryRepository = {
 
     return okResult({
       status: ResultSuccessStatus.Ok,
-      data: { items, totalCount },
+      data: { items: usersToOutputMapper(items), totalCount },
     });
   },
-  async getUser(userId: string): Promise<Result<WithId<UserDBModel>>> {
+  async getUser(userId: string): Promise<Result<UserOutputModel>> {
     const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
 
     if (!user) {
@@ -51,7 +53,7 @@ export const usersQueryRepository = {
     }
     return okResult({
       status: ResultSuccessStatus.Ok,
-      data: user,
+      data: userToOutputMapper(user),
     });
   },
 };

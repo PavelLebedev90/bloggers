@@ -4,6 +4,8 @@ export const AUTH_ROUTER = {
   ROOT: "/auth",
   BASE: "/",
   LOGIN: "/login",
+  LOGOUT: "/logout",
+  REFRESH_TOKEN: "/refresh-token",
   ME: "/me",
   REGISTRATION: "/registration",
   REGISTRATION_CONFIRM: "/registration-confirmation",

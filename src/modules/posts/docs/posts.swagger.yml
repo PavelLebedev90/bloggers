@@ -1,21 +1,29 @@
-tags:
-  - name: Posts
-    description: API for managing posts
-
 paths:
   /api/posts:
     get:
-      summary: Get a list of all posts
+      summary: Get a paginated list of posts
       tags: [Posts]
+      security: []
+      parameters:
+        - in: query
+          name: sortBy
+          required: false
+          schema:
+            type: string
+            enum: [title, createdAt, shortDescription, blogName, content]
+            default: createdAt
+        - $ref: "#/components/parameters/SortDirection"
+        - $ref: "#/components/parameters/PageNumber"
+        - $ref: "#/components/parameters/PageSize"
       responses:
         200:
-          description: List of all posts
+          description: Paginated list of posts
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/Post"
+                $ref: "#/components/schemas/PostsPaginated"
+        400:
+          $ref: "#/components/responses/BadRequest"
     post:
       summary: Create a new post
       tags: [Posts]
@@ -26,7 +34,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/PostInputDto"
+              $ref: "#/components/schemas/PostInput"
       responses:
         201:
           description: Post successfully created
@@ -35,64 +43,104 @@ paths:
               schema:
                 $ref: "#/components/schemas/Post"
         400:
-          description: Validation error
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
+
+  /api/posts/{id}:
+    get:
+      summary: Get a post by id
+      tags: [Posts]
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/PostIdPath"
+      responses:
+        200:
+          description: The requested post
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+                $ref: "#/components/schemas/Post"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        404:
+          $ref: "#/components/responses/NotFound"
+    put:
+      summary: Update an existing post
+      tags: [Posts]
+      security:
+        - BasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PostIdPath"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostInput"
+      responses:
+        204:
+          description: Post successfully updated
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
+    delete:
+      summary: Delete a post
+      tags: [Posts]
+      security:
+        - BasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/PostIdPath"
+      responses:
+        204:
+          description: Post successfully deleted
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          $ref: "#/components/responses/NotFound"
 
   /api/posts/{postId}/comments:
     get:
-      summary: Get a list of comments for a post
+      summary: Get a paginated list of comments for a post
       tags: [Posts]
+      security: []
       parameters:
         - in: path
           name: postId
           required: true
-          description: The unique identifier of the post
+          description: The unique identifier of the post (MongoDB ObjectId)
           schema:
             type: string
+            pattern: "^[0-9a-fA-F]{24}$"
             example: "60a7e5f8b4c7e1234567890a"
         - in: query
           name: sortBy
+          required: false
           schema:
             type: string
             enum: [content, createdAt]
             default: createdAt
-        - in: query
-          name: sortDirection
-          schema:
-            type: string
-            enum: [asc, desc]
-            default: desc
-        - in: query
-          name: pageNumber
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 10
+        - $ref: "#/components/parameters/SortDirection"
+        - $ref: "#/components/parameters/PageNumber"
+        - $ref: "#/components/parameters/PageSize"
       responses:
         200:
-          description: List of comments for the post
+          description: Paginated list of comments for the post
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/CommentOutputWithMeta"
+                $ref: "#/components/schemas/CommentsPaginated"
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+          $ref: "#/components/responses/BadRequest"
         404:
-          description: Post not found
+          $ref: "#/components/responses/NotFound"
     post:
       summary: Create a new comment for a post
       tags: [Posts]
@@ -102,9 +150,10 @@ paths:
         - in: path
           name: postId
           required: true
-          description: The unique identifier of the post
+          description: The unique identifier of the post (MongoDB ObjectId)
           schema:
             type: string
+            pattern: "^[0-9a-fA-F]{24}$"
             example: "60a7e5f8b4c7e1234567890a"
       requestBody:
         required: true
@@ -120,114 +169,30 @@ paths:
               schema:
                 $ref: "#/components/schemas/Comment"
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+          $ref: "#/components/responses/BadRequest"
         401:
-          description: Unauthorized - access token is missing, expired or incorrect
-        404:
-          description: Post not found
-
-  /api/posts/{id}:
-    get:
-      summary: Get a post by ID
-      tags: [Posts]
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the post
-          schema:
-            type: string
-            example: "post-id"
-      responses:
-        200:
-          description: The requested post
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Post"
-        404:
-          description: Post not found
-    put:
-      summary: Update a post
-      tags: [Posts]
-      security:
-        - BasicAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the post
-          schema:
-            type: string
-            example: "post-id"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PostInputDto"
-      responses:
-        204:
-          description: Post successfully updated
-        400:
-          description: Validation error
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          description: Forbidden - the user's email is not confirmed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
         404:
-          description: Post not found
-    delete:
-      summary: Delete a post
-      tags: [Posts]
-      security:
-        - BasicAuth: []
-      parameters:
-        - in: path
-          name: id
-          required: true
-          description: The unique identifier of the post
-          schema:
-            type: string
-            example: "post-id"
-      responses:
-        204:
-          description: Post successfully deleted
-        404:
-          description: Post not found
+          $ref: "#/components/responses/NotFound"
 
 components:
-  securitySchemes:
-    BasicAuth:
-      type: http
-      scheme: basic
-    BearerAuth:
-      type: http
-      scheme: bearer
+  parameters:
+    PostIdPath:
+      in: path
+      name: id
+      required: true
+      description: The unique identifier of the post (MongoDB ObjectId)
+      schema:
+        type: string
+        pattern: "^[0-9a-fA-F]{24}$"
+        example: "60a7e5f8b4c7e1234567890a"
   schemas:
-    CommentOutputWithMeta:
-      type: object
-      properties:
-        pagesCount:
-          type: integer
-          example: 1
-        page:
-          type: integer
-          example: 1
-        pageSize:
-          type: integer
-          example: 10
-        totalCount:
-          type: integer
-          example: 1
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/Comment"
     Post:
       type: object
       required:
@@ -237,10 +202,11 @@ components:
         - content
         - blogId
         - blogName
+        - createdAt
       properties:
         id:
           type: string
-          example: "post-id"
+          example: "60a7e5f8b4c7e1234567890a"
         title:
           type: string
           minLength: 1
@@ -258,17 +224,21 @@ components:
           example: "Post content"
         blogId:
           type: string
-          example: "blog-id"
+          pattern: "^[0-9a-fA-F]{24}$"
+          example: "60a7e5f8b4c7e1234567890b"
         blogName:
           type: string
-          example: "My blog"
-    PostInputDto:
+          example: "Tech Blog"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-01T00:00:00.000Z"
+    PostInputWithoutBlogId:
       type: object
       required:
         - title
         - shortDescription
         - content
-        - blogId
       properties:
         title:
           type: string
@@ -285,22 +255,25 @@ components:
           minLength: 1
           maxLength: 1000
           example: "Post content"
-        blogId:
-          type: string
-          example: "blog-id"
-    ValidationError:
-      type: object
-      properties:
-        field:
-          type: string
-          example: "clientName"
-        message:
-          type: string
-          example: "Client name is required"
-    ValidationErrorResponse:
-      type: object
-      properties:
-        errorMessages:
-          type: array
-          items:
-            $ref: "#/components/schemas/ValidationError"
+    PostInput:
+      allOf:
+        - $ref: "#/components/schemas/PostInputWithoutBlogId"
+        - type: object
+          required:
+            - blogId
+          properties:
+            blogId:
+              type: string
+              pattern: "^[0-9a-fA-F]{24}$"
+              example: "60a7e5f8b4c7e1234567890b"
+    PostsPaginated:
+      allOf:
+        - $ref: "#/components/schemas/PaginationMeta"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Post"

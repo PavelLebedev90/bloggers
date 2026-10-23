@@ -7,11 +7,10 @@ import { commentToDBMapper } from "../../comments/mappers/comment-to-db.mapper";
 import { CommentOutputModel } from "../../comments/types/comments-output.type";
 import { commentsService } from "../../comments/service/comments.service";
 import { commentsQueryRepository } from "../../comments/repository/comments-query.repository";
-import { commentToOutputMapper } from "../../comments/mappers/comment-to-output.mapper";
 import { postsQueryRepository } from "../repository/posts-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
-import { JWTPayload } from "../../../core/adapters/jwt.adapter";
+import { JWTUserInfo } from "../../../core/adapters/jwt.adapter";
 
 export const createCommentByPostIdHandler = async (
   _req: Request,
@@ -19,7 +18,7 @@ export const createCommentByPostIdHandler = async (
     CommentOutputModel | ValidationErrorMessages,
     {
       params: { postId: string };
-      user: JWTPayload;
+      user: JWTUserInfo;
       body: CommentInputModel;
     }
   >,
@@ -54,6 +53,5 @@ export const createCommentByPostIdHandler = async (
     });
   }
   const result = await commentsQueryRepository.getComment(resultWithCommentId.data);
-  if (isError(result)) return sendResult(res, result);
-  sendResult(res, { ...result, status: resultWithCommentId.status }, commentToOutputMapper);
+  sendResult({ res, result, overwriteSuccessStatus: resultWithCommentId.status });
 };

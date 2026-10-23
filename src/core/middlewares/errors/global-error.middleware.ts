@@ -4,7 +4,7 @@ import { sendError } from "../../utils/formatters/result/send-result.formatter";
 
 export const globalErrorMiddleware = (
   err: unknown,
-  _req: Request,
+  __req: Request,
   res: Response,
   __next: NextFunction,
 ) => {

@@ -9,5 +9,9 @@ export const deleteBlogHandler = async (
   res: Response<undefined | ValidationErrorMessages, { params: { id: string } }>,
 ) => {
   const result = await blogsService.deleteBlog(res.locals.params.id);
-  sendResult<ResultSuccessStatus.NoContent>(res, result);
+  sendResult({
+    res,
+    result,
+    overwriteSuccessStatus: ResultSuccessStatus.NoContent,
+  });
 };

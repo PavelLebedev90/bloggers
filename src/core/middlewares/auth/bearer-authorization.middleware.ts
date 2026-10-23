@@ -19,8 +19,7 @@ export const bearerAuthorizationMiddleWare = async (
     return failUnauthorized(res);
   }
   try {
-    const user = await JWTAdapter.getPayloadByToken(token);
-
+    const user = await JWTAdapter.getPayloadByToken(token, "access_token");
     if (!user.isEmailConfirmed) {
       return sendError({
         res,

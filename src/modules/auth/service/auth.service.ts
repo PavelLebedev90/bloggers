@@ -17,12 +17,15 @@ import { userEmailConfirmationToDBMapper } from "../../users/mappers/user-email-
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { smtpAdapter } from "../../../core/adapters/smtp.adapter";
 import { emailTemplates } from "../../../core/mailer/email-templates";
+import { Tokens } from "../mappers/auth-to-output.mapper";
+import { tokenBlackListService } from "../../tokenBlackList/service/tokenBlackList.service";
+import { WithId } from "mongodb";
+import { UserDBModel } from "../../users/types/users-db.type";
+import { TokenBlackList } from "../../tokenBlackList/types/tokenBlackList-db";
+import { UserOutputModel } from "../../users/types/users-output.type";
 
 export const authService = {
-  async login(
-    bodyAuth: AuthInputModel,
-    mode: "jwt" | "jwe" = "jwt",
-  ): Promise<Result<{ token: string }>> {
+  async login(bodyAuth: AuthInputModel, mode: "jwt" | "jwe" = "jwt"): Promise<Result<Tokens>> {
     const result = await usersService.getUserByLoginOrEmail(bodyAuth.loginOrEmail);
     if (isSuccess(result)) {
       try {
@@ -45,28 +48,63 @@ export const authService = {
           extensions: [ERROR_MESSAGES.InternalServerError("passwordVerify")],
         });
       }
-      if (mode === "jwt") {
-        const token = await JWTAdapter.createToken({
-          userId: result.data._id.toString(),
-          isEmailConfirmed: result.data.emailConfirmationIsConfirmed,
-        });
-        return okResult({
-          status: ResultSuccessStatus.Ok,
-          data: { token },
-        });
-      } else {
-        const token = await JWEAdapter.encryptSession({
-          user: result.data,
-          sub: result.data._id.toString(),
-        });
-        return okResult({
-          status: ResultSuccessStatus.Ok,
-          data: { token },
-        });
-      }
+      return await this.composeTokens(result.data, mode);
     } else {
       return result;
     }
+  },
+  async logout(refreshToken: string, exp: number, userId: string): Promise<Result<string>> {
+    const resultIsBlack = await tokenBlackListService.getBlackTokenByTOken(refreshToken);
+    if (!!resultIsBlack.data) {
+      return failResult({
+        status: ResultErrorStatus.Unauthorized,
+        extensions: [ERROR_MESSAGES.Unauthorized("jwt")],
+      });
+    }
+    const blackList: TokenBlackList = {
+      createdAt: new Date(),
+      expiresAt: new Date(exp * 1000),
+      token: refreshToken,
+      userId: userId,
+    };
+    const result = await tokenBlackListService.create(blackList);
+    return result;
+  },
+  async refreshToken(
+    refreshToken: string,
+    exp: number,
+    user: UserOutputModel,
+    mode: "jwt" | "jwe" = "jwt",
+  ): Promise<Result<Tokens>> {
+    const resultIsBlack = await tokenBlackListService.getBlackTokenByTOken(refreshToken);
+    if (!!resultIsBlack.data) {
+      return failResult({
+        status: ResultErrorStatus.Unauthorized,
+        extensions: [ERROR_MESSAGES.Unauthorized("token")],
+      });
+    }
+
+    const blackList: TokenBlackList = {
+      createdAt: new Date(),
+      expiresAt: new Date(exp * 1000),
+      token: refreshToken,
+      userId: user.id,
+    };
+    const result = await tokenBlackListService.create(blackList);
+    if (isError(result)) {
+      return failResult({
+        status: ResultErrorStatus.Unauthorized,
+        extensions: [ERROR_MESSAGES.Unauthorized("token")],
+      });
+    }
+    const userFromDB = await usersService.getUserByLoginOrEmail(user.login);
+    if (isError(userFromDB)) {
+      return failResult({
+        status: ResultErrorStatus.Unauthorized,
+        extensions: [ERROR_MESSAGES.Unauthorized("token")],
+      });
+    }
+    return await this.composeTokens(userFromDB.data, mode);
   },
   async createUser(
     bodyUser: UserInputModel,
@@ -154,5 +192,55 @@ export const authService = {
     }
 
     return result;
+  },
+  async composeTokens(
+    user: WithId<UserDBModel>,
+    mode: "jwt" | "jwe" = "jwt",
+  ): Promise<Result<Tokens>> {
+    if (mode === "jwt") {
+      const accessToken = await JWTAdapter.createToken(
+        {
+          userId: user._id.toString(),
+          isEmailConfirmed: user.emailConfirmationIsConfirmed,
+        },
+        "access_token",
+      );
+      const refreshToken = await JWTAdapter.createToken(
+        {
+          userId: user._id.toString(),
+        },
+        "refresh_token",
+      );
+
+      return okResult({
+        status: ResultSuccessStatus.Ok,
+        data: {
+          accessToken,
+          refreshToken,
+        },
+      });
+    } else {
+      const accessToken = await JWEAdapter.encryptSession(
+        {
+          user,
+          sub: user._id.toString(),
+        },
+        "access_token",
+      );
+      const refreshToken = await JWEAdapter.encryptSession(
+        {
+          user,
+          sub: user._id.toString(),
+        },
+        "refresh_token",
+      );
+      return okResult({
+        status: ResultSuccessStatus.Ok,
+        data: {
+          accessToken,
+          refreshToken,
+        },
+      });
+    }
   },
 };

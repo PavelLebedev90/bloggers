@@ -10,6 +10,9 @@ const swaggerOptions = {
       version: "1.0.0",
       description: "Bloggers API documentation",
     },
+    // Only tags/components/paths are merged from the *.swagger.yml files,
+    // so openapi/info/servers have to be declared here.
+    servers: [{ url: "/", description: "Current host" }],
   },
   apis: ["./src/**/*.swagger.yml"],
 };

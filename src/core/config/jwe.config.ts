@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 const DEFAULT_JWE_USSUER = "myapp";
+const DEFAULT_ACCESS_TTL_SEC = 10; //sec
+const DEFAULT_REFRESH_TTL_SEC = 20; //sec
 
 const secret32 = z
   .string()
@@ -39,5 +41,7 @@ export const jweEnv = z
   .object({
     JWE_KEYS: jweKeys,
     JWE_ISSUER: z.string().default(DEFAULT_JWE_USSUER),
+    ACCESS_TTL_SEC: z.number().default(DEFAULT_ACCESS_TTL_SEC),
+    REFRESH_TTL_SEC: z.number().default(DEFAULT_REFRESH_TTL_SEC),
   })
   .parse(process.env);
