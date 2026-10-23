@@ -1,20 +1,11 @@
-tags:
-  - name: Comments
-    description: API for managing comments
-
 paths:
   /api/comments/{commentId}:
     get:
-      summary: Get a comment by ID
+      summary: Get a comment by id
       tags: [Comments]
+      security: []
       parameters:
-        - in: path
-          name: commentId
-          required: true
-          description: The unique identifier of the comment
-          schema:
-            type: string
-            example: "60a7e5f8b4c7e1234567890a"
+        - $ref: "#/components/parameters/CommentId"
       responses:
         200:
           description: The requested comment
@@ -23,26 +14,17 @@ paths:
               schema:
                 $ref: "#/components/schemas/Comment"
         400:
-          description: Validation error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ValidationErrorResponse"
+          $ref: "#/components/responses/BadRequest"
         404:
-          description: Comment not found
+          $ref: "#/components/responses/NotFound"
     put:
-      summary: Update a comment by ID
+      summary: Update a comment by id
+      description: Only the author of the comment may update it.
       tags: [Comments]
       security:
         - BearerAuth: []
       parameters:
-        - in: path
-          name: commentId
-          required: true
-          description: The unique identifier of the comment
-          schema:
-            type: string
-            example: "60a7e5f8b4c7e1234567890a"
+        - $ref: "#/components/parameters/CommentId"
       requestBody:
         required: true
         content:
@@ -53,45 +35,52 @@ paths:
         204:
           description: Comment successfully updated
         400:
-          description: Validation error
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          description: Forbidden - the comment belongs to another user, or the user's email is not confirmed
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
-        401:
-          description: Unauthorized - access token is missing, expired or incorrect
-        403:
-          description: Forbidden - attempting to edit a comment that belongs to another user
         404:
-          description: Comment not found
+          $ref: "#/components/responses/NotFound"
     delete:
-      summary: Delete a comment by ID
+      summary: Delete a comment by id
+      description: Only the author of the comment may delete it.
       tags: [Comments]
       security:
         - BearerAuth: []
       parameters:
-        - in: path
-          name: commentId
-          required: true
-          description: The unique identifier of the comment
-          schema:
-            type: string
-            example: "60a7e5f8b4c7e1234567890a"
+        - $ref: "#/components/parameters/CommentId"
       responses:
         204:
           description: Comment successfully deleted
+        400:
+          $ref: "#/components/responses/BadRequest"
         401:
-          description: Unauthorized - access token is missing, expired or incorrect
+          $ref: "#/components/responses/Unauthorized"
         403:
-          description: Forbidden - attempting to delete a comment that belongs to another user
+          description: Forbidden - the comment belongs to another user, or the user's email is not confirmed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
         404:
-          description: Comment not found
+          $ref: "#/components/responses/NotFound"
 
 components:
-  securitySchemes:
-    BearerAuth:
-      type: http
-      scheme: bearer
+  parameters:
+    CommentId:
+      in: path
+      name: commentId
+      required: true
+      description: The unique identifier of the comment (MongoDB ObjectId)
+      schema:
+        type: string
+        pattern: "^[0-9a-fA-F]{24}$"
+        example: "60a7e5f8b4c7e1234567890a"
   schemas:
     Comment:
       type: object
@@ -135,19 +124,14 @@ components:
           minLength: 20
           maxLength: 300
           example: "This is a comment with enough length to pass validation"
-    ValidationError:
-      type: object
-      properties:
-        field:
-          type: string
-          example: "content"
-        message:
-          type: string
-          example: "Content is required"
-    ValidationErrorResponse:
-      type: object
-      properties:
-        errorMessages:
-          type: array
-          items:
-            $ref: "#/components/schemas/ValidationError"
+    CommentsPaginated:
+      allOf:
+        - $ref: "#/components/schemas/PaginationMeta"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/Comment"

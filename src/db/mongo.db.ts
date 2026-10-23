@@ -15,7 +15,6 @@ export async function runDB(url: string): Promise<void> {
 
     await db.command({ ping: 1 });
     await ensureIndexes();
-    console.log("✅ Environment", url, config.mongodbName);
     console.log("✅ Connected to the database");
   } catch (e: unknown) {
     if (client) {

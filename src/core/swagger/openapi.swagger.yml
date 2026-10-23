@@ -1,13 +1,134 @@
-openapi: 3.1.0
-info:
-  title: Bloggers API
-  version: 1.0.0
-  description: Bloggers API documentation
-
 tags:
-  - name: Testing
-    description: API for clearing the database
+  - name: Auth
+    description: API for authentication and registration
   - name: Blogs
-    description: API for managing Blogs
+    description: API for managing blogs
   - name: Posts
     description: API for managing posts
+  - name: Comments
+    description: API for managing comments
+  - name: Users
+    description: API for managing users (Basic auth)
+  - name: Testing
+    description: API for clearing the database
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+      description: Basic auth with the admin credentials from AUTH_LOGIN / AUTH_PASSWORD
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT access token obtained from POST /api/auth/login
+  parameters:
+    PageNumber:
+      in: query
+      name: pageNumber
+      required: false
+      description: Page number, 1-based
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    PageSize:
+      in: query
+      name: pageSize
+      required: false
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+    SortDirection:
+      in: query
+      name: sortDirection
+      required: false
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+  schemas:
+    PaginationMeta:
+      type: object
+      required:
+        - pagesCount
+        - page
+        - pageSize
+        - totalCount
+      properties:
+        pagesCount:
+          type: integer
+          example: 1
+        page:
+          type: integer
+          example: 1
+        pageSize:
+          type: integer
+          example: 10
+        totalCount:
+          type: integer
+          example: 1
+    ValidationError:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: Name of the field that failed validation
+          example: "name"
+        message:
+          type: string
+          example: "Some fields are missing or invalid. Please correct them and try again."
+    ValidationErrorResponse:
+      type: object
+      required:
+        - errorsMessages
+      properties:
+        errorsMessages:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationError"
+  responses:
+    BadRequest:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+
+paths:
+  /api/testing/all-data:
+    delete:
+      summary: Clear the database
+      description: Removes all data from all collections. Intended for e2e testing only.
+      tags: [Testing]
+      security: []
+      responses:
+        204:
+          description: All data has been deleted
+        500:
+          $ref: "#/components/responses/InternalServerError"

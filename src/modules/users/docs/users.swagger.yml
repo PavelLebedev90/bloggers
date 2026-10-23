@@ -1,57 +1,47 @@
-tags:
-  - name: Users
-    description: API for managing users
-
 paths:
   /api/users:
     get:
-      summary: Get a list of all users
+      summary: Get a paginated list of users
       tags: [Users]
       security:
         - BasicAuth: []
       parameters:
         - in: query
           name: sortBy
+          required: false
           schema:
             type: string
             enum: [login, email, createdAt]
             default: createdAt
-        - in: query
-          name: sortDirection
-          schema:
-            type: string
-            enum: [asc, desc]
-            default: desc
-        - in: query
-          name: pageNumber
-          schema:
-            type: integer
-            minimum: 1
-            default: 1
-        - in: query
-          name: pageSize
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 10
+        - $ref: "#/components/parameters/SortDirection"
+        - $ref: "#/components/parameters/PageNumber"
+        - $ref: "#/components/parameters/PageSize"
         - in: query
           name: searchLoginTerm
+          required: false
+          description: Case-insensitive search by part of the login
           schema:
             type: string
         - in: query
           name: searchEmailTerm
+          required: false
+          description: Case-insensitive search by part of the email
           schema:
             type: string
       responses:
         200:
-          description: List of all users
+          description: Paginated list of users
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/UserOutputWithMeta"
+                $ref: "#/components/schemas/UsersPaginated"
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
     post:
       summary: Create a new user
+      description: The user is created already confirmed, no confirmation email is sent.
       tags: [Users]
       security:
         - BasicAuth: []
@@ -69,11 +59,13 @@ paths:
               schema:
                 $ref: "#/components/schemas/User"
         400:
-          description: Validation error, or login/email is already taken
+          description: Validation error, or the login/email is already taken
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
+        401:
+          $ref: "#/components/responses/Unauthorized"
 
   /api/users/{id}:
     delete:
@@ -85,21 +77,22 @@ paths:
         - in: path
           name: id
           required: true
-          description: The unique identifier of the user
+          description: The unique identifier of the user (MongoDB ObjectId)
           schema:
             type: string
-            example: "1"
+            pattern: "^[0-9a-fA-F]{24}$"
+            example: "60a7e5f8b4c7e1234567890a"
       responses:
         204:
           description: User successfully deleted
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
         404:
-          description: User not found
+          $ref: "#/components/responses/NotFound"
 
 components:
-  securitySchemes:
-    BasicAuth:
-      type: http
-      scheme: basic
   schemas:
     User:
       type: object
@@ -111,7 +104,7 @@ components:
       properties:
         id:
           type: string
-          example: "1"
+          example: "60a7e5f8b4c7e1234567890a"
         login:
           type: string
           minLength: 3
@@ -138,6 +131,7 @@ components:
           minLength: 3
           maxLength: 10
           pattern: "^[a-zA-Z0-9_-]*$"
+          description: Is lower-cased and trimmed by the server
           example: "user1"
         password:
           type: string
@@ -148,39 +142,17 @@ components:
           type: string
           format: email
           maxLength: 100
+          pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+          description: Is lower-cased and trimmed by the server
           example: "user1@example.com"
-    UserOutputWithMeta:
-      type: object
-      properties:
-        pagesCount:
-          type: integer
-          example: 1
-        page:
-          type: integer
-          example: 1
-        pageSize:
-          type: integer
-          example: 10
-        totalCount:
-          type: integer
-          example: 1
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/User"
-    ValidationError:
-      type: object
-      properties:
-        field:
-          type: string
-          example: "clientName"
-        message:
-          type: string
-          example: "Client name is required"
-    ValidationErrorResponse:
-      type: object
-      properties:
-        errorMessages:
-          type: array
-          items:
-            $ref: "#/components/schemas/ValidationError"
+    UsersPaginated:
+      allOf:
+        - $ref: "#/components/schemas/PaginationMeta"
+        - type: object
+          required:
+            - items
+          properties:
+            items:
+              type: array
+              items:
+                $ref: "#/components/schemas/User"
