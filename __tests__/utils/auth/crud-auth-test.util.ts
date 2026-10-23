@@ -40,3 +40,28 @@ export const registrationEmailResending = (body: { email?: unknown }): Test => {
     .post(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.REGISTRATION_EMAIL_RESENDING}`)
     .send(body);
 };
+
+export const refreshToken = (cookie?: string): Test => {
+  const req = request(app).post(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.REFRESH_TOKEN}`);
+  if (cookie !== undefined) {
+    req.set("Cookie", cookie);
+  }
+  return req;
+};
+
+export const logout = (cookie?: string): Test => {
+  const req = request(app).post(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.LOGOUT}`);
+  if (cookie !== undefined) {
+    req.set("Cookie", cookie);
+  }
+  return req;
+};
+
+export const extractRefreshCookie = (res: { headers: Record<string, unknown> }): string => {
+  const rawCookies = res.headers["set-cookie"] as string[] | undefined;
+  const refreshCookie = rawCookies?.find((c) => c.startsWith("refreshToken="));
+  if (!refreshCookie) throw new Error("refreshToken cookie not found in response");
+  const nameValuePair = refreshCookie.split(";").at(0);
+  if (!nameValuePair) throw new Error("refreshToken cookie is empty");
+  return nameValuePair;
+};
