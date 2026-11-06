@@ -9,14 +9,28 @@ import { hashAdapter } from "../../../core/adapters/hash.adapter";
 import { userEmailConfirmationToDBMapper } from "../mappers/user-email-confirmation.mapper";
 
 export const usersService = {
+  async getUser(userId: string): Promise<Result<WithId<UserDBModel>>> {
+    const user = await usersRepository.getUser(userId);
+
+    if (!user) {
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("user id", userId)],
+      });
+    }
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: user,
+    });
+  },
   async getUserByLoginOrEmail(
     loginOrEmail: string | { login: string; email: string },
   ): Promise<Result<WithId<UserDBModel>>> {
     const user = await usersRepository.getUserByLoginOrEmail(loginOrEmail);
     if (!user) {
       return failResult({
-        status: ResultErrorStatus.Unauthorized,
-        extensions: [ERROR_MESSAGES.Unauthorized("loginOrEmail", JSON.stringify(loginOrEmail))],
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("loginOrEmail", JSON.stringify(loginOrEmail))],
       });
     }
     return okResult({

@@ -48,8 +48,11 @@ describe("POST /auth/refresh-token", () => {
       HttpStatus.Ok,
     );
     const refreshCookie = extractRefreshCookie(loginRes);
+    //Задержка, чтобы issueAt было разным
+    await new Promise((res) => setTimeout(res, 1000)).then(() =>
+      refreshToken(refreshCookie).expect(HttpStatus.Ok),
+    );
 
-    await refreshToken(refreshCookie).expect(HttpStatus.Ok);
     const res = await refreshToken(refreshCookie);
 
     expect(res.status).toBe(HttpStatus.Unauthorized);

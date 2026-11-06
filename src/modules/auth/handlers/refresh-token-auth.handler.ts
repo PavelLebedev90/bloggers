@@ -3,10 +3,8 @@ import { ValidationErrorMessages } from "../../../core/types/validation-error.ty
 import { authService } from "../service/auth.service";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 import { authTokenToOutputMapper } from "../mappers/auth-to-output.mapper";
-import { usersQueryRepository } from "../../users/repository/users-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
-import { cookieEnv } from "../../../core/config/cookie.config";
 import { setRefreshCookie } from "../../../core/helpers/refresh-cookie.helper";
 
 export const refreshTokenHandler = async (
@@ -16,20 +14,14 @@ export const refreshTokenHandler = async (
     {
       cookie: {
         userId: string;
-        exp: number;
+        deviceId: string;
       };
     }
   >,
 ) => {
-  const userResult = await usersQueryRepository.getUser(res.locals.cookie.userId);
-  if (isError(userResult)) {
-    return sendError({ res, httpStatus: HttpStatus.Unauthorized, errors: userResult.extensions });
-  }
-  const refreshToken = req.cookies[cookieEnv.REFRESH_NAME] as string;
   const result = await authService.refreshToken(
-    refreshToken,
-    res.locals.cookie.exp,
-    userResult.data,
+    res.locals.cookie.deviceId,
+    res.locals.cookie.userId,
   );
   if (isError(result))
     return sendError({ res, httpStatus: HttpStatus[result.status], errors: result.extensions });

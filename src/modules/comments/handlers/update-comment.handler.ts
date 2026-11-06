@@ -12,12 +12,12 @@ export const updateCommentHandler = async (
     {
       params: { commentId: string };
       body: CommentInputModel;
-      user: JWTUserInfo;
+      userSession: JWTUserInfo;
     }
   >,
 ) => {
   const result = await commentsService.updateComment(
-    res.locals.user.userId,
+    res.locals.userSession.userId,
     res.locals.params.commentId,
     res.locals.body,
   );

@@ -8,11 +8,11 @@ export const deleteCommentHandler = async (
   _req: Request,
   res: Response<
     undefined | ValidationErrorMessages,
-    { params: { commentId: string }; user: JWTUserInfo }
+    { params: { commentId: string }; userSession: JWTUserInfo }
   >,
 ) => {
   const result = await commentsService.deleteComment(
-    res.locals.user.userId,
+    res.locals.userSession.userId,
     res.locals.params.commentId,
   );
   sendResult({ res, result });

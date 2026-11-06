@@ -14,6 +14,8 @@ import { authRouter } from "./routers/auth.router";
 import { COMMENTS_ROUTER_PATH } from "./modules/comments/const/comments-router-path.const";
 import { commentsRouter } from "./routers/comments.router";
 import cookieParser from "cookie-parser";
+import { SECURITY_DEVICES_ROUTER_PATH } from "./modules/securityDevices/const/securityDevices-router-path.const";
+import { securityDevicesRouter } from "./routers/securityDevices.router";
 
 export const setupApp = (app: Express) => {
   app.use(express.json(), cookieParser());
@@ -24,6 +26,7 @@ export const setupApp = (app: Express) => {
   app.use(USERS_ROUTER_PATH, usersRouter);
   app.use(COMMENTS_ROUTER_PATH, commentsRouter);
   app.use(AUTH_ROUTER_PATH, authRouter);
+  app.use(SECURITY_DEVICES_ROUTER_PATH, securityDevicesRouter);
 
   setupSwagger(app);
 

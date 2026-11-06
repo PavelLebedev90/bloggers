@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { JWTAdapter } from "../../adapters/jwt.adapter";
+import { JWTAdapter, JWTType } from "../../adapters/jwt.adapter";
 import { failUnauthorized, sendError } from "../../utils/formatters/result/send-result.formatter";
 import { HttpStatus } from "../../types/http-statuses.type";
 import { ERROR_MESSAGES } from "../../consts/message/error.message.const";
@@ -19,8 +19,8 @@ export const bearerAuthorizationMiddleWare = async (
     return failUnauthorized(res);
   }
   try {
-    const user = await JWTAdapter.getPayloadByToken(token, "access_token");
-    if (!user.isEmailConfirmed) {
+    const userSession = await JWTAdapter.getPayloadByToken(token, JWTType.ACCESS);
+    if (!userSession.isEmailConfirmed) {
       return sendError({
         res,
         httpStatus: HttpStatus.Forbidden,
@@ -28,7 +28,7 @@ export const bearerAuthorizationMiddleWare = async (
       });
     }
 
-    res.locals.user = user;
+    res.locals.userSession = userSession;
   } catch (__e) {
     return failUnauthorized(res);
   }

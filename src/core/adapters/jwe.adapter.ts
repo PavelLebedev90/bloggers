@@ -9,16 +9,20 @@ const ISSUER = jweEnv.JWE_ISSUER;
 
 export type KidStatus = "current" | "deprecated";
 
+export enum JWEType {
+  ACCESS = "access",
+  REFRESH = "refresh",
+}
+
 export class JweKidError extends Error {
   constructor(public readonly reason: "malformed" | "missing" | "unknown") {
     super(`JWE kid: ${reason}`);
   }
 }
-type Typ = "access_token" | "refresh_token";
 /** Создать токен текущим ключом */
 export const JWEAdapter = {
-  async encryptSession(claims: JWTPayload & { sub: string }, typ: Typ) {
-    const ttlTime = typ === "access_token" ? jweEnv.ACCESS_TTL_SEC : jweEnv.REFRESH_TTL_SEC;
+  async encryptSession(claims: JWTPayload & { sub: string }, typ: JWEType) {
+    const ttlTime = typ === JWEType.ACCESS ? jweEnv.ACCESS_TTL_SEC : jweEnv.REFRESH_TTL_SEC;
     const exp = new Date(Date.now() + ttlTime * 1000);
     const token = await new EncryptJWT(claims)
       .setProtectedHeader({ alg: ALG, enc: ENC, kid: currentKid, typ })
@@ -34,7 +38,7 @@ export const JWEAdapter = {
     };
   },
   /** Проверить kid, расшифровать, проверить claims */
-  async decryptSession(token: string, typ: Typ) {
+  async decryptSession(token: string, typ: JWEType) {
     // 1. Прочитать заголовок без ключа
     let header;
     try {
@@ -64,7 +68,7 @@ export const JWEAdapter = {
     return { payload, kid: header.kid, kidStatus };
   },
   /** Перешифровать текущим ключом, не меняя claims (exp остаётся прежним) */
-  async reencrypt(payload: JWTPayload, typ: Typ) {
+  async reencrypt(payload: JWTPayload, typ: JWEType) {
     return new EncryptJWT(payload)
       .setProtectedHeader({ alg: ALG, enc: ENC, kid: currentKid, typ })
       .encrypt(keys.get(currentKid)!);

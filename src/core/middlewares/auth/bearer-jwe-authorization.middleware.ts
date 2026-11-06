@@ -1,5 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
-import { JweKidError, JWEAdapter } from "../../adapters/jwe.adapter";
+import { JweKidError, JWEAdapter, JWEType } from "../../adapters/jwe.adapter";
 import { errors } from "jose";
 import { failUnauthorized } from "../../utils/formatters/result/send-result.formatter";
 import { WithId } from "mongodb";
@@ -23,13 +23,13 @@ export async function bearerJWEAuthorizationMiddleWare(
   }
 
   try {
-    const { payload, kidStatus } = await JWEAdapter.decryptSession(token, "access_token");
+    const { payload, kidStatus } = await JWEAdapter.decryptSession(token, JWEType.ACCESS);
 
     if (kidStatus === "deprecated") {
-      const freshToken = await JWEAdapter.reencrypt(payload, "access_token");
+      const freshToken = await JWEAdapter.reencrypt(payload, JWEType.ACCESS);
       res.setHeader("X-Access-Token", freshToken);
     }
-    res.locals.user = payload.user as WithId<UserDBModel>;
+    res.locals.userSession = payload.user as WithId<UserDBModel>;
     next();
   } catch (err) {
     if (err instanceof JweKidError) {

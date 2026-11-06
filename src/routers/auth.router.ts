@@ -25,6 +25,7 @@ import { registrationEmailResendingAuthHandler } from "../modules/auth/handlers/
 import { logoutHandler } from "../modules/auth/handlers/logout-auth.handler";
 import { refreshTokenHandler } from "../modules/auth/handlers/refresh-token-auth.handler";
 import { cookieRefreshTokenMiddleWare } from "../core/middlewares/auth/cookie-refresh-token.middleware";
+import { collectMetaRequest } from "../core/helpers/collect-meta-request.helper";
 
 export const authRouter: Router = Router();
 
@@ -56,11 +57,11 @@ authRouter.get(
     res: Response<
       AuthOutputModel | ValidationErrorMessages,
       {
-        user: UserOutputModel;
+        userSession: UserOutputModel;
       }
     >,
   ) => {
-    const user = await usersQueryRepository.getUser(res.locals.user.id);
+    const user = await usersQueryRepository.getUser(res.locals.userSession.id);
     sendResult({ res, result: user });
   },
 );
@@ -68,7 +69,7 @@ authRouter.post(
   `${AUTH_ROUTER.LOGIN}/jwe`,
   captureErrorValidation(authScheme),
   async (
-    _req: Request,
+    req: Request,
     res: Response<
       { accessToken: string } | ValidationErrorMessages,
       {
@@ -76,7 +77,8 @@ authRouter.post(
       }
     >,
   ) => {
-    const result = await authService.login(res.locals.body, "jwe");
+    const meta = collectMetaRequest(req);
+    const result = await authService.login(res.locals.body, meta, "jwe");
     sendResult({ res, result, mapper: authTokenToOutputMapper });
   },
 );

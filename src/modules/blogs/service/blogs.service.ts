@@ -5,7 +5,12 @@ import { PostInputModel } from "../../posts/types/posts-input.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { WithId } from "mongodb";
-import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+  SuccessResult,
+} from "../../../core/types/result.type";
 
 export const blogsService = {
   async getBlog(blogId: string): Promise<Result<WithId<BlogDBModel>>> {
@@ -19,7 +24,7 @@ export const blogsService = {
     }
     return okResult({ status: ResultSuccessStatus.Ok, data: blog });
   },
-  async createBlog(bodyBlog: BlogDBModel): Promise<Result<string>> {
+  async createBlog(bodyBlog: BlogDBModel): Promise<SuccessResult<string>> {
     const { insertedId } = await blogsRepository.createBlog(bodyBlog);
     return okResult({
       status: ResultSuccessStatus.Created,

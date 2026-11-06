@@ -18,12 +18,12 @@ export const createCommentByPostIdHandler = async (
     CommentOutputModel | ValidationErrorMessages,
     {
       params: { postId: string };
-      user: JWTUserInfo;
+      userSession: JWTUserInfo;
       body: CommentInputModel;
     }
   >,
 ) => {
-  const userResult = await usersQueryRepository.getUser(res.locals.user.userId);
+  const userResult = await usersQueryRepository.getUser(res.locals.userSession.userId);
   if (isError(userResult)) {
     return sendError({
       res,
@@ -45,13 +45,7 @@ export const createCommentByPostIdHandler = async (
     createdAt: new Date(),
     postId: res.locals.params.postId,
   });
-  if (isError(resultWithCommentId)) {
-    return sendError({
-      res,
-      httpStatus: HttpStatus[resultWithCommentId.status],
-      errors: resultWithCommentId.extensions,
-    });
-  }
+
   const result = await commentsQueryRepository.getComment(resultWithCommentId.data);
   sendResult({ res, result, overwriteSuccessStatus: resultWithCommentId.status });
 };

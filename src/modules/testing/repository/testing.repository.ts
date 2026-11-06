@@ -2,7 +2,7 @@ import {
   blogsCollection,
   commentsCollection,
   postsCollection,
-  tokenBlackListCollection,
+  securityDevicesCollection,
   usersCollection,
 } from "../../../db/collections";
 
@@ -12,6 +12,6 @@ export const testingRepository = {
     await postsCollection.deleteMany({});
     await usersCollection.deleteMany({});
     await commentsCollection.deleteMany({});
-    await tokenBlackListCollection.deleteMany({});
+    await securityDevicesCollection.deleteMany({});
   },
 };

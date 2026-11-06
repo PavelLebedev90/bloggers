@@ -11,10 +11,10 @@ export const getMeHandler = async (
   res: Response<
     AuthOutputModel | ValidationErrorMessages,
     {
-      user: JWTUserInfo;
+      userSession: JWTUserInfo;
     }
   >,
 ) => {
-  const user = await usersQueryRepository.getUser(res.locals.user.userId);
+  const user = await usersQueryRepository.getUser(res.locals.userSession.userId);
   sendResult({ res, result: user, mapper: authToOutputMapper });
 };

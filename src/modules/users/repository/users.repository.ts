@@ -3,6 +3,9 @@ import { ObjectId } from "mongodb";
 import { UserDBModel } from "../types/users-db.type";
 
 export const usersRepository = {
+  async getUser(userId: string) {
+    return await usersCollection.findOne({ _id: new ObjectId(userId) });
+  },
   async getUserByLoginOrEmail(loginOrEmail: string | { login: string; email: string }) {
     let login: string;
     let email: string;

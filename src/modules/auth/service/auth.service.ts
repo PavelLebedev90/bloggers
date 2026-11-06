@@ -1,6 +1,6 @@
 import { hashEnv } from "../../../core/config/hash.config";
 import { AuthInputModel } from "../types/auth-input.type";
-import { JWTAdapter } from "../../../core/adapters/jwt.adapter";
+import { JWTAdapter, JWTType } from "../../../core/adapters/jwt.adapter";
 
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import {
@@ -9,7 +9,7 @@ import {
   isSuccess,
   okResult,
 } from "../../../core/utils/formatters/result/result.formatter";
-import { JWEAdapter } from "../../../core/adapters/jwe.adapter";
+import { JWEAdapter, JWEType } from "../../../core/adapters/jwe.adapter";
 import { usersService } from "../../users/service/users.service";
 import { hashAdapter } from "../../../core/adapters/hash.adapter";
 import { UserInputModel } from "../../users/types/users-input.type";
@@ -18,14 +18,19 @@ import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/ty
 import { smtpAdapter } from "../../../core/adapters/smtp.adapter";
 import { emailTemplates } from "../../../core/mailer/email-templates";
 import { Tokens } from "../mappers/auth-to-output.mapper";
-import { tokenBlackListService } from "../../tokenBlackList/service/tokenBlackList.service";
+import { securityDevicesService } from "../../securityDevices/service/securityDevices.service";
 import { WithId } from "mongodb";
 import { UserDBModel } from "../../users/types/users-db.type";
-import { TokenBlackList } from "../../tokenBlackList/types/tokenBlackList-db";
-import { UserOutputModel } from "../../users/types/users-output.type";
+import { randomUUID } from "node:crypto";
+import { userToOutputMapper } from "../../users/mappers/user-to-output.mapper";
+import { MetaRequest } from "../../../core/helpers/collect-meta-request.helper";
 
 export const authService = {
-  async login(bodyAuth: AuthInputModel, mode: "jwt" | "jwe" = "jwt"): Promise<Result<Tokens>> {
+  async login(
+    bodyAuth: AuthInputModel,
+    meta: MetaRequest,
+    mode: "jwt" | "jwe" = "jwt",
+  ): Promise<Result<Tokens>> {
     const result = await usersService.getUserByLoginOrEmail(bodyAuth.loginOrEmail);
     if (isSuccess(result)) {
       try {
@@ -48,63 +53,69 @@ export const authService = {
           extensions: [ERROR_MESSAGES.InternalServerError("passwordVerify")],
         });
       }
-      return await this.composeTokens(result.data, mode);
+      const deviceId = randomUUID();
+      const tokens = await this.composeTokens(result.data, deviceId, mode);
+      if (isSuccess(tokens)) {
+        const session = securityDevicesService.collectSessionInfo({
+          ip: meta.ip,
+          userAgent: meta.userAgent,
+          userId: result.data._id.toString(),
+          exp: tokens.data.refreshToken.exp,
+          deviceId,
+        });
+        await securityDevicesService.createSession(session);
+      }
+      return tokens;
     } else {
-      return result;
-    }
-  },
-  async logout(refreshToken: string, exp: number, userId: string): Promise<Result<string>> {
-    const resultIsBlack = await tokenBlackListService.getBlackTokenByTOken(refreshToken);
-    if (!!resultIsBlack.data) {
       return failResult({
         status: ResultErrorStatus.Unauthorized,
-        extensions: [ERROR_MESSAGES.Unauthorized("jwt")],
+        extensions: [ERROR_MESSAGES.Unauthorized("loginOrEmail", bodyAuth.loginOrEmail)],
       });
     }
-    const blackList: TokenBlackList = {
-      createdAt: new Date(),
-      expiresAt: new Date(exp * 1000),
-      token: refreshToken,
-      userId: userId,
-    };
-    const result = await tokenBlackListService.create(blackList);
-    return result;
   },
-  async refreshToken(
-    refreshToken: string,
-    exp: number,
-    user: UserOutputModel,
-    mode: "jwt" | "jwe" = "jwt",
-  ): Promise<Result<Tokens>> {
-    const resultIsBlack = await tokenBlackListService.getBlackTokenByTOken(refreshToken);
-    if (!!resultIsBlack.data) {
+  async logout(deviceId: string, userId: string): Promise<Result<true>> {
+    const isDeleted = await securityDevicesService.deleteSessionByDeviceId(deviceId, userId);
+    if (isError(isDeleted)) {
       return failResult({
         status: ResultErrorStatus.Unauthorized,
-        extensions: [ERROR_MESSAGES.Unauthorized("token")],
+        extensions: [ERROR_MESSAGES.Unauthorized("deviceId")],
+      });
+    }
+    return isDeleted;
+  },
+  async refreshToken(
+    deviceId: string,
+    userId: string,
+    mode: "jwt" | "jwe" = "jwt",
+  ): Promise<Result<Tokens>> {
+    const userFromDB = await usersService.getUser(userId);
+    const currentSession = await securityDevicesService.getSessionByDeviceId(deviceId);
+    if (isError(userFromDB) || isError(currentSession)) {
+      return failResult({
+        status: ResultErrorStatus.Unauthorized,
+        extensions: [ERROR_MESSAGES.Unauthorized("userId | deviceId")],
       });
     }
 
-    const blackList: TokenBlackList = {
-      createdAt: new Date(),
-      expiresAt: new Date(exp * 1000),
-      token: refreshToken,
-      userId: user.id,
-    };
-    const result = await tokenBlackListService.create(blackList);
-    if (isError(result)) {
-      return failResult({
-        status: ResultErrorStatus.Unauthorized,
-        extensions: [ERROR_MESSAGES.Unauthorized("token")],
+    const tokens = await this.composeTokens(userFromDB.data, currentSession.data.deviceId, mode);
+    if (isSuccess(tokens)) {
+      const session = securityDevicesService.collectSessionInfo({
+        deviceId: currentSession.data.deviceId,
+        ip: currentSession.data.ip,
+        userAgent: currentSession.data.title,
+        userId: userFromDB.data._id.toString(),
+        exp: tokens.data.refreshToken.exp,
       });
+      const updatedResult = await securityDevicesService.updateSession(session);
+      if (!updatedResult.data) {
+        return failResult({
+          status: ResultErrorStatus.Unauthorized,
+          extensions: [ERROR_MESSAGES.Unauthorized("device id", session.deviceId)],
+        });
+      }
     }
-    const userFromDB = await usersService.getUserByLoginOrEmail(user.login);
-    if (isError(userFromDB)) {
-      return failResult({
-        status: ResultErrorStatus.Unauthorized,
-        extensions: [ERROR_MESSAGES.Unauthorized("token")],
-      });
-    }
-    return await this.composeTokens(userFromDB.data, mode);
+
+    return tokens;
   },
   async createUser(
     bodyUser: UserInputModel,
@@ -195,6 +206,7 @@ export const authService = {
   },
   async composeTokens(
     user: WithId<UserDBModel>,
+    deviceId: string,
     mode: "jwt" | "jwe" = "jwt",
   ): Promise<Result<Tokens>> {
     if (mode === "jwt") {
@@ -203,13 +215,14 @@ export const authService = {
           userId: user._id.toString(),
           isEmailConfirmed: user.emailConfirmationIsConfirmed,
         },
-        "access_token",
+        JWTType.ACCESS,
       );
       const refreshToken = await JWTAdapter.createToken(
         {
           userId: user._id.toString(),
+          deviceId,
         },
-        "refresh_token",
+        JWTType.REFRESH,
       );
 
       return okResult({
@@ -222,17 +235,17 @@ export const authService = {
     } else {
       const accessToken = await JWEAdapter.encryptSession(
         {
-          user,
+          user: userToOutputMapper(user),
           sub: user._id.toString(),
         },
-        "access_token",
+        JWEType.ACCESS,
       );
       const refreshToken = await JWEAdapter.encryptSession(
         {
-          user,
+          user: userToOutputMapper(user),
           sub: user._id.toString(),
         },
-        "refresh_token",
+        JWEType.REFRESH,
       );
       return okResult({
         status: ResultSuccessStatus.Ok,
