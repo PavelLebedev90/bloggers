@@ -16,6 +16,7 @@ export enum ResultErrorStatus {
   Forbidden = "Forbidden",
   NotFound = "NotFound",
   Conflict = "Conflict",
+  TooManyRequests = "TooManyRequests",
   InternalServerError = "InternalServerError",
 }
 

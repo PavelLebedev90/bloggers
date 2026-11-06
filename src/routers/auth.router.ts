@@ -26,26 +26,35 @@ import { logoutHandler } from "../modules/auth/handlers/logout-auth.handler";
 import { refreshTokenHandler } from "../modules/auth/handlers/refresh-token-auth.handler";
 import { cookieRefreshTokenMiddleWare } from "../core/middlewares/auth/cookie-refresh-token.middleware";
 import { collectMetaRequest } from "../core/helpers/collect-meta-request.helper";
+import { rateLimitMiddleware } from "../core/middlewares/rateLimit/rate-limit.middleware";
 
 export const authRouter: Router = Router();
 
 authRouter.get(AUTH_ROUTER.ME, bearerAuthorizationMiddleWare, getMeHandler);
-authRouter.post(AUTH_ROUTER.LOGIN, captureErrorValidation(authScheme), loginHandler);
+authRouter.post(
+  AUTH_ROUTER.LOGIN,
+  captureErrorValidation(authScheme),
+  rateLimitMiddleware,
+  loginHandler,
+);
 authRouter.post(AUTH_ROUTER.LOGOUT, cookieRefreshTokenMiddleWare, logoutHandler);
 authRouter.post(AUTH_ROUTER.REFRESH_TOKEN, cookieRefreshTokenMiddleWare, refreshTokenHandler);
 authRouter.post(
   AUTH_ROUTER.REGISTRATION,
   captureErrorValidation(userCreateScheme),
+  rateLimitMiddleware,
   registrationAuthHandler,
 );
 authRouter.post(
   AUTH_ROUTER.REGISTRATION_CONFIRM,
   captureErrorValidation(authConfirmationScheme),
+  rateLimitMiddleware,
   registrationConfirmAuthHandler,
 );
 authRouter.post(
   AUTH_ROUTER.REGISTRATION_EMAIL_RESENDING,
   captureErrorValidation(authEmailResendingScheme),
+  rateLimitMiddleware,
   registrationEmailResendingAuthHandler,
 );
 
@@ -68,6 +77,7 @@ authRouter.get(
 authRouter.post(
   `${AUTH_ROUTER.LOGIN}/jwe`,
   captureErrorValidation(authScheme),
+  rateLimitMiddleware,
   async (
     req: Request,
     res: Response<

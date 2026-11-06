@@ -6,6 +6,7 @@ export const collectMetaRequest = (req: Request) => {
     ip: req.ip?.toString() || "",
     userAgent: req.headers["user-agent"]?.toString() || "",
     originalUrl: req.originalUrl?.toString() || "",
+    baseUrl: req.baseUrl?.toString() || "",
     method: req.method?.toString() || "",
   };
 };

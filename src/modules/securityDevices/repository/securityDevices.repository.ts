@@ -1,5 +1,5 @@
 import { securityDevicesCollection } from "../../../db/collections";
-import { SecurityDeviceDBModel } from "../types/securityDevices-db";
+import { SecurityDeviceDBModel } from "../types/securityDevice-db";
 
 export const securityDevicesRepository = {
   async getAllSession(currentUserId: string) {

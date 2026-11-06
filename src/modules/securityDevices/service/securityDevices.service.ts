@@ -6,7 +6,7 @@ import {
   okResult,
 } from "../../../core/utils/formatters/result/result.formatter";
 import { securityDevicesRepository } from "../repository/securityDevices.repository";
-import { SecurityDeviceDBModel } from "../types/securityDevices-db";
+import { SecurityDeviceDBModel } from "../types/securityDevice-db";
 
 export const securityDevicesService = {
   async getAllSession(userId: string) {

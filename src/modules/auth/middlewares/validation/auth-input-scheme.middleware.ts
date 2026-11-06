@@ -11,7 +11,7 @@ export const authScheme = z.object({
 
 export const authConfirmationScheme = z.object({
   body: z.object({
-    code: z.uuid(),
+    code: z.string().trim().nonempty(),
   }),
 });
 

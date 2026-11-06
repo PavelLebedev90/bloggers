@@ -1,6 +1,6 @@
 import { WithId } from "mongodb";
-import { SecurityDeviceDBModel } from "../types/securityDevices-db";
-import { SecurityDeviceOutputModel } from "../types/securityDevices-output";
+import { SecurityDeviceDBModel } from "../types/securityDevice-db";
+import { SecurityDeviceOutputModel } from "../types/securityDevice-output";
 
 export const securityDeviceToOutputMapper = (
   session: WithId<SecurityDeviceDBModel>,
