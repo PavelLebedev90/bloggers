@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { CommentInputModel } from "../../comments/types/comments-input.type";
@@ -11,19 +11,13 @@ import { postsQueryRepository } from "../repository/posts-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 import { JWTUserInfo } from "../../../core/adapters/jwt.adapter";
+import { SanitizedRequest } from "../../../core/types/express.type";
 
 export const createCommentByPostIdHandler = async (
-  _req: Request,
-  res: Response<
-    CommentOutputModel | ValidationErrorMessages,
-    {
-      params: { postId: string };
-      userSession: JWTUserInfo;
-      body: CommentInputModel;
-    }
-  >,
+  req: SanitizedRequest<CommentInputModel, unknown, { postId: string }, unknown, JWTUserInfo>,
+  res: Response<CommentOutputModel | ValidationErrorMessages>,
 ) => {
-  const userResult = await usersQueryRepository.getUser(res.locals.userSession.userId);
+  const userResult = await usersQueryRepository.getUser(req.userSession.userId);
   if (isError(userResult)) {
     return sendError({
       res,
@@ -31,7 +25,7 @@ export const createCommentByPostIdHandler = async (
       errors: userResult.extensions,
     });
   }
-  const postResult = await postsQueryRepository.getPost(res.locals.params.postId);
+  const postResult = await postsQueryRepository.getPost(req.validData.params.postId);
   if (isError(postResult)) {
     return sendError({
       res,
@@ -39,11 +33,11 @@ export const createCommentByPostIdHandler = async (
       errors: postResult.extensions,
     });
   }
-  const dbComment = commentToDBMapper(res.locals.body, userResult.data);
+  const dbComment = commentToDBMapper(req.validData.body, userResult.data);
   const resultWithCommentId = await commentsService.createComment({
     ...dbComment,
     createdAt: new Date(),
-    postId: res.locals.params.postId,
+    postId: req.validData.params.postId,
   });
 
   const result = await commentsQueryRepository.getComment(resultWithCommentId.data);

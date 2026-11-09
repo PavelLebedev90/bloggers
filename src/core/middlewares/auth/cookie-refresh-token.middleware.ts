@@ -32,7 +32,7 @@ export const cookieRefreshTokenMiddleWare = async (
       return failUnauthorized(res);
     }
 
-    res.locals.cookie = {
+    req.userSession = {
       userId: payload.userId,
       exp: payload.exp,
       deviceId: payload.deviceId,

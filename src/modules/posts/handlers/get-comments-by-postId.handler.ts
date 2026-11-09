@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { commentsQueryRepository } from "../../comments/repository/comments-query.repository";
 import {
@@ -9,19 +9,13 @@ import { CommentQueryInputModel } from "../../comments/types/comments-query-inpu
 import { postsQueryRepository } from "../repository/posts-query.repository";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
+import { SanitizedRequest } from "../../../core/types/express.type";
 
 export const getCommentsByPostIdHandler = async (
-  _req: Request,
-  res: Response<
-    CommentOutputModelWithMeta,
-    {
-      params: { postId: string };
-      userId: string;
-      query: CommentQueryInputModel;
-    }
-  >,
+  req: SanitizedRequest<unknown, CommentQueryInputModel, { postId: string }>,
+  res: Response<CommentOutputModelWithMeta>,
 ) => {
-  const postResult = await postsQueryRepository.getPost(res.locals.params.postId);
+  const postResult = await postsQueryRepository.getPost(req.validData.params.postId);
 
   if (isError(postResult)) {
     return sendError({
@@ -32,8 +26,8 @@ export const getCommentsByPostIdHandler = async (
   }
 
   const result = await commentsQueryRepository.getAll({
-    ...res.locals.query,
-    postId: res.locals.params.postId,
+    ...req.validData.query,
+    postId: req.validData.params.postId,
   });
 
   sendResult({
@@ -41,10 +35,10 @@ export const getCommentsByPostIdHandler = async (
     result,
     mapper: (data: { items: CommentOutputModel[]; totalCount: number }) => ({
       items: data.items,
-      page: res.locals.query.pageNumber,
-      pageSize: res.locals.query.pageSize,
+      page: req.validData.query.pageNumber,
+      pageSize: req.validData.query.pageSize,
       totalCount: data.totalCount,
-      pagesCount: Math.ceil(data.totalCount / res.locals.query.pageSize),
+      pagesCount: Math.ceil(data.totalCount / req.validData.query.pageSize),
     }),
   });
 };

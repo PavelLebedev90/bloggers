@@ -209,50 +209,57 @@ export const authService = {
     deviceId: string,
     mode: "jwt" | "jwe" = "jwt",
   ): Promise<Result<Tokens>> {
-    if (mode === "jwt") {
-      const accessToken = await JWTAdapter.createToken(
-        {
-          userId: user._id.toString(),
-          isEmailConfirmed: user.emailConfirmationIsConfirmed,
-        },
-        JWTType.ACCESS,
-      );
-      const refreshToken = await JWTAdapter.createToken(
-        {
-          userId: user._id.toString(),
-          deviceId,
-        },
-        JWTType.REFRESH,
-      );
+    try {
+      if (mode === "jwt") {
+        const accessToken = await JWTAdapter.createToken(
+          {
+            userId: user._id.toString(),
+            isEmailConfirmed: user.emailConfirmationIsConfirmed,
+          },
+          JWTType.ACCESS,
+        );
+        const refreshToken = await JWTAdapter.createToken(
+          {
+            userId: user._id.toString(),
+            deviceId,
+          },
+          JWTType.REFRESH,
+        );
 
-      return okResult({
-        status: ResultSuccessStatus.Ok,
-        data: {
-          accessToken,
-          refreshToken,
-        },
-      });
-    } else {
-      const accessToken = await JWEAdapter.encryptSession(
-        {
-          user: userToOutputMapper(user),
-          sub: user._id.toString(),
-        },
-        JWEType.ACCESS,
-      );
-      const refreshToken = await JWEAdapter.encryptSession(
-        {
-          user: userToOutputMapper(user),
-          sub: user._id.toString(),
-        },
-        JWEType.REFRESH,
-      );
-      return okResult({
-        status: ResultSuccessStatus.Ok,
-        data: {
-          accessToken,
-          refreshToken,
-        },
+        return okResult({
+          status: ResultSuccessStatus.Ok,
+          data: {
+            accessToken,
+            refreshToken,
+          },
+        });
+      } else {
+        const accessToken = await JWEAdapter.encryptSession(
+          {
+            user: userToOutputMapper(user),
+            sub: user._id.toString(),
+          },
+          JWEType.ACCESS,
+        );
+        const refreshToken = await JWEAdapter.encryptSession(
+          {
+            user: userToOutputMapper(user),
+            sub: user._id.toString(),
+          },
+          JWEType.REFRESH,
+        );
+        return okResult({
+          status: ResultSuccessStatus.Ok,
+          data: {
+            accessToken,
+            refreshToken,
+          },
+        });
+      }
+    } catch (__e) {
+      return failResult({
+        status: ResultErrorStatus.InternalServerError,
+        extensions: [ERROR_MESSAGES.InternalServerError("composeTokens")],
       });
     }
   },

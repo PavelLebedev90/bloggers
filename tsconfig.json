@@ -111,9 +111,9 @@
     // "libReplacement": true // Разрешает переопределять встроенные lib-файлы через npm-пакеты @typescript/lib-*
   },
   "include": ["src/**/*.ts", "__tests__/**/*.ts"], // Какие файлы включать в проверку типов — весь TS-код в src и тесты в __tests__
-  "exclude": ["node_modules", "dist"] // Какие папки исключить из компиляции
+  "exclude": ["node_modules", "dist"], // Какие папки исключить из компиляции
 
-  // "files": ["src/index.ts"], // Явный список файлов для компиляции (альтернатива include, без глобов)
+  "files": ["src/types/express.d.ts"] // Явный список файлов для компиляции (альтернатива include, без глобов)
   // "references": [{ "path": "../shared" }], // Ссылки на другие проекты (project references) — для монорепозиториев с несколькими tsconfig
   // "extends": "./tsconfig.base.json", // Наследование настроек из другого tsconfig-файла
   // "watchOptions": { "watchFile": "useFsEvents" }, // Настройки поведения режима tsc --watch (какой механизм слежения за файлами использовать)

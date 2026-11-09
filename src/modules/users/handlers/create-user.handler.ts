@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { UserOutputModel } from "../types/users-output.type";
@@ -8,21 +8,17 @@ import { usersService } from "../service/users.service";
 import { usersQueryRepository } from "../repository/users-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { SanitizedRequest } from "../../../core/types/express.type";
 
 export const createUserHandler = async (
-  _req: Request,
-  res: Response<
-    UserOutputModel | ValidationErrorMessages,
-    {
-      body: UserInputModel;
-    }
-  >,
+  req: SanitizedRequest<UserInputModel>,
+  res: Response<UserOutputModel | ValidationErrorMessages>,
 ) => {
-  const bodyUser = userToDBMapper(res.locals.body);
+  const bodyUser = userToDBMapper(req.validData.body);
   const resultWithUserId = await usersService.createUser(
     {
       ...bodyUser,
-      password: res.locals.body.password,
+      password: req.validData.body.password,
     },
     { isConfirmed: true },
   );

@@ -1,5 +1,11 @@
+import { WithId } from "mongodb";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
-import { ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+  SuccessResult,
+} from "../../../core/types/result.type";
 import {
   failResult,
   isSuccess,
@@ -9,14 +15,14 @@ import { securityDevicesRepository } from "../repository/securityDevices.reposit
 import { SecurityDeviceDBModel } from "../types/securityDevice-db";
 
 export const securityDevicesService = {
-  async getAllSession(userId: string) {
+  async getAllSession(userId: string): Promise<Result<WithId<SecurityDeviceDBModel>[]>> {
     const result = await securityDevicesRepository.getAllSession(userId);
     return okResult({
       status: ResultSuccessStatus.Ok,
       data: result,
     });
   },
-  async getSessionByDeviceId(deviceId: string) {
+  async getSessionByDeviceId(deviceId: string): Promise<Result<WithId<SecurityDeviceDBModel>>> {
     const session = await securityDevicesRepository.getSessionByDeviceId(deviceId);
     if (!session) {
       return failResult({
@@ -29,21 +35,24 @@ export const securityDevicesService = {
       data: session,
     });
   },
-  async createSession(session: SecurityDeviceDBModel) {
+  async createSession(session: SecurityDeviceDBModel): Promise<SuccessResult<string>> {
     const { insertedId } = await securityDevicesRepository.createSession(session);
     return okResult({
       status: ResultSuccessStatus.Created,
       data: insertedId.toString(),
     });
   },
-  async updateSession(session: SecurityDeviceDBModel) {
+  async updateSession(session: SecurityDeviceDBModel): Promise<SuccessResult<boolean>> {
     const isUpdated = await securityDevicesRepository.updateSession(session);
     return okResult({
       status: ResultSuccessStatus.Ok,
       data: isUpdated,
     });
   },
-  async deleteAllSessionExcludeCurrent(currentDeviceId: string, userId: string) {
+  async deleteAllSessionExcludeCurrent(
+    currentDeviceId: string,
+    userId: string,
+  ): Promise<Result<true>> {
     const isDeleted = await securityDevicesRepository.deleteAllSessionExcludeCurrent(
       currentDeviceId,
       userId,
@@ -59,7 +68,7 @@ export const securityDevicesService = {
       data: isDeleted,
     });
   },
-  async deleteSessionByDeviceId(deviceId: string, userId: string) {
+  async deleteSessionByDeviceId(deviceId: string, userId: string): Promise<Result<true>> {
     const session = await this.getSessionByDeviceId(deviceId);
     if (isSuccess(session) && session.data.userId !== userId) {
       return failResult({

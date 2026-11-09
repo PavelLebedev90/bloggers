@@ -28,7 +28,7 @@ export const bearerAuthorizationMiddleWare = async (
       });
     }
 
-    res.locals.userSession = userSession;
+    req.userSession = userSession;
   } catch (__e) {
     return failUnauthorized(res);
   }

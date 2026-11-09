@@ -12,17 +12,18 @@ export const captureErrorValidation = (scheme: z.ZodObject) => {
           body: req.body,
           query: req.query,
           params: req.params,
-          cookies: req.cookies as z.infer<typeof scheme>["cookies"],
+          cookies: req.cookies,
         },
         {
           reportInput: true,
         },
       );
-
-      res.locals.body = sanitizedResult.body;
-      res.locals.query = sanitizedResult.query;
-      res.locals.params = sanitizedResult.params;
-      res.locals.cookies = sanitizedResult.cookies;
+      req.validData = {
+        body: sanitizedResult.body,
+        query: sanitizedResult.query,
+        params: sanitizedResult.params,
+        cookies: sanitizedResult.cookies,
+      };
       next();
     } catch (error) {
       if (error instanceof ZodError) {

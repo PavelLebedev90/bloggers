@@ -1,18 +1,14 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import { CommentOutputModel } from "../types/comments-output.type";
 import { commentsQueryRepository } from "../repository/comments-query.repository";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
+import { SanitizedRequest } from "../../../core/types/express.type";
 
 export const getCommentHandler = async (
-  _req: Request,
-  res: Response<
-    CommentOutputModel | ValidationErrorMessages,
-    {
-      params: { commentId: string };
-    }
-  >,
+  req: SanitizedRequest<unknown, unknown, { commentId: string }>,
+  res: Response<CommentOutputModel | ValidationErrorMessages>,
 ) => {
-  const result = await commentsQueryRepository.getComment(res.locals.params.commentId);
+  const result = await commentsQueryRepository.getComment(req.validData.params.commentId);
   sendResult({ res, result });
 };

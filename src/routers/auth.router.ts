@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import { captureErrorValidation } from "../core/middlewares/validation/capture-error-validation.middleware";
 import { AUTH_ROUTER } from "../modules/auth/const/auth-router-path.const";
 import {
@@ -27,6 +27,7 @@ import { refreshTokenHandler } from "../modules/auth/handlers/refresh-token-auth
 import { cookieRefreshTokenMiddleWare } from "../core/middlewares/auth/cookie-refresh-token.middleware";
 import { collectMetaRequest } from "../core/helpers/collect-meta-request.helper";
 import { rateLimitMiddleware } from "../core/middlewares/rateLimit/rate-limit.middleware";
+import { SanitizedRequest, SessionRequest } from "../core/types/express.type";
 
 export const authRouter: Router = Router();
 
@@ -62,15 +63,10 @@ authRouter.get(
   `${AUTH_ROUTER.ME}/jwe`,
   bearerJWEAuthorizationMiddleWare,
   async (
-    _req: Request,
-    res: Response<
-      AuthOutputModel | ValidationErrorMessages,
-      {
-        userSession: UserOutputModel;
-      }
-    >,
+    req: SessionRequest<UserOutputModel>,
+    res: Response<AuthOutputModel | ValidationErrorMessages>,
   ) => {
-    const user = await usersQueryRepository.getUser(res.locals.userSession.id);
+    const user = await usersQueryRepository.getUser(req.userSession.id);
     sendResult({ res, result: user });
   },
 );
@@ -79,16 +75,11 @@ authRouter.post(
   captureErrorValidation(authScheme),
   rateLimitMiddleware,
   async (
-    req: Request,
-    res: Response<
-      { accessToken: string } | ValidationErrorMessages,
-      {
-        body: AuthInputModel;
-      }
-    >,
+    req: SanitizedRequest<AuthInputModel>,
+    res: Response<{ accessToken: string } | ValidationErrorMessages>,
   ) => {
     const meta = collectMetaRequest(req);
-    const result = await authService.login(res.locals.body, meta, "jwe");
+    const result = await authService.login(req.validData.body, meta, "jwe");
     sendResult({ res, result, mapper: authTokenToOutputMapper });
   },
 );

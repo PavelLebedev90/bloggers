@@ -1,17 +1,13 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import { PostOutputModel } from "../types/posts-output.type";
 import { postsQueryRepository } from "../repository/posts-query.repository";
 import { sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { SanitizedRequest } from "../../../core/types/express.type";
 
 export const getPostHandler = async (
-  _req: Request,
-  res: Response<
-    PostOutputModel,
-    {
-      params: { id: string };
-    }
-  >,
+  req: SanitizedRequest<unknown, unknown, { id: string }>,
+  res: Response<PostOutputModel>,
 ) => {
-  const result = await postsQueryRepository.getPost(res.locals.params.id);
+  const result = await postsQueryRepository.getPost(req.validData.params.id);
   sendResult({ res, result });
 };

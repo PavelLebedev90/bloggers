@@ -15,6 +15,8 @@ export type JWTUserInfo<T extends JWTType = JWTType.ACCESS> = T extends JWTType.
   : {
       userId: string;
       deviceId: string;
+      exp?: number;
+      issuedAt?: number;
     };
 
 export const JWTAdapter = {

@@ -1,19 +1,15 @@
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { rateLimitsCollection } from "../../../db/collections";
 import { RateLimitDBModel } from "../../../modules/rateLimits/types/rateLimit-db";
 import { collectMetaRequest } from "../../helpers/collect-meta-request.helper";
 import { sendError } from "../../utils/formatters/result/send-result.formatter";
 import { HttpStatus } from "../../types/http-statuses.type";
 import { ERROR_MESSAGES } from "../../consts/message/error.message.const";
+import { SanitizedRequest } from "../../types/express.type";
 
 export const rateLimitMiddleware = async (
-  req: Request,
-  res: Response<
-    unknown,
-    {
-      body: Record<string, unknown>;
-    }
-  >,
+  req: SanitizedRequest<Record<string, unknown>>,
+  res: Response,
   next: NextFunction,
 ) => {
   const { ip, method, originalUrl } = collectMetaRequest(req);
@@ -39,7 +35,7 @@ export const rateLimitMiddleware = async (
     ip,
     method,
     url: originalUrl,
-    payload: res.locals.body,
+    payload: req.validData.body,
     expiresAt,
   };
 

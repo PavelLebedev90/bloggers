@@ -29,7 +29,7 @@ export async function bearerJWEAuthorizationMiddleWare(
       const freshToken = await JWEAdapter.reencrypt(payload, JWEType.ACCESS);
       res.setHeader("X-Access-Token", freshToken);
     }
-    res.locals.userSession = payload.user as WithId<UserDBModel>;
+    req.userSession = payload.user as WithId<UserDBModel>;
     next();
   } catch (err) {
     if (err instanceof JweKidError) {

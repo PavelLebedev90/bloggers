@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { PostInputModel } from "../../posts/types/posts-input.type";
@@ -7,20 +7,15 @@ import { blogsService } from "../service/blogs.service";
 import { postsQueryRepository } from "../../posts/repository/posts-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { SanitizedRequest } from "../../../core/types/express.type";
 
 export const createPostByBlogIdHandler = async (
-  _req: Request,
-  res: Response<
-    PostOutputModel | ValidationErrorMessages,
-    {
-      body: Omit<PostInputModel, "blogId">;
-      params: { blogId: string };
-    }
-  >,
+  req: SanitizedRequest<Omit<PostInputModel, "blogId">, unknown, { blogId: string }>,
+  res: Response<PostOutputModel | ValidationErrorMessages>,
 ) => {
   const resultWithPostId = await blogsService.createPostByBlogId({
-    ...res.locals.body,
-    blogId: res.locals.params.blogId,
+    ...req.validData.body,
+    blogId: req.validData.params.blogId,
   });
   if (isError(resultWithPostId)) {
     return sendError({

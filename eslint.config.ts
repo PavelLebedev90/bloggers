@@ -62,7 +62,12 @@ export default defineConfig([
     // settings: {}, // Общие настройки, доступные всем правилам и плагинам через context.settings (например alias-резолвер для import-плагина)
     // processor: "some-plugin/processor-name", // Препроцессор для файлов не-JS/TS формата (например .vue, .md) — извлекает JS-блоки для линтинга
   },
-
+  {
+    files: ["**/*.d.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
   // ===== Дополнительные блоки конфигурации (примеры) =====
   // {
   //   files: ["**/*.test.ts", "**/__tests__/**/*.ts"],

@@ -1,4 +1,4 @@
-import { Response, Request } from "express";
+import { Response } from "express";
 import { HttpStatus } from "../../../core/types/http-statuses.type";
 import { ValidationErrorMessages } from "../../../core/types/validation-error.type";
 import { PostInputModel } from "../types/posts-input.type";
@@ -7,17 +7,13 @@ import { postsService } from "../service/posts.service";
 import { postsQueryRepository } from "../repository/posts-query.repository";
 import { isError } from "../../../core/utils/formatters/result/result.formatter";
 import { sendError, sendResult } from "../../../core/utils/formatters/result/send-result.formatter";
+import { SanitizedRequest } from "../../../core/types/express.type";
 
 export const createPostHandler = async (
-  _req: Request,
-  res: Response<
-    PostOutputModel | ValidationErrorMessages,
-    {
-      body: PostInputModel;
-    }
-  >,
+  req: SanitizedRequest<PostInputModel>,
+  res: Response<PostOutputModel | ValidationErrorMessages>,
 ) => {
-  const resultWithPostId = await postsService.createPost(res.locals.body);
+  const resultWithPostId = await postsService.createPost(req.validData.body);
   if (isError(resultWithPostId)) {
     return sendError({
       res,
