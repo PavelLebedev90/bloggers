@@ -20,10 +20,15 @@ import { emailTemplates } from "../../../core/mailer/email-templates";
 import { Tokens } from "../mappers/auth-to-output.mapper";
 import { securityDevicesService } from "../../securityDevices/service/securityDevices.service";
 import { WithId } from "mongodb";
-import { UserDBModel } from "../../users/types/users-db.type";
+import { UserDBModel, UserEmailConfirmation } from "../../users/types/users-db.type";
 import { randomUUID } from "node:crypto";
 import { userToOutputMapper } from "../../users/mappers/user-to-output.mapper";
 import { MetaRequest } from "../../../core/helpers/collect-meta-request.helper";
+
+enum EmailConfirmationType {
+  CODE = "code",
+  RECOVERY_CODE = "recoveryCode",
+}
 
 export const authService = {
   async login(
@@ -142,67 +147,115 @@ export const authService = {
     return result;
   },
   async registrationConfirmAuth(emailConfirmationCode: string): Promise<Result<true>> {
-    const user = await usersService.getUserByEmailConfirmationCode(emailConfirmationCode);
-    if (isError(user)) {
-      return failResult({
-        status: ResultErrorStatus.BadRequest,
-        extensions: [ERROR_MESSAGES.BadRequest("code", emailConfirmationCode)],
-      });
+    const userResult = await this.checkUserEmailConfirmationCode(
+      emailConfirmationCode,
+      EmailConfirmationType.CODE,
+    );
+    if (isError(userResult)) {
+      return userResult;
     }
-    if (user.data.emailConfirmationIsConfirmed) {
-      return failResult({
-        status: ResultErrorStatus.BadRequest,
-        extensions: [ERROR_MESSAGES.NotFound("code", emailConfirmationCode)],
-      });
-    }
-    const isUpdatedUser = await usersService.updateUser(user.data._id.toString(), {
+    const isUpdatedUser = await usersService.updateUser(userResult.data._id.toString(), {
       ...userEmailConfirmationToDBMapper({ isConfirmed: true }),
-      login: user.data.login,
-      email: user.data.email,
+      login: userResult.data.login,
+      email: userResult.data.email,
     });
     return isUpdatedUser;
   },
   async registrationEmailResendingAuth(email: string): Promise<Result<true>> {
-    const user = await usersService.getUserByLoginOrEmail({ email, login: "null" });
-    if (isError(user)) {
+    const userResult = await this.getUserByLoginOrEmail(email);
+    if (isError(userResult)) {
       return failResult({
         status: ResultErrorStatus.BadRequest,
-        extensions: [ERROR_MESSAGES.BadRequest("email", email)],
+        extensions: [ERROR_MESSAGES.NotFound("email", email)],
       });
     }
 
-    if (user.data.emailConfirmationIsConfirmed) {
+    if (userResult.data.emailConfirmationIsConfirmed) {
       return failResult({
         status: ResultErrorStatus.BadRequest,
         extensions: [ERROR_MESSAGES.BadRequest("email")],
       });
     }
     const emailConfirmationFields = userEmailConfirmationToDBMapper({ isConfirmed: false });
-    const result = await usersService.updateUser(user.data._id.toString(), {
-      ...emailConfirmationFields,
-      login: user.data.login,
-      email: user.data.email,
-    });
+    const updatedResult = await this.updateUserEmailConfirmationFields(
+      userResult.data,
+      emailConfirmationFields,
+    );
 
-    if (isSuccess(result) && emailConfirmationFields.emailConfirmationCode) {
+    if (isSuccess(updatedResult) && emailConfirmationFields.emailConfirmationCode) {
       smtpAdapter
         .sendMail({
-          to: user.data.email,
+          to: userResult.data.email,
           ...emailTemplates.registrationConfirmation({
-            login: user.data.login,
+            login: userResult.data.login,
             code: emailConfirmationFields.emailConfirmationCode,
           }),
         })
         .catch((error: unknown) =>
           console.error("Failed to send registration confirmation email (resend)", {
-            userId: user.data._id.toString(),
-            email: user.data.email,
+            userId: userResult.data._id.toString(),
+            email: userResult.data.email,
             error,
           }),
         );
     }
 
-    return result;
+    return updatedResult;
+  },
+  async passwordRecoveryAuth(email: string): Promise<Result<true>> {
+    const userResult = await this.getUserByLoginOrEmail(email);
+    if (isError(userResult)) {
+      return okResult({
+        status: ResultSuccessStatus.NoContent,
+        data: true,
+      });
+    }
+    const emailConfirmationFields = userEmailConfirmationToDBMapper({ isConfirmed: false });
+
+    const updatedResult = await this.updateUserEmailConfirmationFields(
+      userResult.data,
+      emailConfirmationFields,
+    );
+
+    if (isSuccess(updatedResult) && emailConfirmationFields.emailConfirmationCode) {
+      smtpAdapter
+        .sendMail({
+          to: userResult.data.email,
+          ...emailTemplates.passwordRecovery({
+            login: userResult.data.login,
+            code: emailConfirmationFields.emailConfirmationCode,
+          }),
+        })
+        .catch((error: unknown) =>
+          console.error("Failed to send password recovery email (resend)", {
+            userId: userResult.data._id.toString(),
+            email: userResult.data.email,
+            error,
+          }),
+        );
+    }
+
+    return updatedResult;
+  },
+  async updatePassword(emailConfirmationCode: string, newPassword: string): Promise<Result<true>> {
+    const userResult = await this.checkUserEmailConfirmationCode(
+      emailConfirmationCode,
+      EmailConfirmationType.RECOVERY_CODE,
+    );
+    if (isError(userResult)) {
+      return userResult;
+    }
+    const passwordHash = await usersService.getPasswordHash(newPassword);
+    const isUpdatedUser = await usersService.updateUser<"createdAt">(
+      userResult.data._id.toString(),
+      {
+        ...userEmailConfirmationToDBMapper({ isConfirmed: true }),
+        login: userResult.data.login,
+        email: userResult.data.email,
+        passwordHash: passwordHash.data,
+      },
+    );
+    return isUpdatedUser;
   },
   async composeTokens(
     user: WithId<UserDBModel>,
@@ -262,5 +315,55 @@ export const authService = {
         extensions: [ERROR_MESSAGES.InternalServerError("composeTokens")],
       });
     }
+  },
+  async getUserByLoginOrEmail(email: string): Promise<Result<WithId<UserDBModel>>> {
+    const user = await usersService.getUserByLoginOrEmail({ email });
+    if (isError(user)) {
+      return failResult({
+        status: ResultErrorStatus.NotFound,
+        extensions: [ERROR_MESSAGES.NotFound("email", email)],
+      });
+    }
+    return user;
+  },
+  async updateUserEmailConfirmationFields(
+    user: WithId<UserDBModel>,
+    emailConfirmationFields: UserEmailConfirmation,
+  ): Promise<Result<true>> {
+    const result = await usersService.updateUser(user._id.toString(), {
+      ...emailConfirmationFields,
+      login: user.login,
+      email: user.email,
+    });
+    return result;
+  },
+  async checkUserEmailConfirmationCode(
+    emailConfirmationCode: string,
+    confirmationType: EmailConfirmationType,
+  ): Promise<Result<WithId<UserDBModel>>> {
+    const user = await usersService.getUserByEmailConfirmationCode(emailConfirmationCode);
+    if (isError(user)) {
+      return failResult({
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.BadRequest(confirmationType, emailConfirmationCode)],
+      });
+    }
+    if (user.data.emailConfirmationIsConfirmed) {
+      return failResult({
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.NotFound(confirmationType, emailConfirmationCode)],
+      });
+    }
+    const now = new Date();
+    if (
+      user.data.emailConfirmationExpirationDate &&
+      user.data.emailConfirmationExpirationDate.getTime() < now.getTime()
+    ) {
+      return failResult({
+        status: ResultErrorStatus.BadRequest,
+        extensions: [ERROR_MESSAGES.NotFound(confirmationType, emailConfirmationCode)],
+      });
+    }
+    return user;
   },
 };

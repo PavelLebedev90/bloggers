@@ -1,24 +1,28 @@
 import { usersCollection } from "../../../db/collections";
-import { ObjectId } from "mongodb";
+import { Filter, ObjectId } from "mongodb";
 import { UserDBModel } from "../types/users-db.type";
 
 export const usersRepository = {
   async getUser(userId: string) {
     return await usersCollection.findOne({ _id: new ObjectId(userId) });
   },
-  async getUserByLoginOrEmail(loginOrEmail: string | { login: string; email: string }) {
-    let login: string;
-    let email: string;
-    if (typeof loginOrEmail === "object") {
-      login = loginOrEmail.login;
-      email = loginOrEmail.email;
-    } else {
-      login = loginOrEmail;
-      email = loginOrEmail;
+  async getUserByLoginOrEmail(loginOrEmail: string | { login?: string; email?: string }) {
+    const filter: Filter<UserDBModel> = {};
+    if (typeof loginOrEmail !== "object") {
+      filter.$or = [{ login: loginOrEmail }, { email: loginOrEmail }];
     }
-    const user = await usersCollection.findOne({
-      $or: [{ login }, { email }],
-    });
+    if (typeof loginOrEmail === "object") {
+      if (loginOrEmail.login && loginOrEmail.email) {
+        filter.$or = [{ login: loginOrEmail.login }, { email: loginOrEmail.email }];
+      }
+      if (loginOrEmail.login) {
+        filter.login = loginOrEmail.login;
+      }
+      if (loginOrEmail.email) {
+        filter.email = loginOrEmail.email;
+      }
+    }
+    const user = await usersCollection.findOne(filter);
     return user;
   },
   async getUserByEmailConfirmationCode(emailConfirmationCode: string) {
@@ -30,7 +34,10 @@ export const usersRepository = {
     const { insertedId } = await usersCollection.insertOne(bodyUser);
     return insertedId.toString();
   },
-  async updateUser(userId: string, bodyUser: Omit<UserDBModel, "createdAt" | "passwordHash">) {
+  async updateUser<T extends keyof UserDBModel = "createdAt" | "passwordHash">(
+    userId: string,
+    bodyUser: Omit<UserDBModel, T>,
+  ) {
     const result = await usersCollection.updateOne(
       { _id: new ObjectId(userId) },
       { $set: bodyUser },

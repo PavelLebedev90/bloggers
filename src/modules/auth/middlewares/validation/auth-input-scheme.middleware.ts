@@ -20,3 +20,10 @@ export const authEmailResendingScheme = z.object({
     email: emailScheme,
   }),
 });
+
+export const authNewPasswordScheme = z.object({
+  body: z.object({
+    recoveryCode: authConfirmationScheme.shape.body.shape.code,
+    newPassword: authScheme.shape.body.shape.password,
+  }),
+});

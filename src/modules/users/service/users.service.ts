@@ -2,7 +2,12 @@ import { usersRepository } from "../repository/users.repository";
 import { UserDBModel, UserModel } from "../types/users-db.type";
 import { hashEnv } from "../../../core/config/hash.config";
 import { MongoServerError, WithId } from "mongodb";
-import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+  SuccessResult,
+} from "../../../core/types/result.type";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { hashAdapter } from "../../../core/adapters/hash.adapter";
@@ -24,7 +29,7 @@ export const usersService = {
     });
   },
   async getUserByLoginOrEmail(
-    loginOrEmail: string | { login: string; email: string },
+    loginOrEmail: string | { login?: string; email?: string },
   ): Promise<Result<WithId<UserDBModel>>> {
     const user = await usersRepository.getUserByLoginOrEmail(loginOrEmail);
     if (!user) {
@@ -57,9 +62,7 @@ export const usersService = {
     bodyUser: UserModel & { password: string },
     options: { isConfirmed: boolean },
   ): Promise<Result<{ userId: string; emailConfirmationCode: string | null }>> {
-    const passwordHash = await hashAdapter.hash(bodyUser.password, {
-      secret: hashEnv.PEPPER,
-    });
+    const passwordHash = await this.getPasswordHash(bodyUser.password);
     try {
       const emailConfirmationFields = userEmailConfirmationToDBMapper({
         isConfirmed: options.isConfirmed,
@@ -69,7 +72,7 @@ export const usersService = {
         login: bodyUser.login,
         email: bodyUser.email,
         createdAt: new Date(),
-        passwordHash,
+        passwordHash: passwordHash.data,
       });
       return okResult({
         status: ResultSuccessStatus.Created,
@@ -92,9 +95,9 @@ export const usersService = {
       throw e;
     }
   },
-  async updateUser(
+  async updateUser<T extends keyof UserDBModel = "createdAt" | "passwordHash">(
     userId: string,
-    bodyUser: Omit<UserDBModel, "createdAt" | "passwordHash">,
+    bodyUser: Omit<UserDBModel, T>,
   ): Promise<Result<true>> {
     const isUpdated = await usersRepository.updateUser(userId, bodyUser);
     if (!isUpdated) {
@@ -119,6 +122,15 @@ export const usersService = {
     return okResult({
       status: ResultSuccessStatus.NoContent,
       data: isDeleted,
+    });
+  },
+  async getPasswordHash(password: string): Promise<SuccessResult<string>> {
+    const passwordHash = await hashAdapter.hash(password, {
+      secret: hashEnv.PEPPER,
+    });
+    return okResult({
+      status: ResultSuccessStatus.Ok,
+      data: passwordHash,
     });
   },
 };

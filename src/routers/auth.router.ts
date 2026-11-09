@@ -4,6 +4,7 @@ import { AUTH_ROUTER } from "../modules/auth/const/auth-router-path.const";
 import {
   authConfirmationScheme,
   authEmailResendingScheme,
+  authNewPasswordScheme,
   authScheme,
 } from "../modules/auth/middlewares/validation/auth-input-scheme.middleware";
 import { loginHandler } from "../modules/auth/handlers/login-auth.handler";
@@ -28,6 +29,8 @@ import { cookieRefreshTokenMiddleWare } from "../core/middlewares/auth/cookie-re
 import { collectMetaRequest } from "../core/helpers/collect-meta-request.helper";
 import { rateLimitMiddleware } from "../core/middlewares/rateLimit/rate-limit.middleware";
 import { SanitizedRequest, SessionRequest } from "../core/types/express.type";
+import { passwordRecoveryHandler } from "../modules/auth/handlers/password-recovery-auth.handler";
+import { updatePasswordHandler } from "../modules/auth/handlers/update-password-auth.handler";
 
 export const authRouter: Router = Router();
 
@@ -57,6 +60,18 @@ authRouter.post(
   captureErrorValidation(authEmailResendingScheme),
   rateLimitMiddleware,
   registrationEmailResendingAuthHandler,
+);
+authRouter.post(
+  AUTH_ROUTER.PASSWORD_RECOVERY,
+  captureErrorValidation(authEmailResendingScheme),
+  rateLimitMiddleware,
+  passwordRecoveryHandler,
+);
+authRouter.post(
+  AUTH_ROUTER.NEW_PASSWORD,
+  captureErrorValidation(authNewPasswordScheme),
+  rateLimitMiddleware,
+  updatePasswordHandler,
 );
 
 authRouter.get(

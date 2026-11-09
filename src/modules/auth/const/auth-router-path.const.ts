@@ -10,6 +10,8 @@ export const AUTH_ROUTER = {
   REGISTRATION: "/registration",
   REGISTRATION_CONFIRM: "/registration-confirmation",
   REGISTRATION_EMAIL_RESENDING: "/registration-email-resending",
+  PASSWORD_RECOVERY: "/password-recovery",
+  NEW_PASSWORD: "/new-password",
 } as const;
 
 export const AUTH_ROUTER_PATH = `${config.basePath}${AUTH_ROUTER.ROOT}`;
