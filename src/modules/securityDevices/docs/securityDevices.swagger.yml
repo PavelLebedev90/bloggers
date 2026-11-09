@@ -1,0 +1,97 @@
+paths:
+  /api/security/devices:
+    get:
+      summary: Get the current user's active devices
+      description: Returns active refresh-token sessions associated with the supplied refresh-token cookie.
+      tags: [SecurityDevices]
+      security:
+        - RefreshTokenCookie: []
+      responses:
+        200:
+          description: Active devices for the current user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SecurityDevice"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+
+    delete:
+      summary: Delete all other devices
+      description: Revokes all the current user's sessions except the session identified by the refresh-token cookie.
+      tags: [SecurityDevices]
+      security:
+        - RefreshTokenCookie: []
+      responses:
+        204:
+          description: Other device sessions were deleted
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        404:
+          description: No other device sessions were found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /api/security/devices/{deviceId}:
+    delete:
+      summary: Delete a device session
+      description: Revokes the specified session. The device must belong to the current user.
+      tags: [SecurityDevices]
+      security:
+        - RefreshTokenCookie: []
+      parameters:
+        - in: path
+          name: deviceId
+          required: true
+          description: Device identifier returned by GET /api/security/devices
+          schema:
+            type: string
+            minLength: 1
+            example: "a1c2e345-6789-4abc-8def-0123456789ab"
+      responses:
+        204:
+          description: Device session was deleted
+        400:
+          $ref: "#/components/responses/BadRequest"
+        401:
+          $ref: "#/components/responses/Unauthorized"
+        403:
+          description: The device belongs to another user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        404:
+          $ref: "#/components/responses/NotFound"
+
+components:
+  schemas:
+    SecurityDevice:
+      type: object
+      required:
+        - ip
+        - title
+        - lastActiveDate
+        - deviceId
+      properties:
+        ip:
+          type: string
+          description: IP address observed when the session was created
+          example: "203.0.113.10"
+        title:
+          type: string
+          description: User-Agent value observed when the session was created
+          example: "Mozilla/5.0"
+        lastActiveDate:
+          type: string
+          format: date-time
+          description: Time when the refresh token was last issued
+          example: "2026-11-09T10:30:00.000Z"
+        deviceId:
+          type: string
+          format: uuid
+          example: "a1c2e345-6789-4abc-8def-0123456789ab"

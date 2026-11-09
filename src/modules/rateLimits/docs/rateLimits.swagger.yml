@@ -1,0 +1,9 @@
+components:
+  responses:
+    TooManyRequests:
+      description: Too many requests from this IP to this HTTP method and URL. The limit is five requests per ten-second window.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+

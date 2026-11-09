@@ -9,6 +9,8 @@ tags:
     description: API for managing comments
   - name: Users
     description: API for managing users (Basic auth)
+  - name: SecurityDevices
+    description: API for listing and revoking the current user's refresh-token sessions
   - name: Testing
     description: API for clearing the database
 
