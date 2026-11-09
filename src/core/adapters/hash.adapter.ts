@@ -8,7 +8,7 @@ export const hashAdapter = {
     },
   ): Promise<string> {
     const passwordHash = await hash(field, options);
-    return passwordHash.toString();
+    return passwordHash;
   },
   async verify(
     digest: string,

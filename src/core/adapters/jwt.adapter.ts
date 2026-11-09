@@ -2,14 +2,26 @@ import { decodeJwt, JWTPayload, jwtVerify, SignJWT } from "jose";
 import { jwtEnv } from "../config/jwt.config";
 import { randomUUID } from "node:crypto";
 
-export type JWTUserInfo = {
-  isEmailConfirmed: boolean;
-  userId: string;
-};
-type Typ = "access_token" | "refresh_token";
+export enum JWTType {
+  ACCESS = "access",
+  REFRESH = "refresh",
+}
+
+export type JWTUserInfo<T extends JWTType = JWTType.ACCESS> = T extends JWTType.ACCESS
+  ? {
+      isEmailConfirmed: boolean;
+      userId: string;
+    }
+  : {
+      userId: string;
+      deviceId: string;
+      exp?: number;
+      issuedAt?: number;
+    };
+
 export const JWTAdapter = {
-  async createToken(user: JWTUserInfo | { userId: string }, typ: Typ) {
-    const ttlTime = typ === "access_token" ? jwtEnv.ACCESS_TTL_SEC : jwtEnv.REFRESH_TTL_SEC;
+  async createToken<T extends JWTType>(user: JWTUserInfo<T>, typ: JWTType) {
+    const ttlTime = typ === JWTType.ACCESS ? jwtEnv.ACCESS_TTL_SEC : jwtEnv.REFRESH_TTL_SEC;
     const exp = new Date(Date.now() + ttlTime * 1000);
     const token = await new SignJWT(user)
       //Алгоритм и мета данные
@@ -26,8 +38,11 @@ export const JWTAdapter = {
       .sign(jwtEnv.JWT_SECRET);
     return { token, exp };
   },
-  async getPayloadByToken(token: string, typ: Typ): Promise<JWTUserInfo & JWTPayload> {
-    const { payload } = await jwtVerify<JWTUserInfo & (JWTPayload & { exp: number })>(
+  async getPayloadByToken<T extends JWTType>(
+    token: string,
+    typ: T,
+  ): Promise<JWTUserInfo<T> & JWTPayload> {
+    const { payload } = await jwtVerify<JWTUserInfo<T> & (JWTPayload & { exp: number })>(
       token,
       jwtEnv.JWT_SECRET,
       {

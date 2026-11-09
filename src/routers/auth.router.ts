@@ -1,4 +1,4 @@
-import { Router, Request, Response } from "express";
+import { Router, Response } from "express";
 import { captureErrorValidation } from "../core/middlewares/validation/capture-error-validation.middleware";
 import { AUTH_ROUTER } from "../modules/auth/const/auth-router-path.const";
 import {
@@ -25,26 +25,37 @@ import { registrationEmailResendingAuthHandler } from "../modules/auth/handlers/
 import { logoutHandler } from "../modules/auth/handlers/logout-auth.handler";
 import { refreshTokenHandler } from "../modules/auth/handlers/refresh-token-auth.handler";
 import { cookieRefreshTokenMiddleWare } from "../core/middlewares/auth/cookie-refresh-token.middleware";
+import { collectMetaRequest } from "../core/helpers/collect-meta-request.helper";
+import { rateLimitMiddleware } from "../core/middlewares/rateLimit/rate-limit.middleware";
+import { SanitizedRequest, SessionRequest } from "../core/types/express.type";
 
 export const authRouter: Router = Router();
 
 authRouter.get(AUTH_ROUTER.ME, bearerAuthorizationMiddleWare, getMeHandler);
-authRouter.post(AUTH_ROUTER.LOGIN, captureErrorValidation(authScheme), loginHandler);
+authRouter.post(
+  AUTH_ROUTER.LOGIN,
+  captureErrorValidation(authScheme),
+  rateLimitMiddleware,
+  loginHandler,
+);
 authRouter.post(AUTH_ROUTER.LOGOUT, cookieRefreshTokenMiddleWare, logoutHandler);
 authRouter.post(AUTH_ROUTER.REFRESH_TOKEN, cookieRefreshTokenMiddleWare, refreshTokenHandler);
 authRouter.post(
   AUTH_ROUTER.REGISTRATION,
   captureErrorValidation(userCreateScheme),
+  rateLimitMiddleware,
   registrationAuthHandler,
 );
 authRouter.post(
   AUTH_ROUTER.REGISTRATION_CONFIRM,
   captureErrorValidation(authConfirmationScheme),
+  rateLimitMiddleware,
   registrationConfirmAuthHandler,
 );
 authRouter.post(
   AUTH_ROUTER.REGISTRATION_EMAIL_RESENDING,
   captureErrorValidation(authEmailResendingScheme),
+  rateLimitMiddleware,
   registrationEmailResendingAuthHandler,
 );
 
@@ -52,31 +63,23 @@ authRouter.get(
   `${AUTH_ROUTER.ME}/jwe`,
   bearerJWEAuthorizationMiddleWare,
   async (
-    _req: Request,
-    res: Response<
-      AuthOutputModel | ValidationErrorMessages,
-      {
-        user: UserOutputModel;
-      }
-    >,
+    req: SessionRequest<UserOutputModel>,
+    res: Response<AuthOutputModel | ValidationErrorMessages>,
   ) => {
-    const user = await usersQueryRepository.getUser(res.locals.user.id);
+    const user = await usersQueryRepository.getUser(req.userSession.id);
     sendResult({ res, result: user });
   },
 );
 authRouter.post(
   `${AUTH_ROUTER.LOGIN}/jwe`,
   captureErrorValidation(authScheme),
+  rateLimitMiddleware,
   async (
-    _req: Request,
-    res: Response<
-      { accessToken: string } | ValidationErrorMessages,
-      {
-        body: AuthInputModel;
-      }
-    >,
+    req: SanitizedRequest<AuthInputModel>,
+    res: Response<{ accessToken: string } | ValidationErrorMessages>,
   ) => {
-    const result = await authService.login(res.locals.body, "jwe");
+    const meta = collectMetaRequest(req);
+    const result = await authService.login(req.validData.body, meta, "jwe");
     sendResult({ res, result, mapper: authTokenToOutputMapper });
   },
 );

@@ -2,7 +2,12 @@ import { commentsRepository } from "../repository/comments.repository";
 import { CommentInputModel } from "../types/comments-input.type";
 import { CommentDBModel } from "../types/comments-db.type";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
-import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
+import {
+  Result,
+  ResultErrorStatus,
+  ResultSuccessStatus,
+  SuccessResult,
+} from "../../../core/types/result.type";
 import { WithId } from "mongodb";
 import {
   failResult,
@@ -24,7 +29,7 @@ export const commentsService = {
       data: comments,
     });
   },
-  async createComment(bodyComment: CommentDBModel): Promise<Result<string>> {
+  async createComment(bodyComment: CommentDBModel): Promise<SuccessResult<string>> {
     const { insertedId } = await commentsRepository.createComment(bodyComment);
     return okResult({
       status: ResultSuccessStatus.Created,

@@ -7,21 +7,25 @@ import { UserDBModel } from "../modules/users/types/users-db.type";
 import { USERS_ROUTER } from "../modules/users/const/users-router-path.const";
 import { CommentDBModel } from "../modules/comments/types/comments-db.type";
 import { COMMENTS_ROUTER } from "../modules/comments/const/comments-router-path.const";
-import { TokenBlackList } from "../modules/tokenBlackList/types/tokenBlackList-db";
-import { TOKEN_BLACK_LIST_ROUTER } from "../modules/tokenBlackList/const/tokenBlackList-router-path.const";
+import { SecurityDeviceDBModel } from "../modules/securityDevices/types/securityDevice-db";
+import { SECURITY_DEVICES_ROUTER } from "../modules/securityDevices/const/securityDevices-router-path.const";
+import { RateLimitDBModel } from "../modules/rateLimits/types/rateLimit-db";
+import { RATE_LIMITS_ROUTER } from "../modules/rateLimits/const/rateLimits-router-path.const";
 
 export let postsCollection: Collection<PostDBModel>;
 export let blogsCollection: Collection<BlogDBModel>;
 export let usersCollection: Collection<UserDBModel>;
 export let commentsCollection: Collection<CommentDBModel>;
-export let tokenBlackListCollection: Collection<TokenBlackList>;
+export let securityDevicesCollection: Collection<SecurityDeviceDBModel>;
+export let rateLimitsCollection: Collection<RateLimitDBModel>;
 
 export function initCollections(db: Db): void {
   postsCollection = db.collection<PostDBModel>(POSTS_ROUTER.ROOT);
   blogsCollection = db.collection<BlogDBModel>(BLOGS_ROUTER.ROOT);
   usersCollection = db.collection<UserDBModel>(USERS_ROUTER.ROOT);
   commentsCollection = db.collection<CommentDBModel>(COMMENTS_ROUTER.ROOT);
-  tokenBlackListCollection = db.collection<TokenBlackList>(TOKEN_BLACK_LIST_ROUTER.ROOT);
+  securityDevicesCollection = db.collection<SecurityDeviceDBModel>(SECURITY_DEVICES_ROUTER.ROOT);
+  rateLimitsCollection = db.collection<RateLimitDBModel>(RATE_LIMITS_ROUTER.ROOT);
 }
 
 export async function ensureIndexes(): Promise<void> {
@@ -30,5 +34,6 @@ export async function ensureIndexes(): Promise<void> {
     { key: { email: 1 }, name: "email_unique", unique: true },
     { key: { login: 1 }, name: "login_unique", unique: true },
   ]);
-  await tokenBlackListCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  await securityDevicesCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  await rateLimitsCollection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 }

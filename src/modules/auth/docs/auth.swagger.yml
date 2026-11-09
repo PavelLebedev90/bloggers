@@ -4,7 +4,8 @@ paths:
       summary: Login with loginOrEmail and password
       description: >
         On success returns a JWT access token in the body and sets the refresh token
-        in an httpOnly cookie (`refreshToken`, Secure, SameSite=Strict).
+        in an httpOnly cookie (`refreshToken`, Secure, SameSite=Strict). A device
+        session is created using the request IP and User-Agent.
       tags: [Auth]
       security: []
       requestBody:
@@ -34,6 +35,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
         500:
           $ref: "#/components/responses/InternalServerError"
 
@@ -41,8 +44,8 @@ paths:
     post:
       summary: Issue a new pair of tokens
       description: >
-        Requires a valid `refreshToken` cookie. The presented refresh token is added to
-        the blacklist and a new access token plus a new refresh token cookie are issued.
+        Requires a valid, active `refreshToken` cookie. Issues a new access token and
+        refresh token cookie for the same device; the previous refresh token is invalidated.
       tags: [Auth]
       security:
         - RefreshTokenCookie: []
@@ -62,7 +65,7 @@ paths:
         401:
           description: >
             Unauthorized - the refresh token cookie is missing, expired, incorrect,
-            already blacklisted, or the user no longer exists
+            revoked, already used, or the user no longer exists
           content:
             application/json:
               schema:
@@ -72,8 +75,8 @@ paths:
     post:
       summary: Log out the current session
       description: >
-        Requires a valid `refreshToken` cookie. The refresh token is added to the
-        blacklist and the cookie is cleared.
+        Requires a valid, active `refreshToken` cookie. Revokes the current device
+        session and clears the cookie.
       tags: [Auth]
       security:
         - RefreshTokenCookie: []
@@ -89,7 +92,7 @@ paths:
         401:
           description: >
             Unauthorized - the refresh token cookie is missing, expired, incorrect,
-            already blacklisted, or the user no longer exists
+            revoked, or already used
           content:
             application/json:
               schema:
@@ -147,6 +150,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
 
   /api/auth/registration-confirmation:
     post:
@@ -172,6 +177,8 @@ paths:
                 $ref: "#/components/schemas/ValidationErrorResponse"
         404:
           $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
 
   /api/auth/registration-email-resending:
     post:
@@ -196,6 +203,8 @@ paths:
                 $ref: "#/components/schemas/ValidationErrorResponse"
         404:
           $ref: "#/components/responses/NotFound"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
 
   /api/auth/login/jwe:
     post:
@@ -224,6 +233,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ValidationErrorResponse"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
         500:
           $ref: "#/components/responses/InternalServerError"
 
@@ -278,7 +289,9 @@ components:
       properties:
         loginOrEmail:
           type: string
-          description: The user's login (3-10 chars) or email. Is lower-cased and trimmed by the server.
+          minLength: 3
+          maxLength: 100
+          description: The user's login (3-10 characters) or email. Trimmed and lower-cased by the server.
           example: "user1"
         password:
           type: string

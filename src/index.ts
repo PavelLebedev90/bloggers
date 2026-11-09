@@ -7,6 +7,7 @@ import { config } from "./core/config/setup.config";
 const app: Express = express();
 
 const bootstrap = async () => {
+  app.set("trust proxy", true);
   setupApp(app);
 
   await runDB(config.mongodbUrl);

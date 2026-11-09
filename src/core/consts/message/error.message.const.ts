@@ -48,6 +48,14 @@ export const ERROR_MESSAGES: ErrorMessages = {
       entity: collectEntityField(field, entity),
     };
   },
+  [ResultErrorStatus.TooManyRequests](field: string, entity?: string) {
+    return {
+      field,
+      message:
+        "You sent too many requests to the server within a certain period of time. Please wait and try again later",
+      entity: collectEntityField(field, entity),
+    };
+  },
   [ResultErrorStatus.InternalServerError](field: string, entity?: string) {
     return {
       field,
