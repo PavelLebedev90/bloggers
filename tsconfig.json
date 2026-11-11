@@ -94,7 +94,7 @@
 
     // ===== Вывод ошибок (Output Formatting) =====
     // "pretty": true, // Цветной и форматированный вывод ошибок в терминале (включено по умолчанию)
-    "noErrorTruncation": true // Не обрезать длинные типы в тексте сообщений об ошибках
+    "noErrorTruncation": true, // Не обрезать длинные типы в тексте сообщений об ошибках
 
     // ===== Полнота проверки типов проекта (Completeness) =====
     // "skipDefaultLibCheck": true, // Не проверять типы только во встроенных .d.ts самого TypeScript (более узкая версия skipLibCheck)
@@ -105,8 +105,8 @@
     // "disableSizeLimit": true, // Снять ограничение объёма памяти для очень больших проектов (файлы >20МБ типов)
 
     // ===== Прочее =====
-    // "experimentalDecorators": true, // Включить поддержку декораторов (устаревший, "legacy" стандарт — используется, например, в старом NestJS/TypeORM)
-    // "emitDecoratorMetadata": true, // Генерировать метаданные типов для декораторов (нужно для reflect-metadata, DI-контейнеров вроде NestJS)
+    "experimentalDecorators": true, // Включить поддержку декораторов (устаревший, "legacy" стандарт — используется, например, в старом NestJS/TypeORM)
+    "emitDecoratorMetadata": true // Генерировать метаданные типов для декораторов (нужно для reflect-metadata, DI-контейнеров вроде NestJS)
     // "erasableSyntaxOnly": true, // Запрещает конструкции TS, которые нельзя просто "стереть" при транспиляции (enum, namespace и т.п.) — для чистой транспиляции без type-checking
     // "libReplacement": true // Разрешает переопределять встроенные lib-файлы через npm-пакеты @typescript/lib-*
   },

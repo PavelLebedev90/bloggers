@@ -1,4 +1,4 @@
-import { usersRepository } from "../repository/users.repository";
+import { UsersRepository } from "../repository/users.repository";
 import { UserDBModel, UserModel } from "../types/users-db.type";
 import { hashEnv } from "../../../core/config/hash.config";
 import { MongoServerError, WithId } from "mongodb";
@@ -12,10 +12,12 @@ import { failResult, okResult } from "../../../core/utils/formatters/result/resu
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { hashAdapter } from "../../../core/adapters/hash.adapter";
 import { userEmailConfirmationToDBMapper } from "../mappers/user-email-confirmation.mapper";
-
-export const usersService = {
+import { inject, injectable } from "inversify";
+@injectable()
+export class UsersService {
+  constructor(@inject(UsersRepository) protected usersRepository: UsersRepository) {}
   async getUser(userId: string): Promise<Result<WithId<UserDBModel>>> {
-    const user = await usersRepository.getUser(userId);
+    const user = await this.usersRepository.getUser(userId);
 
     if (!user) {
       return failResult({
@@ -27,11 +29,11 @@ export const usersService = {
       status: ResultSuccessStatus.Ok,
       data: user,
     });
-  },
+  }
   async getUserByLoginOrEmail(
     loginOrEmail: string | { login?: string; email?: string },
   ): Promise<Result<WithId<UserDBModel>>> {
-    const user = await usersRepository.getUserByLoginOrEmail(loginOrEmail);
+    const user = await this.usersRepository.getUserByLoginOrEmail(loginOrEmail);
     if (!user) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -42,11 +44,11 @@ export const usersService = {
       status: ResultSuccessStatus.Ok,
       data: user,
     });
-  },
+  }
   async getUserByEmailConfirmationCode(
     emailConfirmationCode: string,
   ): Promise<Result<WithId<UserDBModel>>> {
-    const user = await usersRepository.getUserByEmailConfirmationCode(emailConfirmationCode);
+    const user = await this.usersRepository.getUserByEmailConfirmationCode(emailConfirmationCode);
     if (!user) {
       return failResult({
         status: ResultErrorStatus.BadRequest,
@@ -57,7 +59,7 @@ export const usersService = {
       status: ResultSuccessStatus.Ok,
       data: user,
     });
-  },
+  }
   async createUser(
     bodyUser: UserModel & { password: string },
     options: { isConfirmed: boolean },
@@ -67,7 +69,7 @@ export const usersService = {
       const emailConfirmationFields = userEmailConfirmationToDBMapper({
         isConfirmed: options.isConfirmed,
       });
-      const userId = await usersRepository.createUser({
+      const userId = await this.usersRepository.createUser({
         ...emailConfirmationFields,
         login: bodyUser.login,
         email: bodyUser.email,
@@ -94,12 +96,12 @@ export const usersService = {
       }
       throw e;
     }
-  },
+  }
   async updateUser<T extends keyof UserDBModel = "createdAt" | "passwordHash">(
     userId: string,
     bodyUser: Omit<UserDBModel, T>,
   ): Promise<Result<true>> {
-    const isUpdated = await usersRepository.updateUser(userId, bodyUser);
+    const isUpdated = await this.usersRepository.updateUser(userId, bodyUser);
     if (!isUpdated) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -110,9 +112,9 @@ export const usersService = {
       status: ResultSuccessStatus.NoContent,
       data: isUpdated,
     });
-  },
+  }
   async deleteUser(userId: string): Promise<Result<true>> {
-    const isDeleted = await usersRepository.deleteUser(userId);
+    const isDeleted = await this.usersRepository.deleteUser(userId);
     if (!isDeleted) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -123,7 +125,7 @@ export const usersService = {
       status: ResultSuccessStatus.NoContent,
       data: isDeleted,
     });
-  },
+  }
   async getPasswordHash(password: string): Promise<SuccessResult<string>> {
     const passwordHash = await hashAdapter.hash(password, {
       secret: hashEnv.PEPPER,
@@ -132,5 +134,5 @@ export const usersService = {
       status: ResultSuccessStatus.Ok,
       data: passwordHash,
     });
-  },
-};
+  }
+}

@@ -11,19 +11,24 @@ import {
   isSuccess,
   okResult,
 } from "../../../core/utils/formatters/result/result.formatter";
-import { securityDevicesRepository } from "../repository/securityDevices.repository";
 import { SecurityDeviceDBModel } from "../types/securityDevice-db";
-
-export const securityDevicesService = {
+import { SecurityDevicesRepository } from "../repository/securityDevices.repository";
+import { inject, injectable } from "inversify";
+@injectable()
+export class SecurityDevicesService {
+  constructor(
+    @inject(SecurityDevicesRepository)
+    protected securityDevicesRepository: SecurityDevicesRepository,
+  ) {}
   async getAllSession(userId: string): Promise<Result<WithId<SecurityDeviceDBModel>[]>> {
-    const result = await securityDevicesRepository.getAllSession(userId);
+    const result = await this.securityDevicesRepository.getAllSession(userId);
     return okResult({
       status: ResultSuccessStatus.Ok,
       data: result,
     });
-  },
+  }
   async getSessionByDeviceId(deviceId: string): Promise<Result<WithId<SecurityDeviceDBModel>>> {
-    const session = await securityDevicesRepository.getSessionByDeviceId(deviceId);
+    const session = await this.securityDevicesRepository.getSessionByDeviceId(deviceId);
     if (!session) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -34,26 +39,26 @@ export const securityDevicesService = {
       status: ResultSuccessStatus.Ok,
       data: session,
     });
-  },
+  }
   async createSession(session: SecurityDeviceDBModel): Promise<SuccessResult<string>> {
-    const { insertedId } = await securityDevicesRepository.createSession(session);
+    const { insertedId } = await this.securityDevicesRepository.createSession(session);
     return okResult({
       status: ResultSuccessStatus.Created,
       data: insertedId.toString(),
     });
-  },
+  }
   async updateSession(session: SecurityDeviceDBModel): Promise<SuccessResult<boolean>> {
-    const isUpdated = await securityDevicesRepository.updateSession(session);
+    const isUpdated = await this.securityDevicesRepository.updateSession(session);
     return okResult({
       status: ResultSuccessStatus.Ok,
       data: isUpdated,
     });
-  },
+  }
   async deleteAllSessionExcludeCurrent(
     currentDeviceId: string,
     userId: string,
   ): Promise<Result<true>> {
-    const isDeleted = await securityDevicesRepository.deleteAllSessionExcludeCurrent(
+    const isDeleted = await this.securityDevicesRepository.deleteAllSessionExcludeCurrent(
       currentDeviceId,
       userId,
     );
@@ -67,7 +72,7 @@ export const securityDevicesService = {
       status: ResultSuccessStatus.NoContent,
       data: isDeleted,
     });
-  },
+  }
   async deleteSessionByDeviceId(deviceId: string, userId: string): Promise<Result<true>> {
     const session = await this.getSessionByDeviceId(deviceId);
     if (isSuccess(session) && session.data.userId !== userId) {
@@ -76,7 +81,10 @@ export const securityDevicesService = {
         extensions: [ERROR_MESSAGES.Forbidden("user id", userId)],
       });
     }
-    const isDeleted = await securityDevicesRepository.deleteSessionByDeviceId(deviceId, userId);
+    const isDeleted = await this.securityDevicesRepository.deleteSessionByDeviceId(
+      deviceId,
+      userId,
+    );
     if (!isDeleted) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -87,7 +95,7 @@ export const securityDevicesService = {
       status: ResultSuccessStatus.NoContent,
       data: isDeleted,
     });
-  },
+  }
   collectSessionInfo(meta: {
     ip: string;
     userAgent: string;
@@ -103,5 +111,5 @@ export const securityDevicesService = {
       title: meta.userAgent,
       issuedAt: new Date(),
     };
-  },
-};
+  }
+}

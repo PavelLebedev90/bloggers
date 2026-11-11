@@ -1,10 +1,5 @@
 import { Router } from "express";
 import { BLOGS_ROUTER } from "../modules/blogs/const/blogs-router-path.const";
-import { getAllBlogsHandler } from "../modules/blogs/handlers/get-all-blogs.handler";
-import { getBlogHandler } from "../modules/blogs/handlers/get-blog.handler";
-import { createBlogHandler } from "../modules/blogs/handlers/create-blog.handler";
-import { updateBlogHandler } from "../modules/blogs/handlers/update-blog.handler";
-import { deleteBlogHandler } from "../modules/blogs/handlers/delete-blog.handler";
 import { baseAuthorizationMiddleWare } from "../core/middlewares/auth/base-authorization.middleware";
 import {
   blogCreateScheme,
@@ -13,37 +8,50 @@ import {
   blogUpdateScheme,
 } from "../modules/blogs/middlewares/validation/blogs-input-scheme.middleware";
 import { captureErrorValidation } from "../core/middlewares/validation/capture-error-validation.middleware";
-import { getPostsByBlogIdHandler } from "../modules/blogs/handlers/get-posts-by-blogId.handler";
 import {
   postCreateScheme,
   postQueryScheme,
 } from "../modules/posts/middlewares/validation/posts-input-scheme.middleware";
-import { createPostByBlogIdHandler } from "../modules/blogs/handlers/create-post-by-blogId.handler";
+import { BlogsController } from "../modules/blogs/controller/blogs.controller";
+import { container } from "../composition-root";
 
 export const blogsRouter: Router = Router();
+const blogsController = container.get(BlogsController);
 
-blogsRouter.get(BLOGS_ROUTER.BASE, captureErrorValidation(blogQueryScheme), getAllBlogsHandler);
-blogsRouter.get(BLOGS_ROUTER.BY_ID, captureErrorValidation(blogParamsScheme("id")), getBlogHandler);
+blogsRouter.get(
+  BLOGS_ROUTER.BASE,
+  captureErrorValidation(blogQueryScheme),
+  blogsController.getAllBlogs.bind(blogsController),
+);
+blogsRouter.get(
+  BLOGS_ROUTER.BY_ID,
+  captureErrorValidation(blogParamsScheme("id")),
+  blogsController.getBlog.bind(blogsController),
+);
 blogsRouter.get(
   BLOGS_ROUTER.POSTS_BY_BLOG_ID,
   captureErrorValidation(postQueryScheme.extend(blogParamsScheme("blogId").shape)),
-  getPostsByBlogIdHandler,
+  blogsController.getPostsByBlogId.bind(blogsController),
 );
 
 blogsRouter.use(baseAuthorizationMiddleWare);
 blogsRouter.post(
   BLOGS_ROUTER.POSTS_BY_BLOG_ID,
   captureErrorValidation(postCreateScheme.extend(blogParamsScheme("blogId").shape)),
-  createPostByBlogIdHandler,
+  blogsController.createPostByBlogId.bind(blogsController),
 );
-blogsRouter.post(BLOGS_ROUTER.BASE, captureErrorValidation(blogCreateScheme), createBlogHandler);
+blogsRouter.post(
+  BLOGS_ROUTER.BASE,
+  captureErrorValidation(blogCreateScheme),
+  blogsController.createBlog.bind(blogsController),
+);
 blogsRouter.put(
   BLOGS_ROUTER.BY_ID,
   captureErrorValidation(blogUpdateScheme.extend(blogParamsScheme("id").shape)),
-  updateBlogHandler,
+  blogsController.updateBlog.bind(blogsController),
 );
 blogsRouter.delete(
   BLOGS_ROUTER.BY_ID,
   captureErrorValidation(blogParamsScheme("id")),
-  deleteBlogHandler,
+  blogsController.deleteBlog.bind(blogsController),
 );

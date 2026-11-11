@@ -1,4 +1,4 @@
-import { Router, Response } from "express";
+import { Router } from "express";
 import { captureErrorValidation } from "../core/middlewares/validation/capture-error-validation.middleware";
 import { AUTH_ROUTER } from "../modules/auth/const/auth-router-path.const";
 import {
@@ -7,94 +7,77 @@ import {
   authNewPasswordScheme,
   authScheme,
 } from "../modules/auth/middlewares/validation/auth-input-scheme.middleware";
-import { loginHandler } from "../modules/auth/handlers/login-auth.handler";
-import { getMeHandler } from "../modules/auth/handlers/get-me-auth.handler";
 import { bearerAuthorizationMiddleWare } from "../core/middlewares/auth/bearer-authorization.middleware";
 import { bearerJWEAuthorizationMiddleWare } from "../core/middlewares/auth/bearer-jwe-authorization.middleware";
-import { AuthInputModel } from "../modules/auth/types/auth-input.type";
-import { ValidationErrorMessages } from "../core/types/validation-error.type";
-import { authService } from "../modules/auth/service/auth.service";
-import { sendResult } from "../core/utils/formatters/result/send-result.formatter";
-import { authTokenToOutputMapper } from "../modules/auth/mappers/auth-to-output.mapper";
-import { AuthOutputModel } from "../modules/auth/types/auth-output.type";
-import { usersQueryRepository } from "../modules/users/repository/users-query.repository";
-import { UserOutputModel } from "../modules/users/types/users-output.type";
 import { userCreateScheme } from "../modules/users/middlewares/validation/users-input-scheme.middleware";
-import { registrationAuthHandler } from "../modules/auth/handlers/registration-auth.handler";
-import { registrationConfirmAuthHandler } from "../modules/auth/handlers/registration-confirm-auth.handler";
-import { registrationEmailResendingAuthHandler } from "../modules/auth/handlers/registration-email-resending-auth.handler";
-import { logoutHandler } from "../modules/auth/handlers/logout-auth.handler";
-import { refreshTokenHandler } from "../modules/auth/handlers/refresh-token-auth.handler";
 import { cookieRefreshTokenMiddleWare } from "../core/middlewares/auth/cookie-refresh-token.middleware";
-import { collectMetaRequest } from "../core/helpers/collect-meta-request.helper";
 import { rateLimitMiddleware } from "../core/middlewares/rateLimit/rate-limit.middleware";
-import { SanitizedRequest, SessionRequest } from "../core/types/express.type";
-import { passwordRecoveryHandler } from "../modules/auth/handlers/password-recovery-auth.handler";
-import { updatePasswordHandler } from "../modules/auth/handlers/update-password-auth.handler";
+import { container } from "../composition-root";
+import { AuthController } from "../modules/auth/controller/auth.controller";
 
 export const authRouter: Router = Router();
+const authController = container.get(AuthController);
 
-authRouter.get(AUTH_ROUTER.ME, bearerAuthorizationMiddleWare, getMeHandler);
+authRouter.get(
+  AUTH_ROUTER.ME,
+  bearerAuthorizationMiddleWare,
+  authController.getMe.bind(authController),
+);
 authRouter.post(
   AUTH_ROUTER.LOGIN,
   captureErrorValidation(authScheme),
   rateLimitMiddleware,
-  loginHandler,
+  authController.login.bind(authController),
 );
-authRouter.post(AUTH_ROUTER.LOGOUT, cookieRefreshTokenMiddleWare, logoutHandler);
-authRouter.post(AUTH_ROUTER.REFRESH_TOKEN, cookieRefreshTokenMiddleWare, refreshTokenHandler);
+authRouter.post(
+  AUTH_ROUTER.LOGOUT,
+  cookieRefreshTokenMiddleWare,
+  authController.logout.bind(authController),
+);
+authRouter.post(
+  AUTH_ROUTER.REFRESH_TOKEN,
+  cookieRefreshTokenMiddleWare,
+  authController.refreshToken.bind(authController),
+);
 authRouter.post(
   AUTH_ROUTER.REGISTRATION,
   captureErrorValidation(userCreateScheme),
   rateLimitMiddleware,
-  registrationAuthHandler,
+  authController.registration.bind(authController),
 );
 authRouter.post(
   AUTH_ROUTER.REGISTRATION_CONFIRM,
   captureErrorValidation(authConfirmationScheme),
   rateLimitMiddleware,
-  registrationConfirmAuthHandler,
+  authController.registrationConfirm.bind(authController),
 );
 authRouter.post(
   AUTH_ROUTER.REGISTRATION_EMAIL_RESENDING,
   captureErrorValidation(authEmailResendingScheme),
   rateLimitMiddleware,
-  registrationEmailResendingAuthHandler,
+  authController.registrationEmailResending.bind(authController),
 );
 authRouter.post(
   AUTH_ROUTER.PASSWORD_RECOVERY,
   captureErrorValidation(authEmailResendingScheme),
   rateLimitMiddleware,
-  passwordRecoveryHandler,
+  authController.passwordRecovery.bind(authController),
 );
 authRouter.post(
   AUTH_ROUTER.NEW_PASSWORD,
   captureErrorValidation(authNewPasswordScheme),
   rateLimitMiddleware,
-  updatePasswordHandler,
+  authController.updatePassword.bind(authController),
 );
 
 authRouter.get(
   `${AUTH_ROUTER.ME}/jwe`,
   bearerJWEAuthorizationMiddleWare,
-  async (
-    req: SessionRequest<UserOutputModel>,
-    res: Response<AuthOutputModel | ValidationErrorMessages>,
-  ) => {
-    const user = await usersQueryRepository.getUser(req.userSession.id);
-    sendResult({ res, result: user });
-  },
+  authController.getMeJWE.bind(authController),
 );
 authRouter.post(
   `${AUTH_ROUTER.LOGIN}/jwe`,
   captureErrorValidation(authScheme),
   rateLimitMiddleware,
-  async (
-    req: SanitizedRequest<AuthInputModel>,
-    res: Response<{ accessToken: string } | ValidationErrorMessages>,
-  ) => {
-    const meta = collectMetaRequest(req);
-    const result = await authService.login(req.validData.body, meta, "jwe");
-    sendResult({ res, result, mapper: authTokenToOutputMapper });
-  },
+  authController.loginJWE.bind(authController),
 );

@@ -1,11 +1,12 @@
 import { usersCollection } from "../../../db/collections";
 import { Filter, ObjectId } from "mongodb";
 import { UserDBModel } from "../types/users-db.type";
-
-export const usersRepository = {
+import { injectable } from "inversify";
+@injectable()
+export class UsersRepository {
   async getUser(userId: string) {
     return await usersCollection.findOne({ _id: new ObjectId(userId) });
-  },
+  }
   async getUserByLoginOrEmail(loginOrEmail: string | { login?: string; email?: string }) {
     const filter: Filter<UserDBModel> = {};
     if (typeof loginOrEmail !== "object") {
@@ -24,16 +25,16 @@ export const usersRepository = {
     }
     const user = await usersCollection.findOne(filter);
     return user;
-  },
+  }
   async getUserByEmailConfirmationCode(emailConfirmationCode: string) {
     return await usersCollection.findOne({
       emailConfirmationCode,
     });
-  },
+  }
   async createUser(bodyUser: UserDBModel) {
     const { insertedId } = await usersCollection.insertOne(bodyUser);
     return insertedId.toString();
-  },
+  }
   async updateUser<T extends keyof UserDBModel = "createdAt" | "passwordHash">(
     userId: string,
     bodyUser: Omit<UserDBModel, T>,
@@ -43,9 +44,9 @@ export const usersRepository = {
       { $set: bodyUser },
     );
     return result.matchedCount === 1;
-  },
+  }
   async deleteUser(userId: string) {
     const result = await usersCollection.deleteOne({ _id: new ObjectId(userId) });
     return result.deletedCount === 1;
-  },
-};
+  }
+}
