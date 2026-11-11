@@ -1,5 +1,6 @@
 import { smtpEnv } from "../config/smtp.config";
 import { renderTemplate } from "./render-template";
+import { passwordRecoveryTemplate } from "./templates/password-recovery.template";
 import { registrationConfirmationTemplate } from "./templates/registration-confirmation.template";
 
 const EMAIL_CONFIRMATION_TTL_MINUTES = 10;
@@ -18,6 +19,22 @@ export const emailTemplates = {
     });
     return {
       subject: "Подтверждение регистрации в Bloggers",
+      html,
+    };
+  },
+  passwordRecovery(params: { login: string; code: string }): {
+    subject: string;
+    html: string;
+  } {
+    const recoveryUrl = `${smtpEnv.SMTP_CONFIRMATION_URL}/password-recovery?recoveryCode=${encodeURIComponent(params.code)}`;
+    const html = renderTemplate(passwordRecoveryTemplate, {
+      login: params.login,
+      recoveryUrl,
+      expiresInMinutes: EMAIL_CONFIRMATION_TTL_MINUTES,
+      year: new Date().getFullYear(),
+    });
+    return {
+      subject: "Восстановление пароля в Bloggers",
       html,
     };
   },

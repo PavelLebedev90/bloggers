@@ -3,6 +3,9 @@ import {
   registration,
   registrationConfirmation,
   registrationEmailResending,
+  passwordRecovery,
+  updatePassword,
+  login,
 } from "../../utils/auth/crud-auth-test.util";
 import { collectUserToCreate } from "../../utils/users/collect-user-test.util";
 import { setupDbLifecycle } from "../../utils/db/setup-db-lifecycle.util";
@@ -27,6 +30,7 @@ describe("Auth registration", () => {
   setupDbLifecycle();
 
   beforeEach(() => {
+    mockedSendEmail.mockClear();
     mockedSendEmail.mockResolvedValue(undefined);
   });
 
@@ -165,6 +169,56 @@ describe("Auth registration", () => {
       const res = await registrationEmailResending({ email: "not-an-email" });
 
       expect(res.status).toBe(HttpStatus.BadRequest);
+    });
+  });
+
+  describe("POST /auth/password-recovery", () => {
+    it("should return 204, rotate the recovery code and send an email for an existing user", async () => {
+      const user = collectUserToCreate();
+      await registration(user).expect(HttpStatus.NoContent);
+      mockedSendEmail.mockClear();
+
+      const res = await passwordRecovery({ email: user.email });
+
+      expect(res.status).toBe(HttpStatus.NoContent);
+      const code = await getEmailConfirmationCode(user.email);
+      expect(mockedSendEmail).toHaveBeenCalledWith(
+        expect.objectContaining({ to: user.email, html: expect.stringContaining(code) }),
+      );
+    });
+
+    it("should return 204 for an unknown email", async () => {
+      const res = await passwordRecovery({ email: "unknown@example.com" });
+      expect(res.status).toBe(HttpStatus.NoContent);
+      expect(mockedSendEmail).not.toHaveBeenCalled();
+    });
+
+    it("should reject an invalid email", async () => {
+      const res = await passwordRecovery({ email: "invalid" });
+      expect(res.status).toBe(HttpStatus.BadRequest);
+    });
+  });
+
+  describe("POST /auth/new-password", () => {
+    it("should update password when recovery code is valid", async () => {
+      const user = collectUserToCreate();
+      await registration(user).expect(HttpStatus.NoContent);
+      await passwordRecovery({ email: user.email }).expect(HttpStatus.NoContent);
+      const recoveryCode = await getEmailConfirmationCode(user.email);
+
+      await updatePassword({ recoveryCode, newPassword: "newpass1" }).expect(HttpStatus.NoContent);
+      await login({ loginOrEmail: user.email, password: "newpass1" }).expect(HttpStatus.Ok);
+      await updatePassword({ recoveryCode, newPassword: "another1" }).expect(HttpStatus.BadRequest);
+    });
+
+    it("should reject an invalid recovery code or password", async () => {
+      await updatePassword({ recoveryCode: "invalid", newPassword: "newpass1" }).expect(
+        HttpStatus.BadRequest,
+      );
+      await updatePassword({
+        recoveryCode: "e8b8c3f0-1a2b-4c3d-9e0f-1234567890ab",
+        newPassword: "123",
+      }).expect(HttpStatus.BadRequest);
     });
   });
 });

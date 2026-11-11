@@ -3,7 +3,7 @@ import { BlogDBModel } from "../types/blogs-db.type";
 import { Filter, ObjectId } from "mongodb";
 import { BlogQueryInputModel } from "../types/blogs-query-input.type";
 import { PostQueryInputModel } from "../../posts/types/posts-query-input.type";
-import { postsQueryRepository } from "../../posts/repository/posts-query.repository";
+import { PostsQueryRepository } from "../../posts/repository/posts-query.repository";
 import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/types/result.type";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import {
@@ -14,8 +14,11 @@ import {
 import { BlogOutputModel } from "../types/blogs-output.type";
 import { blogsToOutputMapper, blogToOutputMapper } from "../mappers/blog-to-output.mapper";
 import { PostOutputModel } from "../../posts/types/posts-output.type";
+import { inject, injectable } from "inversify";
+@injectable()
+export class BlogsQueryRepository {
+  constructor(@inject(PostsQueryRepository) protected postsQueryRepository: PostsQueryRepository) {}
 
-export const blogsQueryRepository = {
   async getAll(
     query: BlogQueryInputModel,
   ): Promise<Result<{ items: BlogOutputModel[]; totalCount: number }>> {
@@ -38,7 +41,7 @@ export const blogsQueryRepository = {
       data: { items: blogsToOutputMapper(items), totalCount },
       status: ResultSuccessStatus.Ok,
     });
-  },
+  }
   async getBlog(blogId: string): Promise<Result<BlogOutputModel>> {
     const blog = await blogsCollection.findOne({ _id: new ObjectId(blogId) });
 
@@ -49,7 +52,7 @@ export const blogsQueryRepository = {
       });
     }
     return okResult({ data: blogToOutputMapper(blog), status: ResultSuccessStatus.Ok });
-  },
+  }
   async getAllPostsByBlogId(
     query: Required<PostQueryInputModel>,
   ): Promise<Result<{ items: PostOutputModel[]; totalCount: number }>> {
@@ -57,6 +60,6 @@ export const blogsQueryRepository = {
     if (isError(result)) {
       return result;
     }
-    return await postsQueryRepository.getAll(query);
-  },
-};
+    return await this.postsQueryRepository.getAll(query);
+  }
+}

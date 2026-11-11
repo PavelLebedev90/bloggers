@@ -7,8 +7,9 @@ import { failResult, okResult } from "../../../core/utils/formatters/result/resu
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { postsToOutputMapper, postToOutputMapper } from "../mappers/post-to-output.mapper";
 import { PostOutputModel } from "../types/posts-output.type";
-
-export const postsQueryRepository = {
+import { injectable } from "inversify";
+@injectable()
+export class PostsQueryRepository {
   async getAll(
     query: PostQueryInputModel,
   ): Promise<Result<{ items: PostOutputModel[]; totalCount: number }>> {
@@ -31,7 +32,7 @@ export const postsQueryRepository = {
       status: ResultSuccessStatus.Ok,
       data: { items: postsToOutputMapper(items), totalCount },
     });
-  },
+  }
   async getPost(postId: string): Promise<Result<PostOutputModel>> {
     const post = await postsCollection.findOne({ _id: new ObjectId(postId) });
     if (!post) {
@@ -44,5 +45,5 @@ export const postsQueryRepository = {
       status: ResultSuccessStatus.Ok,
       data: postToOutputMapper(post),
     });
-  },
-};
+  }
+}

@@ -7,8 +7,9 @@ import { failResult, okResult } from "../../../core/utils/formatters/result/resu
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { UserOutputModel } from "../types/users-output.type";
 import { usersToOutputMapper, userToOutputMapper } from "../mappers/user-to-output.mapper";
-
-export const usersQueryRepository = {
+import { injectable } from "inversify";
+@injectable()
+export class UsersQueryRepository {
   async getAll(
     query: UserQueryInputModel,
   ): Promise<Result<{ items: UserOutputModel[]; totalCount: number }>> {
@@ -41,7 +42,7 @@ export const usersQueryRepository = {
       status: ResultSuccessStatus.Ok,
       data: { items: usersToOutputMapper(items), totalCount },
     });
-  },
+  }
   async getUser(userId: string): Promise<Result<UserOutputModel>> {
     const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
 
@@ -55,5 +56,5 @@ export const usersQueryRepository = {
       status: ResultSuccessStatus.Ok,
       data: userToOutputMapper(user),
     });
-  },
-};
+  }
+}

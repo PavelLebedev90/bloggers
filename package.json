@@ -39,10 +39,12 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "handlebars": "^4.7.10",
+    "inversify": "^6.2.2",
     "jose": "^6.2.12",
     "mongodb": "^7.6.0",
     "mongodb-memory-server": "^11.3.0",
     "nodemailer": "^10.1.1",
+    "reflect-metadata": "^0.2.2",
     "swagger-jsdoc": "^6.3.0",
     "swagger-ui-express": "^5.0.1",
     "zod": "^4.6.5"

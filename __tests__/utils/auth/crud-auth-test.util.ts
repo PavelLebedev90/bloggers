@@ -41,6 +41,14 @@ export const registrationEmailResending = (body: { email?: unknown }): Test => {
     .send(body);
 };
 
+export const passwordRecovery = (body: { email?: unknown }): Test => {
+  return request(app).post(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.PASSWORD_RECOVERY}`).send(body);
+};
+
+export const updatePassword = (body: { recoveryCode?: unknown; newPassword?: unknown }): Test => {
+  return request(app).post(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.NEW_PASSWORD}`).send(body);
+};
+
 export const refreshToken = (cookie?: string): Test => {
   const req = request(app).post(`${AUTH_ROUTER_PATH}${AUTH_ROUTER.REFRESH_TOKEN}`);
   if (cookie !== undefined) {

@@ -206,6 +206,49 @@ paths:
         429:
           $ref: "#/components/responses/TooManyRequests"
 
+  /api/auth/password-recovery:
+    post:
+      summary: Send a password recovery email
+      description: Returns the same response whether or not the email belongs to an account.
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordRecoveryInput"
+      responses:
+        204:
+          description: Request accepted; a recovery email is sent when the account exists
+        400:
+          $ref: "#/components/responses/BadRequest"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+
+  /api/auth/new-password:
+    post:
+      summary: Set a new password using a recovery code
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewPasswordInput"
+      responses:
+        204:
+          description: Password was updated and the recovery code invalidated
+        400:
+          description: Validation error, invalid, expired, or already used recovery code
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        429:
+          $ref: "#/components/responses/TooManyRequests"
+
   /api/auth/login/jwe:
     post:
       summary: Login with loginOrEmail and password, returns a JWE session token
@@ -344,3 +387,26 @@ components:
           maxLength: 100
           pattern: '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
           example: "user1@example.com"
+    PasswordRecoveryInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 100
+          example: "user1@example.com"
+    NewPasswordInput:
+      type: object
+      required: [recoveryCode, newPassword]
+      properties:
+        recoveryCode:
+          type: string
+          format: uuid
+          description: Recovery code sent to the user's email
+          example: "e8b8c3f0-1a2b-4c3d-9e0f-1234567890ab"
+        newPassword:
+          type: string
+          minLength: 6
+          maxLength: 20
+          example: "newpass1"

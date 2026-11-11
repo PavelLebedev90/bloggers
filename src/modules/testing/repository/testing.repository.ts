@@ -1,3 +1,4 @@
+import { injectable } from "inversify";
 import {
   blogsCollection,
   commentsCollection,
@@ -6,8 +7,8 @@ import {
   securityDevicesCollection,
   usersCollection,
 } from "../../../db/collections";
-
-export const testingRepository = {
+@injectable()
+export class TestingRepository {
   async clearDB() {
     await blogsCollection.deleteMany({});
     await postsCollection.deleteMany({});
@@ -15,5 +16,5 @@ export const testingRepository = {
     await commentsCollection.deleteMany({});
     await securityDevicesCollection.deleteMany({});
     await rateLimitsCollection.deleteMany({});
-  },
-};
+  }
+}

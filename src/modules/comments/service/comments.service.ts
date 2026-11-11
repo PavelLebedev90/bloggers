@@ -1,4 +1,4 @@
-import { commentsRepository } from "../repository/comments.repository";
+import { CommentsRepository } from "../repository/comments.repository";
 import { CommentInputModel } from "../types/comments-input.type";
 import { CommentDBModel } from "../types/comments-db.type";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
@@ -14,10 +14,12 @@ import {
   isSuccess,
   okResult,
 } from "../../../core/utils/formatters/result/result.formatter";
-
-export const commentsService = {
+import { inject, injectable } from "inversify";
+@injectable()
+export class CommentsService {
+  constructor(@inject(CommentsRepository) protected commentsRepository: CommentsRepository) {}
   async getComment(commentId: string): Promise<Result<WithId<CommentDBModel>>> {
-    const comments = await commentsRepository.getComment(commentId);
+    const comments = await this.commentsRepository.getComment(commentId);
     if (!comments) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -28,14 +30,14 @@ export const commentsService = {
       status: ResultSuccessStatus.Ok,
       data: comments,
     });
-  },
+  }
   async createComment(bodyComment: CommentDBModel): Promise<SuccessResult<string>> {
-    const { insertedId } = await commentsRepository.createComment(bodyComment);
+    const { insertedId } = await this.commentsRepository.createComment(bodyComment);
     return okResult({
       status: ResultSuccessStatus.Created,
       data: insertedId.toString(),
     });
-  },
+  }
   async updateComment(
     userId: string,
     commentId: string,
@@ -51,7 +53,7 @@ export const commentsService = {
       }
     }
 
-    const isUpdated = await commentsRepository.updateComment(commentId, bodyComment);
+    const isUpdated = await this.commentsRepository.updateComment(commentId, bodyComment);
     if (!isUpdated) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -63,7 +65,7 @@ export const commentsService = {
       status: ResultSuccessStatus.NoContent,
       data: isUpdated,
     });
-  },
+  }
   async deleteComment(userId: string, commentId: string): Promise<Result<true>> {
     const result = await this.getComment(commentId);
     if (isSuccess(result)) {
@@ -75,7 +77,7 @@ export const commentsService = {
       }
     }
 
-    const isDeleted = await commentsRepository.deleteComment(commentId);
+    const isDeleted = await this.commentsRepository.deleteComment(commentId);
     if (!isDeleted) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -86,5 +88,5 @@ export const commentsService = {
       status: ResultSuccessStatus.NoContent,
       data: isDeleted,
     });
-  },
-};
+  }
+}

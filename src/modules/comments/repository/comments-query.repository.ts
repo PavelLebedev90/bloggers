@@ -7,8 +7,9 @@ import { Result, ResultErrorStatus, ResultSuccessStatus } from "../../../core/ty
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { CommentOutputModel } from "../types/comments-output.type";
 import { commentsToOutputMapper, commentToOutputMapper } from "../mappers/comment-to-output.mapper";
-
-export const commentsQueryRepository = {
+import { injectable } from "inversify";
+@injectable()
+export class CommentsQueryRepository {
   async getAll(
     query: CommentQueryInputModel,
   ): Promise<Result<{ items: CommentOutputModel[]; totalCount: number }>> {
@@ -31,7 +32,7 @@ export const commentsQueryRepository = {
       status: ResultSuccessStatus.Ok,
       data: { items: commentsToOutputMapper(items), totalCount },
     });
-  },
+  }
   async getComment(commentId: string): Promise<Result<CommentOutputModel>> {
     const comment = await commentsCollection.findOne({ _id: new ObjectId(commentId) });
     if (!comment) {
@@ -44,5 +45,5 @@ export const commentsQueryRepository = {
       status: ResultSuccessStatus.Ok,
       data: commentToOutputMapper(comment),
     });
-  },
-};
+  }
+}

@@ -1,7 +1,5 @@
 import { BlogDBModel } from "../types/blogs-db.type";
-import { blogsRepository } from "../repository/blogs.repository";
-import { postsService } from "../../posts/service/posts.service";
-import { PostInputModel } from "../../posts/types/posts-input.type";
+import { BlogsRepository } from "../repository/blogs.repository";
 import { failResult, okResult } from "../../../core/utils/formatters/result/result.formatter";
 import { ERROR_MESSAGES } from "../../../core/consts/message/error.message.const";
 import { WithId } from "mongodb";
@@ -11,10 +9,16 @@ import {
   ResultSuccessStatus,
   SuccessResult,
 } from "../../../core/types/result.type";
+import { inject, injectable } from "inversify";
+@injectable()
+export class BlogsService {
+  constructor(
+    //TODO
+    @inject(BlogsRepository) protected blogsRepository: BlogsRepository,
+  ) {}
 
-export const blogsService = {
   async getBlog(blogId: string): Promise<Result<WithId<BlogDBModel>>> {
-    const blog = await blogsRepository.getBlog(blogId);
+    const blog = await this.blogsRepository.getBlog(blogId);
 
     if (!blog) {
       return failResult({
@@ -23,22 +27,19 @@ export const blogsService = {
       });
     }
     return okResult({ status: ResultSuccessStatus.Ok, data: blog });
-  },
+  }
   async createBlog(bodyBlog: BlogDBModel): Promise<SuccessResult<string>> {
-    const { insertedId } = await blogsRepository.createBlog(bodyBlog);
+    const { insertedId } = await this.blogsRepository.createBlog(bodyBlog);
     return okResult({
       status: ResultSuccessStatus.Created,
       data: insertedId.toString(),
     });
-  },
-  async createPostByBlogId(bodyPost: PostInputModel): Promise<Result<string>> {
-    return await postsService.createPost(bodyPost);
-  },
+  }
   async updateBlog(
     blogId: string,
     bodyBlog: Omit<BlogDBModel, "createdAt" | "isMembership">,
   ): Promise<Result<true>> {
-    const isUpdated = await blogsRepository.updateBlog(blogId, bodyBlog);
+    const isUpdated = await this.blogsRepository.updateBlog(blogId, bodyBlog);
     if (!isUpdated) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -49,9 +50,9 @@ export const blogsService = {
       status: ResultSuccessStatus.NoContent,
       data: isUpdated,
     });
-  },
+  }
   async deleteBlog(blogId: string): Promise<Result<true>> {
-    const isDeleted = await blogsRepository.deleteBlog(blogId);
+    const isDeleted = await this.blogsRepository.deleteBlog(blogId);
     if (!isDeleted) {
       return failResult({
         status: ResultErrorStatus.NotFound,
@@ -62,5 +63,5 @@ export const blogsService = {
       status: ResultSuccessStatus.NoContent,
       data: isDeleted,
     });
-  },
-};
+  }
+}

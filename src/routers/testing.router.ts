@@ -1,7 +1,9 @@
 import { Router } from "express";
-import { deleteTestingHandler } from "../modules/testing/handlers/delete.handler";
 import { TESTING_ROUTER } from "../modules/testing/consts/testing-router-path.const";
+import { container } from "../composition-root";
+import { TestingController } from "../modules/testing/controller/testing.controller";
 
 export const testingRouter: Router = Router({});
+const testingController = container.get(TestingController);
 
-testingRouter.delete(TESTING_ROUTER.ALL_DATA, deleteTestingHandler);
+testingRouter.delete(TESTING_ROUTER.ALL_DATA, testingController.deleteAll.bind(testingController));
